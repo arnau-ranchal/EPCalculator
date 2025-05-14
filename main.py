@@ -6,13 +6,14 @@ from pydantic import BaseModel
 import os
 import ctypes
 import numpy as np
+import logging
 
 # Importar mòdul chatbot
 import sys
 sys.path.append("chatbot")
 from chatbot.chatbot import respond
 
-
+logger = logging.getLogger(__name__)
 app = FastAPI()
 
 # Cargar la biblioteca compartida
@@ -254,13 +255,15 @@ async def generate_contour_plot(plot_data: ContourPlotRequest):
 class ChatbotRequest(BaseModel):
     message: str
 
+API_KEY = os.environ.get("API_KEY")
 @app.post("/chatbot")
 async def chatbot_with_bot(request: ChatbotRequest):
     """
     Endpoint per interactuar amb el chatbot.
     """
     try:
-        response = respond(request.message)
+        print("chatbot entering")
+        response = respond(request.message, API_KEY)
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")    
