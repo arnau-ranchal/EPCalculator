@@ -2,7 +2,7 @@
 
 # Compilador y flags
 CXX := g++
-CXXFLAGS := -c -fPIC -I ./eigen-3.4.0  # Add Eigen include path
+CXXFLAGS := -c -fPIC -I./eigen-3.4.0  # Add Eigen include path
 LDFLAGS := -shared
 
 # Directorios
