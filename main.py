@@ -255,7 +255,7 @@ async def generate_contour_plot(plot_data: ContourPlotRequest):
 class ChatbotRequest(BaseModel):
     message: str
 
-API_KEY = os.environ.get("API_KEY")
+API_KEY = os.environ.get('API_KEY')
 @app.post("/chatbot")
 async def chatbot_with_bot(request: ChatbotRequest):
     """
@@ -263,6 +263,7 @@ async def chatbot_with_bot(request: ChatbotRequest):
     """
     try:
         print("chatbot entering")
+        print("API KEY: ", os.environ.get('API_KEY'))
         response = respond(request.message, API_KEY)
         return {"response": response}
     except Exception as e:
