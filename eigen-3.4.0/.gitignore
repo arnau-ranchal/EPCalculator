@@ -10,7 +10,7 @@ save
 *.qm
 *.bak
 *~
-*build*
+*build*x
 *.moc.*
 *.moc
 ui_*
