@@ -1,9 +1,10 @@
 // Ensure DOM is loaded before initializing and binding functions
 window.addEventListener('DOMContentLoaded', () => {
     initializeChart();
-    drawDefaultGrid();
     onLineTypeChange();
+    setTimeout(() => drawDefaultGrid(), 0);
 });
+
 
 function calculateExponents(event) {
     event.preventDefault();
@@ -170,11 +171,19 @@ function plotFromFunction() {
       })
       .then(data => {
           console.log("Datos recibidos del backend:", data); 
+          // Info que passarem per a poder visualitzar les dades
+          const metadata = {
+            M, SNR, Rate, N, n, th,
+            typeModulation,
+            xVar: x
+          };
           drawInteractivePlot(data.x, data.y, {
               color: color,
               lineType: lineType,
-              plotType: plotType
+              plotType: plotType,
+              metadata
           });
+
       })
       .catch(error => {
           console.error("Error plotting data", error);
@@ -305,7 +314,8 @@ let activePlots = [];
 let plotIdCounter = 1;
 
 function initializeChart() {
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
+    const margin = { top: 20, right: 30, bottom: 50, left: 80 }; // Marge pels eixos
+
     const width = 800;
     const height = 600;
     // Limpia cualquier gráfico previo
@@ -326,6 +336,26 @@ function initializeChart() {
       .style('flex', '1 1 70%')
       .style('min-width', '400px')
       .style('position','relative');
+
+    container.append('div')
+      .attr('id', 'plot-meta-info')
+      .style('position', 'absolute')
+      .style('top', '10px')
+      .style('right', '10px')
+      .style('background', 'rgba(50,50,50,0.95)')
+      .style('color', 'white')
+      .style('padding', '10px 16px')
+      .style('border-radius', '10px')
+      .style('font-size', '0.9em')
+      .style('max-width', '280px')
+      .style('line-height', '1.5em')
+      .style('z-index', '10')
+      .style('opacity', '0')                       
+      .style('transform', 'scale(0.95)')           
+      .style('transition', 'opacity 250ms ease, transform 250ms ease')
+      .style('display', 'none');
+
+
 
     const legend = outer
       .append('div')
@@ -380,9 +410,9 @@ function initializeChart() {
     window.__g.append('text')
       .attr('class', 'x-axis-label')
       .attr('text-anchor', 'middle')
-      .attr('x', window.__innerWidth  / 2)
+      .attr('x', window.__innerWidth  / 2 - 10)
       .attr('y', window.__innerHeight + 40)  // 40px bajo el eje
-      .style('font-size', '14px')
+      .style('font-size', '20px')
       .style('font-weight', 'bold')
       .text('');  // se actualizará más adelante
 
@@ -391,8 +421,8 @@ function initializeChart() {
       .attr('text-anchor', 'middle')
       .attr('transform', `rotate(-90)`)
       .attr('x', -window.__innerHeight / 2)
-      .attr('y', -50)
-      .style('font-size', '14px')
+      .attr('y', -60)
+      .style('font-size', '20px')
       .style('font-weight', 'bold')
       .text('');
 
@@ -457,6 +487,7 @@ function initializeChart() {
       .style('justify-content','center')
       .style('width','100%');
 
+    // Clear All Plots
     const controls = controlsWrapper.append('div')
       .attr('id','plot-controls')
       .style('display','flex')
@@ -477,10 +508,16 @@ function initializeChart() {
       .attr('class','reset-zoom-button')
       .text('Clear All Plots')
       .on('click', () => {
-        activePlots.length = 0;
-        renderAll();
-        updatePlotListUI();
+        activePlots = [];             
+        updatePlotListUI();            
+        renderAll();                   
+
+        const infoBox = document.getElementById('plot-meta-info');
+        if (infoBox) infoBox.style.display = 'none';
       });
+
+
+
 
     controls.append('label')
       .html('<input type="checkbox" id="toggleGrid" checked> Show grid');
@@ -541,18 +578,43 @@ function zoomed(event) {
     const newX = t.rescaleX(window.__xScale);
     const newY = t.rescaleY(window.__yScale);
 
-    // 2) Redibuja ejes con formato de números sin sufijo “m”
+    // 2) Eixos amb la notació correspondent 
+    const active = activePlots[activePlots.length - 1] || { plotType: 'linear' };
+    //10^exponent
+    const logFormat = d => {
+        if (d <= 0 || isNaN(d)) return ""; // evita valores no válidos
+        const exp = Math.round(Math.log10(d));
+        const superscripts = {
+            "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³",
+            "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹"
+        };
+        const expStr = exp.toString().split("").map(c => superscripts[c] || "").join("");
+        return `10${expStr}`;
+    };
+
+
+    const formatX = (active.plotType === "logX" || active.plotType === "logLog") ? logFormat : d3.format(".2f");
+    const formatY = (active.plotType === "logY" || active.plotType === "logLog") ? logFormat : d3.format(".2f");
+
+
     window.__gX.call(
       d3.axisBottom(newX)
-        .ticks(6)                  // opcional: número de ticks
-        .tickFormat(d3.format(".2e"))
+        .ticks(6)
+        .tickFormat(formatX)
     ).select('.domain').remove();
+
+    // Mida valor eixos
+    window.__gX.selectAll("text")
+      .style("font-size", "18px");
 
     window.__gY.call(
       d3.axisLeft(newY)
         .ticks(6)
-        .tickFormat(d3.format(".2e"))
+        .tickFormat(formatY)
     ).select('.domain').remove();
+
+    window.__gY.selectAll("text")
+      .style("font-size", "18px");
 
 
     // 3) Grid toggle
@@ -615,8 +677,11 @@ function renderAll() {
       window.__pointLayer.selectAll('*').remove();
       window.__content.selectAll('*').remove();
       drawDefaultGrid();
+
+      updatePlotListUI();
       return;
     }
+
   
     // 2) Mostrar contenedores
     d3.select('#plot-container').style('display', 'block');
@@ -657,11 +722,11 @@ function renderAll() {
     const yDomain = yExtent;
 
     // Crea las escalas apropiadas
-    window.__xScale = (xIsLog ? d3.scaleSymlog().constant(0.01) : d3.scaleLinear())
+    window.__xScale = (xIsLog ? d3.scaleLog().domain(xDomain).range([ 0, window.__innerWidth ]) : d3.scaleLinear())
       .domain(xDomain)
       .range([ 0, window.__innerWidth ]);
 
-    window.__yScale = (yIsLog ? d3.scaleSymlog().constant(0.01) : d3.scaleLinear())
+    window.__yScale = (yIsLog ? d3.scaleLog().domain(xDomain).range([ window.__innerHeight, 0 ]) : d3.scaleLinear())
       .domain(yDomain)
       .range([ window.__innerHeight, 0 ]);
 
@@ -799,7 +864,7 @@ function renderAll() {
         .call(d3.axisRight(zScale).ticks(5));
     }
     else {
-      d3.select('#contour-legend').remove(); // 🔥 Borra la leyenda si ya no hay contour plots
+      d3.select('#contour-legend').remove(); // Borra la leyenda si ya no hay contour plots
     }
 
 
@@ -864,42 +929,47 @@ function drawInteractivePlot(x, y, opts) {
     let xCopy = [...x];
     let yCopy = [...y];
 
-/*     // 3) Aplica log₁₀ a los datos si el usuario lo pidió
-    if (plotType === 'log'  || plotType === 'logX') {
-      xCopy = xCopy.map(v => Math.log10(v));
+    // 3) Log if needed
+/*     if (plotType === 'logX' || plotType === 'logLog') {
+        xCopy = xCopy.map(v => Math.log10(v));
     }
-    if (plotType === 'log'  || plotType === 'logY') {
-      yCopy = yCopy.map(v => Math.log10(v));
+    if (plotType === 'logY' || plotType === 'logLog') {
+        yCopy = yCopy.map(v => Math.log10(v));
     } */
 
     // 4) Guarda los datos ya transformados en activePlots
-    activePlots.push({ plotId, x: xCopy, y: yCopy, color, dashStyle, label, plotType });
+    activePlots.push({
+      plotId,
+      x: xCopy,
+      y: yCopy,
+      color,
+      dashStyle,
+      label,
+      plotType,
+      metadata: opts.metadata || {}
+    });
+
     renderAll();
 }
 
 
 
 function updatePlotListUI() {
-    let container = document.getElementById('plot-list');
-    if (!container) {
-        container = document.getElementById('plot-list');
-        if (!container) return;
-        container.style.marginTop = '20px';
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.alignItems = 'flex-start';
-        container.style.paddingRight = '10px';
-        container.style.boxSizing = 'border-box';
-        container.style.maxWidth = '100%';
-        document.getElementById('plot-output').appendChild(container);
-    }
-    container.innerHTML = '<h4>Active plots:</h4>';
-    container.style.marginTop = '0';
+    const container = document.getElementById('plot-list');
+    if (!container) return;
+
+    container.innerHTML = ''; // Neteja tot
+
+    const title = document.createElement('h4');
+    title.textContent = 'Active plots:';
+    container.appendChild(title);
+
+    if (activePlots.length === 0) return;
 
     activePlots.forEach(p => {
         const item = document.createElement('div');
         item.className = `legend-item ${p.plotId}`;
-        item.dataset.plotId = p.plotId;                  // ① guardamos el id
+        item.dataset.plotId = p.plotId;
         item.style.margin = '5px 0';
         item.style.cursor = 'pointer';
         item.style.display = 'grid';
@@ -912,34 +982,28 @@ function updatePlotListUI() {
         item.style.boxSizing = 'border-box';
         item.style.paddingRight = '10px';
 
-        // colorBox (igual que antes)…
         const colorBox = document.createElement('span');
         colorBox.style.display = 'inline-block';
         colorBox.style.width = '15px';
         colorBox.style.height = '15px';
-        colorBox.style.background = p.color;
         if (p.type === 'contour') {
             colorBox.style.background = 'none';
             colorBox.style.backgroundImage = p.color;
-          } else {
+        } else {
             colorBox.style.background = p.color;
-          }
+        }
 
-        // Aquí va el texto editable
         const textSpan = document.createElement('span');
         textSpan.textContent = p.label;
         textSpan.style.wordBreak = 'break-word';
         textSpan.addEventListener('dblclick', () => {
-            // ② crear input inplace
             const input = document.createElement('input');
             input.type = 'text';
             input.value = p.label;
             input.style.width = '100%';
-            // si pulsa Enter, hacemos blur para disparar el commit
             input.addEventListener('keydown', e => {
                 if (e.key === 'Enter') input.blur();
             });
-            // al perder foco, actualizo label y reconstruyo UI
             input.addEventListener('blur', () => {
                 const newLabel = input.value.trim();
                 if (newLabel) p.label = newLabel;
@@ -949,7 +1013,6 @@ function updatePlotListUI() {
             input.focus();
         });
 
-        // botón de eliminar (igual que antes)…
         const btn = document.createElement('button');
         btn.textContent = '❌';
         btn.style.padding = '2px 6px';
@@ -965,23 +1028,78 @@ function updatePlotListUI() {
 
         item.addEventListener('mouseover', () => highlightPlot(p.plotId, true));
         item.addEventListener('mouseout', () => highlightPlot(p.plotId, false));
+
+        item.addEventListener('mouseenter', () => {
+          const infoBox = document.getElementById('plot-meta-info');
+          if (!activePlots.find(ap => ap.plotId === p.plotId)) {
+            if (infoBox) infoBox.style.display = 'none';
+            return;
+          }
+
+          const meta = p.metadata || {};
+          const lines = [];
+
+          if (meta.typeModulation) lines.push(`Type: ${meta.typeModulation}`);
+          if (meta.xVar !== 'M' && meta.M !== undefined) lines.push(`Modulation: ${meta.M}`);
+          if (meta.xVar !== 'SNR' && meta.SNR !== undefined) lines.push(`SNR: ${meta.SNR}`);
+          if (meta.xVar !== 'Rate' && meta.Rate !== undefined) lines.push(`Rate: ${meta.Rate}`);
+          if (meta.xVar !== 'N' && meta.N !== undefined) lines.push(`Quadrature: ${meta.N}`);
+          if (meta.xVar !== 'n' && meta.n !== undefined) lines.push(`Code Length: ${meta.n}`);
+          if (meta.xVar !== 'th' && meta.th !== undefined) lines.push(`Threshold: ${meta.th}`);
+
+          if (infoBox) {
+            infoBox.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
+            infoBox.style.display = 'block';
+            requestAnimationFrame(() => {
+              infoBox.style.opacity = '1';
+              infoBox.style.transform = 'scale(1)';
+            });
+          }
+        });
+
+        item.addEventListener('mouseleave', () => {
+          const infoBox = document.getElementById('plot-meta-info');
+          if (infoBox) {
+            infoBox.style.opacity = '0';
+            infoBox.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              infoBox.style.display = 'none';
+            }, 250);
+          }
+        });
+
     });
 }
+
 
 
 function removePlot(plotId) {
     const removedPlot = activePlots.find(p => p.plotId === plotId);
     activePlots = activePlots.filter(p => p.plotId !== plotId);
-    renderAll();
+
+    //Limpia leyenda visual antes de cualquier render
     updatePlotListUI();
+
+    const hoveredItem = document.querySelector(`.legend-item.${plotId}:hover`);
+    if (hoveredItem) {
+        const infoBox = document.getElementById('plot-meta-info');
+        if (infoBox) infoBox.style.display = 'none';
+    }
+
+    // Treu metadata
+    const infoBox = document.getElementById('plot-meta-info');
+    if (infoBox) infoBox.style.display = 'none';
+
+    renderAll();
 
     if (activePlots.length === 0 && window.__content) {
         window.__content.selectAll('*').remove();
         d3.select('#contour-legend').remove();
-        // Si se eliminó un gráfico logarítmico, forzamos la escala log
         drawDefaultGrid(removedPlot?.plotType === 'log');
     }
+
 }
+
 
 
 function highlightPlot(plotId, highlight) {
@@ -1016,6 +1134,7 @@ function drawDefaultGrid(forceLog = false) {
     window.__xScale.domain([defaultMin, defaultMax]);
     window.__yScale.domain([defaultMin, defaultMax]);
 
+    document.getElementById('toggleGrid')?.setAttribute('checked', 'true');
     zoomed({ transform: d3.zoomIdentity });
 }
 

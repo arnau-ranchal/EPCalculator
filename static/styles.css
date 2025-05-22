@@ -31,11 +31,11 @@ header h1 {
     gap: 20px;
     margin: 40px auto;
     width: 90%; /* Ajusta el ancho para que no ocupe todo el espacio */
-    max-width: 800px;
+    max-width: 850px;
     box-sizing: border-box; /* Incluye padding y border en el ancho total */
 }
 
-.funct1, .funct2 {
+.funct1, .funct2, .funct3 {
     background-color: white;
     padding: 30px 40px;
     border-radius: 12px;
@@ -45,8 +45,8 @@ header h1 {
     gap: 25px;
     box-sizing: border-box;
     width: 100%;
-    max-width: 800px;
     margin: 0 auto;
+    max-width: 900px;
 }
 
 .funct1 h2, .funct2 h2 {
@@ -60,6 +60,7 @@ header h1 {
 /* Ajustar la gràfica per a que no es surti de la box */
 .funct2 {
     overflow-x: hidden; /* Elimina el scroll horizontal */
+    padding: 20px 50px 20px 50px;
 }
 
 .funct2 svg {
@@ -75,7 +76,7 @@ svg {
 .plot-container {
     border: none;
     flex: 1 1 65%;
-    max-width: 300px;
+    max-width: 100%;
 }
 
 
@@ -483,18 +484,20 @@ form button.compute-error:active,
 
 /*  ─── Centrar el texto de las leyendas ───  */
 #plot-list .legend-item {
-    padding: 4px 4px !important;   /* ahora 8px a izquierda/derecha */
-    justify-items: start;           /* asegúrate que el texto quede a la izquierda */
+    padding: 4px 4px !important;  
+    justify-items: start;           
     transition: transform 0.3s ease; 
     grid-column-gap: 6px !important;
+    font-size: 1em;
 }
 #plot-list .legend-item span {
   /* Asegura que cada <span> (el texto) vaya centrado */
   text-align: left;
+  font-size: 1em;
 }
 
 #plot-list .legend-item:hover {
-  transform: scale(0.98);  /* efecto “encoger” al pasar el ratón */
+  transform: scale(0.98); 
 }
 
 #plot-list h4 {
@@ -544,22 +547,16 @@ form button.compute-error:active,
     background-color: #fff5f5;
 }
 
+/* Metadata transició */
+#plot-meta-info {
+  transition: opacity 250ms ease, transform 250ms ease;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
 /* =============================
    CHATBOT STYLES
    ============================= */
-   .funct3 {
-    background-color: white;
-    padding: 30px 40px;
-    border-radius: 12px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-}
 
 .funct3 h2 {
     font-size: 2em;
