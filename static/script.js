@@ -51,7 +51,7 @@ function plotFromFunction() {
     const x = document.getElementById('xVar').value;
     const x2 = document.getElementById('xVar2').value; /* Pel contour plot */
     const [min, max] = document.getElementById('xRange').value.split(',').map(Number);
-    const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number);
+    const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number); /* Pel contour plot */
     const points = Number(document.getElementById('points').value);
     const points2 = Number(document.getElementById('points2').value); /* Pel contour plot */
     const typeModulation = document.getElementById('funcTypeModulation').value;
@@ -101,7 +101,7 @@ function plotFromFunction() {
 
         const payload = {
         y,
-        x1: x,        // ojo: debe ser x1, no x
+        x1: x,       
         x2,
         rang_x1: [min, max],
         rang_x2: [min2, max2],
@@ -154,8 +154,6 @@ function plotFromFunction() {
           lineType,
           plotType
       };
-    
-      /* console.log("Sending payload to /plot_function:", payload); */
   
       document.getElementById('plot-result').innerHTML = "";
       document.getElementById('plot-result').classList.remove('show');
@@ -280,7 +278,7 @@ function onLineTypeChange() {
 
 
 function drawContourPlot(x1, x2, zMatrix) {
-    // 1) Generar un nuevo plotId
+    // 1) Generar nou plotId
     const plotId = `plot-${plotIdCounter++}`;
   
     // 2) Calcular etiqueta por defecto
@@ -299,13 +297,10 @@ function drawContourPlot(x1, x2, zMatrix) {
       color: gradient
     });
   
-    // 5) Re-renderizar todo
+    // 5) Re-renderitzar tot
     renderAll();
     updatePlotListUI();
   }
-  
-  
-  
   
 
 
@@ -411,7 +406,7 @@ function initializeChart() {
       .attr('class', 'x-axis-label')
       .attr('text-anchor', 'middle')
       .attr('x', window.__innerWidth  / 2 - 10)
-      .attr('y', window.__innerHeight + 40)  // 40px bajo el eje
+      .attr('y', window.__innerHeight + 40) 
       .style('font-size', '20px')
       .style('font-weight', 'bold')
       .text('');  // se actualizará más adelante
