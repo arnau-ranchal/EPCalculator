@@ -17,7 +17,7 @@ make clean && make	# Encara que això suposadament ja ho fa el Dockerfile
 docker build -t project_api .
 
 # Executar container
-docker run -p 8000:8000 project_api
+docker run -p 8000:8000 project_api -e API_KEY="your_actual_api_key" project_api
 
 Al navegador:
 http://localhost:8000/docs
