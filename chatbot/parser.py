@@ -157,35 +157,17 @@ def parse_sentence(original_sentence):
     }
 
 
-if __name__ == "__main__":
-    test_sentences = [
-        "compute the error exponent for snr 2",
-        "Calculate Pe with M of 8, typeM pam, and rate 1/3",
-        "What is the optimal rho if N value is 2000 and threshold is 0.0001?",
-        "exponent for SNR 15.5, M points 16, psk constellation",
-        "Find the error probability.",
-        "Get the e0 for rate 0.25 and snr 5. N = 500, n = 1.2",  # This was problematic
-        "rho with M=32",
-        "Just give me the exponent",
-        "error exponent with M-ary 64 and custom modulation type",
-        "What is the error exponent for an SNR of 10, a rate of 1/2, M of 4, type psk, N 1000, n 1, threshold 0.001",
-        # This was problematic
-        "exponent for r 0.6 and m 2, const pam, N 30, n 100, threshold 0.1 and snr = 4",  # Your example
-        "compute exponent with Pulse Amplitude Modulation and N value 500",
-        "error probability for Phase-Shifting Keying, M=16, R=0.25"
-    ]
-
-    for sentence in test_sentences:
-        print(f"Input: \"{sentence}\"")
-        parsed_info = parse_sentence(sentence)
-        if parsed_info:
-            print(
-                f"  Requested: {parsed_info['requested_result_name']} (results[{parsed_info['requested_result_index']}])")
-            print(f"  Parameters: {parsed_info['parameters']}")
-            if parsed_info['extracted_from_sentence']:
-                print(f"  Extracted from sentence: {parsed_info['extracted_from_sentence']}")
-            else:
-                print("  No parameters explicitly extracted, using all defaults for parameters.")
+def parse(sentence): # main
+    print(f"Input: \"{sentence}\"")
+    parsed_info = parse_sentence(sentence)
+    if parsed_info:
+        print(
+            f"  Requested: {parsed_info['requested_result_name']} (results[{parsed_info['requested_result_index']}])")
+        print(f"  Parameters: {parsed_info['parameters']}")
+        if parsed_info['extracted_from_sentence']:
+            print(f"  Extracted from sentence: {parsed_info['extracted_from_sentence']}")
         else:
-            print("  Could not parse the sentence meaningfully.")
-        print("-" * 40)
+            print("  No parameters explicitly extracted, using all defaults for parameters.")
+    else:
+        print("  Could not parse the sentence meaningfully.")
+    print("-" * 40)

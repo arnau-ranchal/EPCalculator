@@ -1,6 +1,9 @@
 from exponents.utils import call_exponents
 from openai import OpenAI
 import re
+import parser
+
+from EPCalculator.chatbot.parser import parse
 
 SYSTEM_PROMPT = (
     "You are a specialized assistant for transmission-system calculations. "
@@ -82,8 +85,11 @@ def parse_function_call(response: str) -> dict:
                     params[key] = value
     return {'function': function_name, 'parameters': params}
 
+def respond(text: str) -> str: # parser
+    return parse(str)
 
-def respond(text: str, api_key: str) -> str:
+
+def respond(text: str, api_key: str) -> str: # chatbot
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": text}
