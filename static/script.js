@@ -78,7 +78,7 @@ function plotFromFunction() {
     } 
 
     const lineType = document.getElementById('lineType').value || '-';
-    const color = document.getElementById('lineColor').value || 'steelblue';
+    const color = document.getElementById('lineColor').value;
     const plotType = document.getElementById('plotType').value;
 
     // CONTOUR CASE
@@ -202,7 +202,7 @@ function plotManually() {
     const yInputEl = document.getElementById('yValues');
     const xInput = xInputEl.value.trim();
     const yInput = yInputEl.value.trim();
-    const color = document.getElementById('lineColor').value || 'steelblue';
+    const color = document.getElementById('lineColor').value;
     const plotType = document.getElementById('plotType').value;
     const lineType = document.getElementById('lineType').value || '-';
     //const manualTitle = document.getElementById('manualTitle').value || 'Manual Graph';
@@ -306,6 +306,11 @@ function drawContourPlot(x1, x2, zMatrix) {
 
 // Interactive multi-plot with zoom, grid, tooltip, overlay & removal
 let activePlots = [];
+const defaultColors = [
+  "steelblue", "crimson", "purple", "seagreen", "goldenrod",
+  "orange", "royalblue", "orchid", "darkcyan", "tomato"
+];
+let colorIndex = 0;
 let plotIdCounter = 1;
 
 function initializeChart() {
@@ -497,13 +502,14 @@ function initializeChart() {
       .attr('class','reset-zoom-button')
       .text('Reset Zoom')
       .on('click', resetZoom);
-
+    // Clear All Plots
     controls.append('button')
       .attr('type','button')
       .attr('class','reset-zoom-button')
       .text('Clear All Plots')
       .on('click', () => {
-        activePlots = [];             
+        activePlots = []; 
+        colorIndex = 0;            
         updatePlotListUI();            
         renderAll();                   
 
@@ -577,13 +583,19 @@ function zoomed(event) {
     const active = activePlots[activePlots.length - 1] || { plotType: 'linear' };
     //10^exponent
     const logFormat = d => {
-        if (d <= 0 || isNaN(d)) return ""; // evita valores no válidos
-        const exp = Math.round(Math.log10(d));
+        if (d <= 0 || isNaN(d)) return "";
+
+        const exp = Math.log10(d);
+        const rounded = Math.round(exp);
+
+        // Solo mostrar potencias exactas
+        if (Math.abs(exp - rounded) > 1e-6) return "";
+
         const superscripts = {
             "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³",
             "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹"
         };
-        const expStr = exp.toString().split("").map(c => superscripts[c] || "").join("");
+        const expStr = rounded.toString().split("").map(c => superscripts[c] || "").join("");
         return `10${expStr}`;
     };
 
@@ -916,13 +928,29 @@ function drawInteractivePlot(x, y, opts) {
       ? opts.label
       : `${document.getElementById('yVar')?.selectedOptions[0]?.text || 'Y'} / ${document.getElementById('xVar')?.selectedOptions[0]?.text || 'X'}`;
 
-    const color    = opts.color     || 'steelblue';
+    const color = opts.color && opts.color.trim() !== ""
+  ? opts.color
+  : defaultColors[colorIndex++ % defaultColors.length];
     const dashStyle= opts.lineType  || 'solid';
     const plotType = opts.plotType  || 'linear';
 
     // 2) Copia datos originales
-    let xCopy = [...x];
-    let yCopy = [...y];
+    let xCopy = [];
+    let yCopy = [];
+
+    for (let i = 0; i < x.length; i++) {
+        const xi = x[i];
+        const yi = y[i];
+        if (  // descarta punts no vàlids pel Log
+            (plotType === 'logX' || plotType === 'logLog') && xi <= 0
+            || (plotType === 'logY' || plotType === 'logLog') && yi <= 0
+        ) {
+            continue; // descarta punto no válido
+        }
+        xCopy.push(xi);
+        yCopy.push(yi);
+    }
+
 
     // 3) Log if needed
 /*     if (plotType === 'logX' || plotType === 'logLog') {
@@ -1086,6 +1114,10 @@ function removePlot(plotId) {
     if (infoBox) infoBox.style.display = 'none';
 
     renderAll();
+    if (activePlots.length === 0) {
+      colorIndex = 0;
+    }
+
 
     if (activePlots.length === 0 && window.__content) {
         window.__content.selectAll('*').remove();
@@ -1120,8 +1152,8 @@ function highlightPlot(plotId, highlight) {
 function drawDefaultGrid(forceLog = false) {
     const useLog = forceLog;
 
-    window.__xScale = (useLog ? d3.scaleSymlog() : d3.scaleLinear()).range([0, window.__innerWidth]);
-    window.__yScale = (useLog ? d3.scaleSymlog() : d3.scaleLinear()).range([window.__innerHeight, 0]);
+    window.__xScale = (useLog ? d3.scaleLog() : d3.scaleLinear()).range([0, window.__innerWidth]);
+    window.__yScale = (useLog ? d3.scaleLog() : d3.scaleLinear()).range([window.__innerHeight, 0]);
 
     const defaultMin = useLog ? -10 : -10;
     const defaultMax = 10;
