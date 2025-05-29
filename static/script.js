@@ -5,6 +5,15 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => drawDefaultGrid(), 0);
 });
 
+const axisLabelsMap = {
+  M:   'Modulation',
+  SNR: 'SNR',
+  Rate:'Rate',
+  N:   'Quadrature',
+  n:   'Code length',
+  th:  'Threshold'
+};
+
 
 function calculateExponents(event) {
     event.preventDefault();
@@ -54,15 +63,15 @@ function plotFromFunction() {
     const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number); /* Pel contour plot */
     const points = Number(document.getElementById('points').value);
     const points2 = Number(document.getElementById('points2').value); /* Pel contour plot */
-    const typeModulation = document.getElementById('funcTypeModulation').value;
 
     // Recull els valors fixos
-    const M = document.getElementById('fixedM').value;
-    const SNR = document.getElementById('fixedSNR').value;
-    const Rate = document.getElementById('fixedRate').value;
-    const N = document.getElementById('fixedN').value;
-    const n = document.getElementById('fixedn').value;
-    const th = document.getElementById('fixedth').value;
+    const M = document.getElementById('M').value;
+    const typeModulation = document.getElementById('TypeModulation').value;
+    const SNR = document.getElementById('SNR').value;
+    const Rate = document.getElementById('R').value;
+    const N = document.getElementById('N').value;
+    const n = document.getElementById('n').value;
+    const th = document.getElementById('th').value;
 
     const inputs = { M, SNR, Rate, N, n, th };
 
@@ -190,9 +199,7 @@ function plotFromFunction() {
           resultDiv.classList.add('show');
       }); 
     }
-      
-
-    
+       
 }
 
 
@@ -877,24 +884,19 @@ function renderAll() {
 
     // ─── Actualizar etiquetas de ejes según el último plot ────
     if (activePlots.length) {
-      const last = activePlots[activePlots.length - 1];
-      let xText, yText;
-      if (last.type === 'contour') {
-        // Contour: X1 en X, X2 en Y
-        xText = document.getElementById('xVar').selectedOptions[0].text;
-        yText = document.getElementById('xVar2').selectedOptions[0].text;
-      } else {
-        // Line/Log: X en X, Y en Y
-        xText = document.getElementById('xVar').selectedOptions[0].text;
-        yText = document.getElementById('yVar').selectedOptions[0].text;
-      }
-      d3.select('.x-axis-label').text(xText);
-      d3.select('.y-axis-label').text(yText);
+      const last = activePlots[activePlots.length - 1],
+            xKey = document.getElementById('xVar').value,
+            xLabel = axisLabelsMap[xKey] || xKey,
+            yLabel = last.type === 'contour'
+              ? (axisLabelsMap[document.getElementById('xVar2').value] || document.getElementById('xVar2').value)
+              : document.getElementById('yVar').selectedOptions[0].text;
+      d3.select('.x-axis-label').text(xLabel);
+      d3.select('.y-axis-label').text(yLabel);
     } else {
-      // Sin plots, ocultamos o limpiamos
       d3.select('.x-axis-label').text('');
       d3.select('.y-axis-label').text('');
     }
+
     // ────────────────────────────────────────────────────────
 
   
