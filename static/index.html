@@ -14,7 +14,7 @@
 
     <!-- Les funcions estan definides a script.js -->
     <!-- <script src="script.js"></script> --> <!-- Pel obrir directament amb el navegador -->
-    <script src="/static/script.js?v=1.94<"></script>
+    <script src="/static/script.js?v=1.100<"></script>
 
 
 </head>
@@ -104,7 +104,7 @@
                     <div class="input-group">
                         <!-- Color -->
                         <label for="lineColor">Color:</label>
-                        <input list="colorOptions" id="lineColor" placeholder="steelblue">
+                        <input list="colorOptions" id="lineColor" placeholder="---">
                         <datalist id="colorOptions">
                             <option value="steelblue">
                             <option value="tomato">
@@ -177,47 +177,6 @@
                         <input type="number" id="points2" value="50" min="1">
                     </div>
 
-                </div>
-
-                <div class="form-row">
-                    <!-- Modulation -->
-                    <div class="input-group">
-                        <label for="fixedM">Modulation</label>
-                        <input type="text" id="fixedM" placeholder="M...">
-                    </div>
-                    <!-- Type modulation -->
-                    <div class="input-group">
-                        <label for="funcTypeModulation">Type</label>
-                        <select id="funcTypeModulation">
-                            <option value="PAM">PAM</option>
-                            <option value="QAM">QAM</option>
-                            <option value="PSK">PSK</option>
-                        </select>
-                    </div>
-                    <!-- SNR -->
-                    <div class="input-group">
-                        <label for="fixedSNR">SNR</label>
-                        <input type="text" id="fixedSNR" placeholder="SNR...">
-                    </div>
-                    <!-- Rate -->
-                    <div class="input-group">
-                        <label for="fixedRate">Rate</label>
-                        <input type="text" id="fixedRate" placeholder="R...">
-                    </div>
-                    <!-- Quadratura -->
-                    <div class="input-group">
-                        <label for="fixedN">Quadrature</label>
-                        <input type="text" id="fixedN" placeholder="N...">
-                    </div>
-                    <!-- Longitud codi / Threshold -->
-                    <div class="input-group">
-                        <label for="fixedn">Code Length</label>
-                        <input type="text" id="fixedn" placeholder="n...">
-                    </div>
-                    <div class="input-group">
-                        <label for="fixedth">Threshold</label>
-                        <input type="text" id="fixedth" placeholder="Threshold...">
-                    </div>
                 </div>
 
                 <!-- Botons plot + manual inputs -->
