@@ -6,14 +6,14 @@ from pydantic import BaseModel
 import os
 import ctypes
 import numpy as np
-import logging
+import math
 
 # Importar mòdul chatbot
 import sys
 sys.path.append("chatbot")
 from chatbot.chatbot import respond
 
-logger = logging.getLogger(__name__)
+
 app = FastAPI()
 
 # Cargar la biblioteca compartida
@@ -84,22 +84,6 @@ async def exponents(
     }
 
 # ------------------------ GRAPHICS -------------------------------------------------------------------------
-def call_exponents(M: float, typeModulation: str, SNR: float, Rate: float, N: float, n:float, th: float) -> list[float]:
-    """
-    Wrapper para la función C++ 'exponents' que retorna una lista de 3 valores:
-    [Probabilidad de error, Exponent, rho óptima]
-    """
-    result_ptr = lib.exponents(
-        ctypes.c_float(M),
-        typeModulation.encode('utf-8'),  # Convertir string a C-style
-        ctypes.c_float(SNR),
-        ctypes.c_float(Rate),
-        ctypes.c_float(N),
-        ctypes.c_float(n),
-        ctypes.c_float(th)
-    )
-    return [result_ptr[i] for i in range(3)]
-
 # Classe per la petició de generar una gràfica respecte una funció ja pre-programada
 class FunctionPlotRequest(BaseModel):
     y: str
@@ -113,9 +97,6 @@ class FunctionPlotRequest(BaseModel):
     N: float
     n: float
     th: float
-    color: str = "steelblue"
-    lineType: str = "-"
-    plotType: str = "linear"
 
 # Endpoint per generar gràfiques a partir de funcions predefinides
 @app.post("/plot_function")
@@ -161,6 +142,7 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
                 "Rho": result[2]
             }
             y_vals.append(y_map[plot_data.y])
+            
 
         return {
             "x": x_vals.tolist(),
@@ -255,16 +237,13 @@ async def generate_contour_plot(plot_data: ContourPlotRequest):
 class ChatbotRequest(BaseModel):
     message: str
 
-API_KEY = os.environ.get('API_KEY')
 @app.post("/chatbot")
 async def chatbot_with_bot(request: ChatbotRequest):
     """
     Endpoint per interactuar amb el chatbot.
     """
     try:
-        print("chatbot entering")
-        print("API KEY: ", os.environ.get('API_KEY'))
-        response = respond(request.message, API_KEY)
+        response = respond(request.message)
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")    
