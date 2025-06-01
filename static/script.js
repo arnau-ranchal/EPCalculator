@@ -1,9 +1,19 @@
 // Ensure DOM is loaded before initializing and binding functions
 window.addEventListener('DOMContentLoaded', () => {
     initializeChart();
-    drawDefaultGrid();
     onLineTypeChange();
+    setTimeout(() => drawDefaultGrid(), 0);
 });
+
+const axisLabelsMap = {
+  M:   'Modulation',
+  SNR: 'SNR',
+  Rate:'Rate',
+  N:   'Quadrature',
+  n:   'Code length',
+  th:  'Threshold'
+};
+
 
 function calculateExponents(event) {
     event.preventDefault();
@@ -50,18 +60,18 @@ function plotFromFunction() {
     const x = document.getElementById('xVar').value;
     const x2 = document.getElementById('xVar2').value; /* Pel contour plot */
     const [min, max] = document.getElementById('xRange').value.split(',').map(Number);
-    const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number);
+    const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number); /* Pel contour plot */
     const points = Number(document.getElementById('points').value);
     const points2 = Number(document.getElementById('points2').value); /* Pel contour plot */
-    const typeModulation = document.getElementById('funcTypeModulation').value;
 
     // Recull els valors fixos
-    const M = document.getElementById('fixedM').value;
-    const SNR = document.getElementById('fixedSNR').value;
-    const Rate = document.getElementById('fixedRate').value;
-    const N = document.getElementById('fixedN').value;
-    const n = document.getElementById('fixedn').value;
-    const th = document.getElementById('fixedth').value;
+    const M = document.getElementById('M').value;
+    const typeModulation = document.getElementById('TypeModulation').value;
+    const SNR = document.getElementById('SNR').value;
+    const Rate = document.getElementById('R').value;
+    const N = document.getElementById('N').value;
+    const n = document.getElementById('n').value;
+    const th = document.getElementById('th').value;
 
     const inputs = { M, SNR, Rate, N, n, th };
 
@@ -77,7 +87,7 @@ function plotFromFunction() {
     } 
 
     const lineType = document.getElementById('lineType').value || '-';
-    const color = document.getElementById('lineColor').value || 'steelblue';
+    const color = document.getElementById('lineColor').value;
     const plotType = document.getElementById('plotType').value;
 
     // CONTOUR CASE
@@ -100,7 +110,7 @@ function plotFromFunction() {
 
         const payload = {
         y,
-        x1: x,        // ojo: debe ser x1, no x
+        x1: x,       
         x2,
         rang_x1: [min, max],
         rang_x2: [min2, max2],
@@ -153,8 +163,6 @@ function plotFromFunction() {
           lineType,
           plotType
       };
-    
-      /* console.log("Sending payload to /plot_function:", payload); */
   
       document.getElementById('plot-result').innerHTML = "";
       document.getElementById('plot-result').classList.remove('show');
@@ -170,11 +178,19 @@ function plotFromFunction() {
       })
       .then(data => {
           console.log("Datos recibidos del backend:", data); 
+          // Info que passarem per a poder visualitzar les dades
+          const metadata = {
+            M, SNR, Rate, N, n, th,
+            typeModulation,
+            xVar: x
+          };
           drawInteractivePlot(data.x, data.y, {
               color: color,
               lineType: lineType,
-              plotType: plotType
+              plotType: plotType,
+              metadata
           });
+
       })
       .catch(error => {
           console.error("Error plotting data", error);
@@ -183,9 +199,7 @@ function plotFromFunction() {
           resultDiv.classList.add('show');
       }); 
     }
-      
-
-    
+       
 }
 
 
@@ -195,7 +209,7 @@ function plotManually() {
     const yInputEl = document.getElementById('yValues');
     const xInput = xInputEl.value.trim();
     const yInput = yInputEl.value.trim();
-    const color = document.getElementById('lineColor').value || 'steelblue';
+    const color = document.getElementById('lineColor').value;
     const plotType = document.getElementById('plotType').value;
     const lineType = document.getElementById('lineType').value || '-';
     //const manualTitle = document.getElementById('manualTitle').value || 'Manual Graph';
@@ -271,7 +285,7 @@ function onLineTypeChange() {
 
 
 function drawContourPlot(x1, x2, zMatrix) {
-    // 1) Generar un nuevo plotId
+    // 1) Generar nou plotId
     const plotId = `plot-${plotIdCounter++}`;
   
     // 2) Calcular etiqueta por defecto
@@ -290,22 +304,25 @@ function drawContourPlot(x1, x2, zMatrix) {
       color: gradient
     });
   
-    // 5) Re-renderizar todo
+    // 5) Re-renderitzar tot
     renderAll();
     updatePlotListUI();
   }
-  
-  
-  
   
 
 
 // Interactive multi-plot with zoom, grid, tooltip, overlay & removal
 let activePlots = [];
+const defaultColors = [
+  "steelblue", "crimson", "purple", "seagreen", "goldenrod",
+  "orange", "royalblue", "orchid", "darkcyan", "tomato"
+];
+let colorIndex = 0;
 let plotIdCounter = 1;
 
 function initializeChart() {
-    const margin = { top: 20, right: 30, bottom: 50, left: 60 };
+    const margin = { top: 20, right: 30, bottom: 50, left: 80 }; // Marge pels eixos
+
     const width = 800;
     const height = 600;
     // Limpia cualquier gráfico previo
@@ -326,6 +343,26 @@ function initializeChart() {
       .style('flex', '1 1 70%')
       .style('min-width', '400px')
       .style('position','relative');
+
+    container.append('div')
+      .attr('id', 'plot-meta-info')
+      .style('position', 'absolute')
+      .style('top', '10px')
+      .style('right', '10px')
+      .style('background', 'rgba(50,50,50,0.95)')
+      .style('color', 'white')
+      .style('padding', '10px 16px')
+      .style('border-radius', '10px')
+      .style('font-size', '0.9em')
+      .style('max-width', '280px')
+      .style('line-height', '1.5em')
+      .style('z-index', '10')
+      .style('opacity', '0')                       
+      .style('transform', 'scale(0.95)')           
+      .style('transition', 'opacity 250ms ease, transform 250ms ease')
+      .style('display', 'none');
+
+
 
     const legend = outer
       .append('div')
@@ -380,9 +417,9 @@ function initializeChart() {
     window.__g.append('text')
       .attr('class', 'x-axis-label')
       .attr('text-anchor', 'middle')
-      .attr('x', window.__innerWidth  / 2)
-      .attr('y', window.__innerHeight + 40)  // 40px bajo el eje
-      .style('font-size', '14px')
+      .attr('x', window.__innerWidth  / 2 - 10)
+      .attr('y', window.__innerHeight + 40) 
+      .style('font-size', '20px')
       .style('font-weight', 'bold')
       .text('');  // se actualizará más adelante
 
@@ -391,8 +428,8 @@ function initializeChart() {
       .attr('text-anchor', 'middle')
       .attr('transform', `rotate(-90)`)
       .attr('x', -window.__innerHeight / 2)
-      .attr('y', -50)
-      .style('font-size', '14px')
+      .attr('y', -60)
+      .style('font-size', '20px')
       .style('font-weight', 'bold')
       .text('');
 
@@ -457,6 +494,7 @@ function initializeChart() {
       .style('justify-content','center')
       .style('width','100%');
 
+    // Clear All Plots
     const controls = controlsWrapper.append('div')
       .attr('id','plot-controls')
       .style('display','flex')
@@ -471,16 +509,23 @@ function initializeChart() {
       .attr('class','reset-zoom-button')
       .text('Reset Zoom')
       .on('click', resetZoom);
-
+    // Clear All Plots
     controls.append('button')
       .attr('type','button')
       .attr('class','reset-zoom-button')
       .text('Clear All Plots')
       .on('click', () => {
-        activePlots.length = 0;
-        renderAll();
-        updatePlotListUI();
+        activePlots = []; 
+        colorIndex = 0;            
+        updatePlotListUI();            
+        renderAll();                   
+
+        const infoBox = document.getElementById('plot-meta-info');
+        if (infoBox) infoBox.style.display = 'none';
       });
+
+
+
 
     controls.append('label')
       .html('<input type="checkbox" id="toggleGrid" checked> Show grid');
@@ -541,18 +586,49 @@ function zoomed(event) {
     const newX = t.rescaleX(window.__xScale);
     const newY = t.rescaleY(window.__yScale);
 
-    // 2) Redibuja ejes con formato de números sin sufijo “m”
+    // 2) Eixos amb la notació correspondent 
+    const active = activePlots[activePlots.length - 1] || { plotType: 'linear' };
+    //10^exponent
+    const logFormat = d => {
+        if (d <= 0 || isNaN(d)) return "";
+
+        const exp = Math.log10(d);
+        const rounded = Math.round(exp);
+
+        // Solo mostrar potencias exactas
+        if (Math.abs(exp - rounded) > 1e-6) return "";
+
+        const superscripts = {
+            "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³",
+            "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹"
+        };
+        const expStr = rounded.toString().split("").map(c => superscripts[c] || "").join("");
+        return `10${expStr}`;
+    };
+
+
+    const formatX = (active.plotType === "logX" || active.plotType === "logLog") ? logFormat : d3.format(".2f");
+    const formatY = (active.plotType === "logY" || active.plotType === "logLog") ? logFormat : d3.format(".2f");
+
+
     window.__gX.call(
       d3.axisBottom(newX)
-        .ticks(6)                  // opcional: número de ticks
-        .tickFormat(d3.format(".2e"))
+        .ticks(6)
+        .tickFormat(formatX)
     ).select('.domain').remove();
+
+    // Mida valor eixos
+    window.__gX.selectAll("text")
+      .style("font-size", "18px");
 
     window.__gY.call(
       d3.axisLeft(newY)
         .ticks(6)
-        .tickFormat(d3.format(".2e"))
+        .tickFormat(formatY)
     ).select('.domain').remove();
+
+    window.__gY.selectAll("text")
+      .style("font-size", "18px");
 
 
     // 3) Grid toggle
@@ -615,8 +691,11 @@ function renderAll() {
       window.__pointLayer.selectAll('*').remove();
       window.__content.selectAll('*').remove();
       drawDefaultGrid();
+
+      updatePlotListUI();
       return;
     }
+
   
     // 2) Mostrar contenedores
     d3.select('#plot-container').style('display', 'block');
@@ -657,11 +736,11 @@ function renderAll() {
     const yDomain = yExtent;
 
     // Crea las escalas apropiadas
-    window.__xScale = (xIsLog ? d3.scaleSymlog().constant(0.01) : d3.scaleLinear())
+    window.__xScale = (xIsLog ? d3.scaleLog().domain(xDomain).range([ 0, window.__innerWidth ]) : d3.scaleLinear())
       .domain(xDomain)
       .range([ 0, window.__innerWidth ]);
 
-    window.__yScale = (yIsLog ? d3.scaleSymlog().constant(0.01) : d3.scaleLinear())
+    window.__yScale = (yIsLog ? d3.scaleLog().domain(xDomain).range([ window.__innerHeight, 0 ]) : d3.scaleLinear())
       .domain(yDomain)
       .range([ window.__innerHeight, 0 ]);
 
@@ -799,30 +878,25 @@ function renderAll() {
         .call(d3.axisRight(zScale).ticks(5));
     }
     else {
-      d3.select('#contour-legend').remove(); // 🔥 Borra la leyenda si ya no hay contour plots
+      d3.select('#contour-legend').remove(); // Borra la leyenda si ya no hay contour plots
     }
 
 
     // ─── Actualizar etiquetas de ejes según el último plot ────
     if (activePlots.length) {
-      const last = activePlots[activePlots.length - 1];
-      let xText, yText;
-      if (last.type === 'contour') {
-        // Contour: X1 en X, X2 en Y
-        xText = document.getElementById('xVar').selectedOptions[0].text;
-        yText = document.getElementById('xVar2').selectedOptions[0].text;
-      } else {
-        // Line/Log: X en X, Y en Y
-        xText = document.getElementById('xVar').selectedOptions[0].text;
-        yText = document.getElementById('yVar').selectedOptions[0].text;
-      }
-      d3.select('.x-axis-label').text(xText);
-      d3.select('.y-axis-label').text(yText);
+      const last = activePlots[activePlots.length - 1],
+            xKey = document.getElementById('xVar').value,
+            xLabel = axisLabelsMap[xKey] || xKey,
+            yLabel = last.type === 'contour'
+              ? (axisLabelsMap[document.getElementById('xVar2').value] || document.getElementById('xVar2').value)
+              : document.getElementById('yVar').selectedOptions[0].text;
+      d3.select('.x-axis-label').text(xLabel);
+      d3.select('.y-axis-label').text(yLabel);
     } else {
-      // Sin plots, ocultamos o limpiamos
       d3.select('.x-axis-label').text('');
       d3.select('.y-axis-label').text('');
     }
+
     // ────────────────────────────────────────────────────────
 
   
@@ -856,50 +930,71 @@ function drawInteractivePlot(x, y, opts) {
       ? opts.label
       : `${document.getElementById('yVar')?.selectedOptions[0]?.text || 'Y'} / ${document.getElementById('xVar')?.selectedOptions[0]?.text || 'X'}`;
 
-    const color    = opts.color     || 'steelblue';
+    const color = opts.color && opts.color.trim() !== ""
+  ? opts.color
+  : defaultColors[colorIndex++ % defaultColors.length];
     const dashStyle= opts.lineType  || 'solid';
     const plotType = opts.plotType  || 'linear';
 
     // 2) Copia datos originales
-    let xCopy = [...x];
-    let yCopy = [...y];
+    let xCopy = [];
+    let yCopy = [];
 
-/*     // 3) Aplica log₁₀ a los datos si el usuario lo pidió
-    if (plotType === 'log'  || plotType === 'logX') {
-      xCopy = xCopy.map(v => Math.log10(v));
+    for (let i = 0; i < x.length; i++) {
+        const xi = x[i];
+        const yi = y[i];
+        if (  // descarta punts no vàlids pel Log
+            (plotType === 'logX' || plotType === 'logLog') && xi <= 0
+            || (plotType === 'logY' || plotType === 'logLog') && yi <= 0
+        ) {
+            continue; // descarta punto no válido
+        }
+        xCopy.push(xi);
+        yCopy.push(yi);
     }
-    if (plotType === 'log'  || plotType === 'logY') {
-      yCopy = yCopy.map(v => Math.log10(v));
+
+
+    // 3) Log if needed
+/*     if (plotType === 'logX' || plotType === 'logLog') {
+        xCopy = xCopy.map(v => Math.log10(v));
+    }
+    if (plotType === 'logY' || plotType === 'logLog') {
+        yCopy = yCopy.map(v => Math.log10(v));
     } */
 
     // 4) Guarda los datos ya transformados en activePlots
-    activePlots.push({ plotId, x: xCopy, y: yCopy, color, dashStyle, label, plotType });
+    activePlots.push({
+      plotId,
+      x: xCopy,
+      y: yCopy,
+      color,
+      dashStyle,
+      label,
+      plotType,
+      metadata: opts.metadata || {}
+    });
+
     renderAll();
 }
 
 
 
 function updatePlotListUI() {
-    let container = document.getElementById('plot-list');
-    if (!container) {
-        container = document.getElementById('plot-list');
-        if (!container) return;
-        container.style.marginTop = '20px';
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.alignItems = 'flex-start';
-        container.style.paddingRight = '10px';
-        container.style.boxSizing = 'border-box';
-        container.style.maxWidth = '100%';
-        document.getElementById('plot-output').appendChild(container);
-    }
-    container.innerHTML = '<h4>Active plots:</h4>';
-    container.style.marginTop = '0';
+    const container = document.getElementById('plot-list');
+    if (!container) return;
+
+    container.innerHTML = ''; // Neteja tot
+
+    const title = document.createElement('h4');
+    title.textContent = 'Active plots:';
+    container.appendChild(title);
+
+    if (activePlots.length === 0) return;
 
     activePlots.forEach(p => {
         const item = document.createElement('div');
         item.className = `legend-item ${p.plotId}`;
-        item.dataset.plotId = p.plotId;                  // ① guardamos el id
+        item.dataset.plotId = p.plotId;
         item.style.margin = '5px 0';
         item.style.cursor = 'pointer';
         item.style.display = 'grid';
@@ -912,34 +1007,28 @@ function updatePlotListUI() {
         item.style.boxSizing = 'border-box';
         item.style.paddingRight = '10px';
 
-        // colorBox (igual que antes)…
         const colorBox = document.createElement('span');
         colorBox.style.display = 'inline-block';
         colorBox.style.width = '15px';
         colorBox.style.height = '15px';
-        colorBox.style.background = p.color;
         if (p.type === 'contour') {
             colorBox.style.background = 'none';
             colorBox.style.backgroundImage = p.color;
-          } else {
+        } else {
             colorBox.style.background = p.color;
-          }
+        }
 
-        // Aquí va el texto editable
         const textSpan = document.createElement('span');
         textSpan.textContent = p.label;
         textSpan.style.wordBreak = 'break-word';
         textSpan.addEventListener('dblclick', () => {
-            // ② crear input inplace
             const input = document.createElement('input');
             input.type = 'text';
             input.value = p.label;
             input.style.width = '100%';
-            // si pulsa Enter, hacemos blur para disparar el commit
             input.addEventListener('keydown', e => {
                 if (e.key === 'Enter') input.blur();
             });
-            // al perder foco, actualizo label y reconstruyo UI
             input.addEventListener('blur', () => {
                 const newLabel = input.value.trim();
                 if (newLabel) p.label = newLabel;
@@ -949,7 +1038,6 @@ function updatePlotListUI() {
             input.focus();
         });
 
-        // botón de eliminar (igual que antes)…
         const btn = document.createElement('button');
         btn.textContent = '❌';
         btn.style.padding = '2px 6px';
@@ -965,23 +1053,82 @@ function updatePlotListUI() {
 
         item.addEventListener('mouseover', () => highlightPlot(p.plotId, true));
         item.addEventListener('mouseout', () => highlightPlot(p.plotId, false));
+
+        item.addEventListener('mouseenter', () => {
+          const infoBox = document.getElementById('plot-meta-info');
+          if (!activePlots.find(ap => ap.plotId === p.plotId)) {
+            if (infoBox) infoBox.style.display = 'none';
+            return;
+          }
+
+          const meta = p.metadata || {};
+          const lines = [];
+
+          if (meta.typeModulation) lines.push(`Type: ${meta.typeModulation}`);
+          if (meta.xVar !== 'M' && meta.M !== undefined) lines.push(`Modulation: ${meta.M}`);
+          if (meta.xVar !== 'SNR' && meta.SNR !== undefined) lines.push(`SNR: ${meta.SNR}`);
+          if (meta.xVar !== 'Rate' && meta.Rate !== undefined) lines.push(`Rate: ${meta.Rate}`);
+          if (meta.xVar !== 'N' && meta.N !== undefined) lines.push(`Quadrature: ${meta.N}`);
+          if (meta.xVar !== 'n' && meta.n !== undefined) lines.push(`Code Length: ${meta.n}`);
+          if (meta.xVar !== 'th' && meta.th !== undefined) lines.push(`Threshold: ${meta.th}`);
+
+          if (infoBox) {
+            infoBox.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
+            infoBox.style.display = 'block';
+            requestAnimationFrame(() => {
+              infoBox.style.opacity = '1';
+              infoBox.style.transform = 'scale(1)';
+            });
+          }
+        });
+
+        item.addEventListener('mouseleave', () => {
+          const infoBox = document.getElementById('plot-meta-info');
+          if (infoBox) {
+            infoBox.style.opacity = '0';
+            infoBox.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              infoBox.style.display = 'none';
+            }, 250);
+          }
+        });
+
     });
 }
+
 
 
 function removePlot(plotId) {
     const removedPlot = activePlots.find(p => p.plotId === plotId);
     activePlots = activePlots.filter(p => p.plotId !== plotId);
-    renderAll();
+
+    //Limpia leyenda visual antes de cualquier render
     updatePlotListUI();
+
+    const hoveredItem = document.querySelector(`.legend-item.${plotId}:hover`);
+    if (hoveredItem) {
+        const infoBox = document.getElementById('plot-meta-info');
+        if (infoBox) infoBox.style.display = 'none';
+    }
+
+    // Treu metadata
+    const infoBox = document.getElementById('plot-meta-info');
+    if (infoBox) infoBox.style.display = 'none';
+
+    renderAll();
+    if (activePlots.length === 0) {
+      colorIndex = 0;
+    }
+
 
     if (activePlots.length === 0 && window.__content) {
         window.__content.selectAll('*').remove();
         d3.select('#contour-legend').remove();
-        // Si se eliminó un gráfico logarítmico, forzamos la escala log
         drawDefaultGrid(removedPlot?.plotType === 'log');
     }
+
 }
+
 
 
 function highlightPlot(plotId, highlight) {
@@ -1007,8 +1154,8 @@ function highlightPlot(plotId, highlight) {
 function drawDefaultGrid(forceLog = false) {
     const useLog = forceLog;
 
-    window.__xScale = (useLog ? d3.scaleSymlog() : d3.scaleLinear()).range([0, window.__innerWidth]);
-    window.__yScale = (useLog ? d3.scaleSymlog() : d3.scaleLinear()).range([window.__innerHeight, 0]);
+    window.__xScale = (useLog ? d3.scaleLog() : d3.scaleLinear()).range([0, window.__innerWidth]);
+    window.__yScale = (useLog ? d3.scaleLog() : d3.scaleLinear()).range([window.__innerHeight, 0]);
 
     const defaultMin = useLog ? -10 : -10;
     const defaultMax = 10;
@@ -1016,6 +1163,7 @@ function drawDefaultGrid(forceLog = false) {
     window.__xScale.domain([defaultMin, defaultMax]);
     window.__yScale.domain([defaultMin, defaultMax]);
 
+    document.getElementById('toggleGrid')?.setAttribute('checked', 'true');
     zoomed({ transform: d3.zoomIdentity });
 }
 
