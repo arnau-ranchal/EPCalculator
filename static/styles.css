@@ -1,9 +1,9 @@
 
 /* General Styles */
 body {
-    margin: 0; /* Elimina márgenes predeterminados del body */
-    padding: 0; /* Elimina paddings predeterminados del body */
-    overflow-x: hidden; /* Previene el scroll horizontal */
+    margin: 0; 
+    padding: 0;
+    overflow-x: hidden; 
     background-color: #f0f0f0;
     font-family: Arial, sans-serif;
     font-size: 0.7em;
@@ -15,8 +15,8 @@ header {
     color: white;
     padding: 10px 0;
     text-align: center;
-    width: 100%; /* Asegura que no se desborde */
-    box-sizing: border-box; /* Incluye padding y border en el ancho total */
+    width: 100%; 
+    box-sizing: border-box; 
 }
 
 header h1 {
@@ -30,12 +30,12 @@ header h1 {
     flex-direction: column;
     gap: 20px;
     margin: 40px auto;
-    width: 90%; /* Ajusta el ancho para que no ocupe todo el espacio */
-    max-width: 800px;
-    box-sizing: border-box; /* Incluye padding y border en el ancho total */
+    width: 90%; 
+    max-width: 850px;
+    box-sizing: border-box; 
 }
 
-.funct1, .funct2 {
+.funct1, .funct2, .funct3 {
     background-color: white;
     padding: 30px 40px;
     border-radius: 12px;
@@ -45,21 +45,22 @@ header h1 {
     gap: 25px;
     box-sizing: border-box;
     width: 100%;
-    max-width: 800px;
     margin: 0 auto;
+    max-width: 900px;
 }
 
 .funct1 h2, .funct2 h2 {
-    font-size: 2em; /* Más grande para destacar */
-    margin: 0 0 20px 0; /* Espacio inferior para separar del contenido */
+    font-size: 2em; 
+    margin: 0 0 20px 0; 
     text-align: center;
     color: rgb(47, 48, 79);
-    font-weight: bold; /* Destaca el título */
+    font-weight: bold; 
 }
 
 /* Ajustar la gràfica per a que no es surti de la box */
 .funct2 {
-    overflow-x: hidden; /* Elimina el scroll horizontal */
+    overflow-x: hidden; 
+    padding: 20px 50px 20px 50px;
 }
 
 .funct2 svg {
@@ -75,7 +76,7 @@ svg {
 .plot-container {
     border: none;
     flex: 1 1 65%;
-    max-width: 300px;
+    max-width: 100%;
 }
 
 
@@ -87,7 +88,7 @@ svg {
 
 #plot-output {
     position: relative;
-    overflow-x: hidden; /* Añade esto para prevenir barra horizontal */
+    overflow-x: hidden; 
     overflow-y: visible;
     padding-bottom: 50px;
     max-width: 100%;
@@ -106,20 +107,20 @@ svg {
 #plot-controls input[type="checkbox"] {
     margin-right: 5px;
     cursor: pointer;
-    transform: scale(1.1); /* un pelín más grande */
+    transform: scale(1.1); 
 }
 
 
 /* Form Styles */
 form {
     display: flex;
-    flex-direction: column; /* Asegura que las filas estén apiladas verticalmente */
-    gap: 15px; /* Espacio entre las filas */
+    flex-direction: column; 
+    gap: 15px; 
 }
 
 .form-row {
     display: flex;
-    flex-wrap: wrap; /* Permite que los inputs pasen a una nueva línea si no caben */
+    flex-wrap: wrap; 
     justify-content: center;
     gap: 20px;
     align-items: flex-start;
@@ -132,7 +133,7 @@ form {
     align-items: center;
     gap: 6px;
     flex: 1;
-    min-width: 120px; /* Para permitir adaptabilidad en pantallas pequeñas */
+    min-width: 120px; 
     max-width: 180px;
 }
 
@@ -145,7 +146,7 @@ form {
 }
 
 form label {
-    font-size: 0.95em; /* Aumenta el tamaño de letra */
+    font-size: 0.95em; 
     font-weight: 500;
     color: #333;
     text-align: center;
@@ -153,8 +154,8 @@ form label {
 
 form input, form select {
     width: 100%;
-    padding: 8px; /* Más espacio interno */
-    font-size: 0.9em; /* Más grande el texto */
+    padding: 8px; 
+    font-size: 0.9em; 
     border: 1px solid #ccc;
     border-radius: 6px;
     text-align: center;
@@ -192,7 +193,6 @@ form input, form select {
 
 
 /* Botones generales */
-
 .button-container {
     text-align: center;
     margin-top: 20px;
@@ -275,26 +275,26 @@ form input, form select {
 }
 
 form button.compute-error, .funct2 button.create-graphic {
-    display: block; /* Asegura que el botón ocupe toda la línea */
-    margin: 0 auto; /* Centra el botón horizontalmente */
+    display: block; 
+    margin: 0 auto; 
     background-color: rgb(47, 48, 79);
     color: white;
     border: none;
-    padding: 6px 10px; /* Reduce el tamaño del botón */
+    padding: 6px 10px; 
     border-radius: 5px;
     cursor: pointer;
-    font-size: 0.8em; /* Reduce el tamaño del texto */
+    font-size: 0.8em; 
     text-align: center;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 form button.compute-error:hover, .funct2 button.create-graphic:hover {
-    background-color: rgb(60, 60, 100); /* Color más claro al pasar el ratón */
+    background-color: rgb(60, 60, 100); 
 }
 
 form button.compute-error:active, .funct2 button.create-graphic:active {
-    background-color: rgb(30, 30, 50); /* Color más oscuro al hacer clic */
-    transform: scale(0.95); /* Efecto de reducción al presionar */
+    background-color: rgb(30, 30, 50); 
+    transform: scale(0.95);
 }
 
 .input-group {
@@ -316,9 +316,9 @@ footer {
     text-align: center;
     padding: 10px 0;
     position: relative;
-    width: 100%; /* Asegura que no se desborde */
+    width: 100%; 
     margin-top: 20px;
-    box-sizing: border-box; /* Incluye padding y border en el ancho total */
+    box-sizing: border-box; 
 }
 
 footer a {
@@ -367,7 +367,8 @@ form button.compute-error:active,
 .reset-zoom-button:hover {
     background-color: rgb(60, 60, 100);
 }
-/* Agregar estos estilos al final */
+
+
 #plot-controls-global {
     margin: 20px 0;
     padding: 10px;
@@ -408,14 +409,14 @@ form button.compute-error:active,
 .reset-zoom-button:hover, #plot-controls-global button:hover {
     background-color: #45a049;
 }
-/* Centrado del contenedor de controles (Reset + checkboxes) */
+/* Reset + checkboxes */
 #plot-output > div:has(#plot-controls) {
     display: flex;
     justify-content: center;
     width: 100%;
 }
 
-/* Centrado perfecto de los controles */
+
 #plot-controls-wrapper {
     display: flex;
     justify-content: center;
@@ -453,13 +454,6 @@ form button.compute-error:active,
     background-color: white;
 }
 
-/* For error highlighting */
-.manual-fullwidth-group textarea.input-error {
-    border-color: #e74c3c;
-    background-color: #fff5f5;
-}
-
-
 #plot-layout {
     margin-top: 20px;
     display: flex;
@@ -470,9 +464,9 @@ form button.compute-error:active,
 }
 
 #plot-list {
-  /* la parte de la lista de plots */
-  flex: 0 0 30%;    /* ocupa el 35% fijo */
-  margin-top: 0;    /* anulamos ese espacio de arriba */
+  /* Llista de plots */
+  flex: 0 0 30%;  
+  margin-top: 0;   
   padding: 15px 8px 15px 20px !important;
   background: #f9f9f9;
   border-radius: 8px;
@@ -481,20 +475,21 @@ form button.compute-error:active,
   box-sizing: border-box; 
 }
 
-/*  ─── Centrar el texto de las leyendas ───  */
+/*  ─── Centrar text llegenda ───  */
 #plot-list .legend-item {
-    padding: 4px 4px !important;   /* ahora 8px a izquierda/derecha */
-    justify-items: start;           /* asegúrate que el texto quede a la izquierda */
+    padding: 4px 4px !important;  
+    justify-items: start;           
     transition: transform 0.3s ease; 
     grid-column-gap: 6px !important;
+    font-size: 1em;
 }
 #plot-list .legend-item span {
-  /* Asegura que cada <span> (el texto) vaya centrado */
   text-align: left;
+  font-size: 1em;
 }
 
 #plot-list .legend-item:hover {
-  transform: scale(0.98);  /* efecto “encoger” al pasar el ratón */
+  transform: scale(0.98); 
 }
 
 #plot-list h4 {
@@ -513,10 +508,9 @@ form button.compute-error:active,
     width: 100%;
 }
 
-/* Asegura que el wrapper ocupe todo el ancho del contenedor */
 #manual-section .casilla {
     width: 100%;
-    padding: 0 10px;      /* respiración horizontal */
+    padding: 0 10px;     
     box-sizing: border-box;
   }
   
@@ -526,7 +520,7 @@ form button.compute-error:active,
     flex-direction: column;
     width: 100%;
     margin: 20px 0;
-    padding: 0 10px;   /* opcional, para respirar */
+    padding: 0 10px; 
     box-sizing: border-box;
 }
 
@@ -538,28 +532,27 @@ form button.compute-error:active,
     color: #333;
 }
 
-/* Resalta errores igual que antes */
+/* ERRORS highlighting*/
 #manual-section .casilla textarea.input-error {
     border-color: #e74c3c;
     background-color: #fff5f5;
 }
 
+.manual-fullwidth-group textarea.input-error {
+    border-color: #e74c3c;
+    background-color: #fff5f5;
+}
+
+/* Metadata transició */
+#plot-meta-info {
+  transition: opacity 250ms ease, transform 250ms ease;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
 /* =============================
    CHATBOT STYLES
    ============================= */
-   .funct3 {
-    background-color: white;
-    padding: 30px 40px;
-    border-radius: 12px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-}
 
 .funct3 h2 {
     font-size: 2em;
