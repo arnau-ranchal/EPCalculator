@@ -1,243 +1,216 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>TFG API</title>
-
-    <!-- Estil del html -->
-    <!-- <link rel="stylesheet" href="styles.css"/> --> <!-- Per obrir directament al navegador -->
-    <link rel="stylesheet" href="/static/styles.css?v=1.39">
-
-
-    <!-- Importa D3 -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Inter font -->
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700&display=swap" rel="stylesheet">
+    <!-- Your stylesheet -->
+    <link rel="stylesheet" href="/static/styles.css?v=1.50">
+    <!-- D3 for plots -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-
-    <!-- Les funcions estan definides a script.js -->
-    <!-- <script src="script.js"></script> --> <!-- Pel obrir directament amb el navegador -->
-    <script src="/static/script.js?v=1.100<"></script>
-
-
+    <!-- Your script -->
+    <script src="/static/script.js?v=2.8"></script>
 </head>
 <body>
-    <header id="header">
+    <header id="header" class="center-header">
         <h1 id="titulo">TSimTool</h1>
         <h2 id="subtitulo">A tool for simulating transmission systems</h2>
-        <h3 id="subtitulo2"><a href="https://www.upf.edu/web/matcom">UPF MatCom Research Group</a></h3></h3>
+        <h3 id="subtitulo2"><a href="https://www.upf.edu/web/matcom">UPF MatCom Research Group</a></h3>
     </header>
-    
-    <section class="functions">
-        <!-- Exponents UI (ya funcional) -->
-        <article class="funct1">
-            <h2 id="exponents">Exponents:</h2>
-            <form method="get">
-                <div class="form-row">
-                    <!-- Modulation -->
-                    <div class="input-group">
-                        <label for="M">Modulation</label>
-                        <input type="text" id="M" placeholder="M...">
-                    </div>
-                    <!-- Type Modulation -->
-                    <div class="input-group">
-                        <label for="TypeModulation">Type</label>
-                        <select id="TypeModulation">
-                            <option value="PAM">PAM</option>
-                            <option value="QAM">QAM</option>
-                            <option value="PSK">PSK</option>
-                        </select>
-                    </div>
-                    <!-- SNR -->
-                    <div class="input-group">
-                        <label for="SNR">SNR</label>
-                        <input type="text" id="SNR" placeholder="SNR...">
-                    </div>
-                    <!-- Rate -->
-                    <div class="input-group">
-                        <label for="R">Rate</label>
-                        <input type="text" id="R" placeholder="R...">
-                    </div>
-                    <!-- Quadrature -->
-                    <div class="input-group">
-                        <label for="N">Quadrature</label>
-                        <input type="text" id="N" placeholder="N...">
-                    </div>
-                    <!-- Longitud codi / Threshold -->
-                    <div class="input-group">
-                        <label for="n">Code Length</label>
-                        <input type="text" id="n" placeholder="n...">
-                    </div>
-                    <div class="input-group">
-                        <label for="th">Threshold</label>
-                        <input type="text" id="th" placeholder="Threshold...">
-                    </div>
-                </div>
-                <button type="submit" class="compute-error" onclick="calculateExponents(event)">Compute error</button>
-                <div class="result" id="result"></div>
-            </form>
-        </article>
 
-        <!-- GRAPHICS SECTION -->
-        <article class="funct2">
-            <h2 id="graphics">Graphic:</h2>
-            <form onsubmit="generateGraph(event)">
-                <!-- Comuns -->
-                <div class="input-group-row">
-                    <div class="input-group">
-                        <!-- Plot type -->
-                        <label for="plotType">Plot Type:</label>
-                        <select id="plotType" onchange="onLineTypeChange()">
-                            <option value="linear">Linear</option>
-                            <option value="logLog">LogLog</option>
-                            <option value="logX">Log X</option>
-                            <option value="logY">Log Y</option>
-                            <option value="contour">Contour</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <!-- Line type -->
-                        <label for="lineType">Line Type:</label>
-                        <select id="lineType">
-                            <option value="solid">Solid</option>
-                            <option value="dashed">Dashed</option>
-                            <option value="dotted">Dotted</option>
-                            <option value="dot-dash">Dot-Dash</option>
-                          </select>      
-                    </div>
-                    <div class="input-group">
-                        <!-- Color -->
-                        <label for="lineColor">Color:</label>
-                        <input list="colorOptions" id="lineColor" placeholder="---">
-                        <datalist id="colorOptions">
-                            <option value="steelblue">
-                            <option value="tomato">
-                            <option value="orange">
-                            <option value="mediumseagreen">
-                            <option value="royalblue">
-                            <option value="orchid">
-                            <option value="goldenrod">
-                            <option value="crimson">
-                        </datalist>
-                    </div>
-                </div>
-
-                <!-- From Function -->
-                <h3>From Function</h3>
-                <div class="form-row">
-                    <div class="input-group">
-                        <label for="yVar">Y:</label>
-                        <select id="yVar">
-                            <!-- Type function -->
-                            <option value="ErrorProb">Error probability</option>
-                            <option value="Exponents">Exponents</option>
-                            <option value="Rho">Optimal rho</option>
-                        </select>
-                    </div>
-                    <!-- X1 -->
-                    <div class="input-group">
-                        <label for="xVar">X1:</label>
-                        <select id="xVar">
-                            <!-- X variable - per decidir -->
-                            <option value="M">M</option>
-                            <option value="SNR">SNR</option>
-                            <option value="Rate">Rate</option>
-                            <option value="N">N</option>
-                            <option value="n">n</option>
-                            <option value="th">Threshold</option>
-                        </select>
-                    </div>
-                    <!-- X2 - OCULTA per defecte -->
-                    <div class="input-group" id="x2-group" style="display: none;">
-                        <label for="xVar2">X2:</label>
-                        <select id="xVar2">
-                            <option value="M">M</option>
-                            <option value="SNR">SNR</option>
-                            <option value="Rate">Rate</option>
-                            <option value="N">N</option>
-                            <option value="n">n</option>
-                            <option value="th">Threshold</option>
-                        </select>
-                    </div>
-                    <!-- Rang x -->
-                    <div class="input-group">
-                        <label for="xRange">X1 Range:</label>
-                        <input type="text" id="xRange" placeholder="e.g. 1,100">
-                    </div>
-                    <!-- Rang x2 - OCULTA per defecte -->
-                    <div class="input-group" id="xRange2-group" style="display: none;">
-                        <label for="xRange2">X2 Range:</label>
-                        <input type="text" id="xRange2" placeholder="e.g. 1,100">
-                    </div>
-                    <!-- Punts pel plots -->
-                    <div class="input-group">
-                        <label for="points">X1 Points:</label>
-                        <input type="number" id="points" value="50">
-                    </div>
-
-                    <!-- X2 Points - OCULTA per defecte -->
-                    <div class="input-group" id="xPoints2-group" style="display: none;">
-                        <label for="points2">X2 Points:</label>
-                        <input type="number" id="points2" value="50" min="1">
-                    </div>
-
-                </div>
-
-                <!-- Botons plot + manual inputs -->
-                <div class="button-group">
-                    <button type="button" onclick="plotFromFunction()">Plot</button>
-                    <button type="button" id="toggleManualBtn" onclick="toggleManualInputs()">Add manually</button> 
-                </div>
-
-                <div class="result" id="plot-result"></div>
-
-                <!-- Plot Manual - OCULTA per defecte-->
-                <div id="manual-section" style="display: none;">
-                    <h3>Manual Plot</h3>
-
-                    <div class="manual-fullwidth-group">
-                        <label for="manualTitle">Plot Title:</label>
-                        <input type="text" id="manualTitle" placeholder="Enter chart title here">
-                    </div>
-                
-                    <div class="manual-fullwidth-group">
-                        <label for="xValues">X values:</label>
-                        <div class="casilla x">
-                            <textarea id="xValues" placeholder="e.g. 1, 2, 3, 4"></textarea>
-                        </div>
-                        
-                    </div>
-                
-                    <div class="manual-fullwidth-group">
-                        <label for="yValues">Y values:</label>
-                        <div class="casilla y">
-                            <textarea id="yValues" placeholder="e.g. 10, 20, 30, 40"></textarea>
-                        </div>
-                    </div>
-                
-                    <div class="manual-button-row">
-                        <button type="button" onclick="plotManually()">Plot Manually</button>
-                    </div>
-                </div>
-                <!-- Plot output -->
-                <div id="plot-output"></div>
-            </form>
-        </article>
-        <!-- CHATBOT SECTION -->
-        <article class="funct3">
-            <h2 id="chatbot">Chatbot:</h2>
-            <div class="chatbox">
-            <div class="chat-messages" id="chat-messages"></div>
-            <div class="chat-input-container">
-                <input type="text" id="chat-input" placeholder="Ask the chat something..." />
-                <button type="button" class="send-button" onclick="sendMessage()">➤</button>
+    <section class="main-layout">
+      <!-- Parameters (Left) -->
+      <aside class="parameters-area">
+        <h2 class="section-title">Simulation Parameters</h2>
+        <form method="get">
+          <div class="input-group-block">
+            <div class="input-group">
+              <label for="M">Modulation</label>
+              <input type="text" id="M" placeholder="e.g. 16">
             </div>
+            <div class="input-group">
+              <label for="TypeModulation">Type</label>
+              <select id="TypeModulation" class="custom-select">
+                <option value="PAM">PAM</option>
+                <option value="QAM">QAM</option>
+                <option value="PSK">PSK</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="SNR">SNR</label>
+              <input type="text" id="SNR" placeholder="e.g. 7">
+            </div>
+            <div class="input-group">
+              <label for="R">Rate</label>
+              <input type="text" id="R" placeholder="e.g. 0.5">
+            </div>
+            <div class="input-group">
+              <label for="n">Code Length</label>
+              <input type="text" id="n" placeholder="e.g. 100">
+            </div>
+            <div id="advanced-toggle" class="advanced-toggle" onclick="toggleAdvancedParams()">
+            <span>Advanced Parameters</span>
+            <span class="arrow">&#9654;</span>
+            </div>
+            <div id="advanced-params" class="advanced-params">
+            <div class="input-group">
+                <label for="N">Quadrature</label>
+                <input type="text" id="N" placeholder="20">
+            </div>
+            <div class="input-group">
+                <label for="th">Threshold</label>
+                <input type="text" id="th" placeholder="1e-10">
+            </div>
+            </div>
+          <button type="submit" class="compute-error" onclick="calculateExponents(event)">Compute</button>
+          <div class="result" id="result"></div>
+        </form>
+      </aside>
+      
+      
+      <!-- Right: Plot and Chatbot -->
+      <div class="right-panel">
+        <!-- Plot Area -->
+        <section class="plot-area">
+          <h2 class="section-title">Plot</h2>
+          <form onsubmit="generateGraph(event)">
+            <div class="input-group-block">
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="plotType">Plot Type</label>
+                  <select id="plotType" onchange="onLineTypeChange()">
+                    <option value="linear">Linear</option>
+                    <option value="logLog">LogLog</option>
+                    <option value="logX">Log X</option>
+                    <option value="logY">Log Y</option>
+                    <option value="contour">Contour</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="lineType">Line Type</label>
+                  <select id="lineType">
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="dot-dash">Dot-Dash</option>
+                  </select>      
+                </div>
+                <div class="input-group">
+                  <label for="lineColor">Color</label>
+                  <input list="colorOptions" id="lineColor" placeholder="---">
+                  <datalist id="colorOptions">
+                    <option value="steelblue">
+                    <option value="tomato">
+                    <option value="orange">
+                    <option value="mediumseagreen">
+                    <option value="royalblue">
+                    <option value="orchid">
+                    <option value="goldenrod">
+                    <option value="crimson">
+                  </datalist>
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="yVar">Y</label>
+                  <select id="yVar">
+                    <option value="ErrorProb">Error probability</option>
+                    <option value="Exponents">Exponents</option>
+                    <option value="Rho">Optimal rho</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="xVar">X1</label>
+                  <select id="xVar">
+                    <option value="M">M</option>
+                    <option value="SNR">SNR</option>
+                    <option value="Rate">Rate</option>
+                    <option value="N">N</option>
+                    <option value="n">n</option>
+                    <option value="th">Threshold</option>
+                  </select>
+                </div>
+                <div class="input-group" id="x2-group" style="display: none;">
+                  <label for="xVar2">X2</label>
+                  <select id="xVar2">
+                    <option value="M">M</option>
+                    <option value="SNR">SNR</option>
+                    <option value="Rate">Rate</option>
+                    <option value="N">N</option>
+                    <option value="n">n</option>
+                    <option value="th">Threshold</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="xRange">X1 Range</label>
+                  <input type="text" id="xRange" placeholder="e.g. 1,100">
+                </div>
+                <div class="input-group" id="xRange2-group" style="display: none;">
+                  <label for="xRange2">X2 Range</label>
+                  <input type="text" id="xRange2" placeholder="e.g. 1,100">
+                </div>
+                <div class="input-group">
+                  <label for="points">X1 Points</label>
+                  <input type="number" id="points" value="50">
+                </div>
+                <div class="input-group" id="xPoints2-group" style="display: none;">
+                  <label for="points2">X2 Points</label>
+                  <input type="number" id="points2" value="50" min="1">
+                </div>
+              </div>
             </div>
             <div class="button-group">
-                <button type="button", class="create-graphic" onclick="clearChat()">🗑️ New Chat</button>
+              <button type="button" onclick="plotFromFunction()">Plot</button>
+              <button type="button" id="toggleManualBtn" onclick="toggleManualInputs()">Add manually</button> 
             </div>
-              
-        </article>
+            <div class="result" id="plot-result"></div>
+            <!-- Manual section can go here if you use it -->
+            <div id="manual-section" style="display: none;">
+              <h3 style="margin-top: 20px;">Manual Plot</h3>
+              <div class="input-group-block">
+                <div class="input-group">
+                  <label for="manualTitle">Plot Title</label>
+                  <input type="text" id="manualTitle" placeholder="Enter chart title here">
+                </div>
+                <div class="input-group">
+                  <label for="xValues">X values</label>
+                  <textarea id="xValues" placeholder="e.g. 1, 2, 3, 4"></textarea>
+                </div>
+                <div class="input-group">
+                  <label for="yValues">Y values</label>
+                  <textarea id="yValues" placeholder="e.g. 10, 20, 30, 40"></textarea>
+                </div>
+                <div class="manual-button-row">
+                  <button type="button" onclick="plotManually()">Plot Manually</button>
+                </div>
+              </div>
+            </div>
+            <div id="plot-output"></div>
+          </form>
         </section>
+        <!-- Chatbot Area -->
+        <section class="chatbot-area">
+          <h2 class="section-title">Chatbot</h2>
+          <div class="chatbox">
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-container">
+              <input type="text" id="chat-input" placeholder="Ask the chat something..." />
+              <button type="button" class="send-button" onclick="sendMessage()">➤</button>
+            </div>
+          </div>
+          <div class="button-group">
+            <button type="button" class="create-graphic" onclick="clearChat()">🗑️ New Chat</button>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <footer>
+        <p>© Universitat Pompeu Fabra Barcelona, 2025</p>
+    </footer>
 </body>
-<footer>
-    <p>© Universitat Pompeu Fabra Barcelona, 2025</p>
-</footer>
 </html>

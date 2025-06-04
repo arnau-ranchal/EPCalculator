@@ -1,7 +1,8 @@
 // Ensure DOM is loaded before initializing and binding functions
 window.addEventListener('DOMContentLoaded', () => {
     initializeChart();
-    onLineTypeChange();
+    onLineTypeChange(); 
+    //toggleManualInputs();
     setTimeout(() => drawDefaultGrid(), 0);
 });
 
@@ -22,9 +23,9 @@ function calculateExponents(event) {
     const typeM = document.getElementById('TypeModulation').value;
     const SNR = document.getElementById('SNR').value;
     const R = document.getElementById('R').value;
-    const N = document.getElementById('N').value;
+    const N = document.getElementById('N').value || 20;
     const n = document.getElementById('n').value;
-    const th = document.getElementById('th').value;
+    const th = document.getElementById('th').value || 1e-6;
     const resultDiv = document.getElementById('result');
 
     // Neteja resultats anteriors
@@ -41,7 +42,7 @@ function calculateExponents(event) {
         .then(data => {
             resultDiv.innerHTML = `
                 <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
-                <p><strong>Exponents:</strong> ${data["Exponents"].toFixed(4)}</p>
+                <p><strong>Error exponent:</strong> ${data["Exponents"].toFixed(4)}</p>
                 <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
             `;
             resultDiv.classList.add('show');
@@ -69,9 +70,9 @@ function plotFromFunction() {
     const typeModulation = document.getElementById('TypeModulation').value;
     const SNR = document.getElementById('SNR').value;
     const Rate = document.getElementById('R').value;
-    const N = document.getElementById('N').value;
+    const N = document.getElementById('N').value || 20;
     const n = document.getElementById('n').value;
-    const th = document.getElementById('th').value;
+    const th = document.getElementById('th').value || 1e-6;
 
     const inputs = { M, SNR, Rate, N, n, th };
 
@@ -132,11 +133,16 @@ function plotFromFunction() {
           },
           body: JSON.stringify(payload)
         })
-          .then(response => response.json())
-          .then(data => {
-            drawContourPlot(data.x1, data.x2, data.z);
-          })
-          .catch(error => console.error("Error:", error));
+        .then(response => response.json())
+        .then(data => {
+          drawContourPlot(data.x1, data.x2, data.z);
+        })
+        .catch(error => {
+          console.error("Error plotting data", error);
+          const resultDiv = document.getElementById('plot-result');
+          resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">⚠️ Unable to process the data. Please verify your inputs.</p>`;
+          resultDiv.classList.add('show');
+        }); 
     }
     // LINEAR I LOG CASE
     else{
@@ -158,10 +164,7 @@ function plotFromFunction() {
           Rate: parseFloat(Rate) || 0,
           N: parseFloat(N) || 0,
           n: parseFloat(n) || 0,
-          th: parseFloat(th) || 0,
-          color,
-          lineType,
-          plotType
+          th: parseFloat(th) || 0
       };
   
       document.getElementById('plot-result').innerHTML = "";
@@ -177,7 +180,6 @@ function plotFromFunction() {
           return response.json();
       })
       .then(data => {
-          console.log("Datos recibidos del backend:", data); 
           // Info que passarem per a poder visualitzar les dades
           const metadata = {
             M, SNR, Rate, N, n, th,
@@ -322,14 +324,24 @@ let plotIdCounter = 1;
 
 function initializeChart() {
     const margin = { top: 20, right: 30, bottom: 50, left: 80 }; // Marge pels eixos
-
-    const width = 800;
-    const height = 600;
+    // MIDA GRÀFIC !!! -- ORIGINAL 800x600
+    const width = 650;
+    const height = 500;
+    
     // Limpia cualquier gráfico previo
     d3.select('#plot-output').html('');
 
     // ─── Layout flex para gráfico + lista ─────────────────────────
-    const outer = d3.select('#plot-output')
+    const wrapper = d3.select('#plot-output')
+      .append('div')
+      .attr('id', 'plot-wrapper')
+      .style('width', '100%')
+      .style('display', 'flex')
+      .style('justify-content', 'flex-start')
+      .style('padding-left', '40px');        
+
+
+    const outer = wrapper
       .append('div')
       .attr('id', 'plot-layout')
       .style('display', 'flex')
@@ -337,12 +349,15 @@ function initializeChart() {
       .style('align-items', 'stretch')
       .style('flex-wrap', 'nowrap');
 
+
     const container = outer
       .append('div')
       .attr('class','plot-container')
-      .style('flex', '1 1 70%')
-      .style('min-width', '400px')
+      .style('flex', '1 1 75%') // más espacio para el gráfico
+      .style('min-width', '480px')
+      .style('margin-right', '20px') // empuja la lista más a la derecha
       .style('position','relative');
+
 
     container.append('div')
       .attr('id', 'plot-meta-info')
@@ -362,20 +377,19 @@ function initializeChart() {
       .style('transition', 'opacity 250ms ease, transform 250ms ease')
       .style('display', 'none');
 
-
-
     const legend = outer
       .append('div')
       .attr('id', 'plot-list')
-      .style('flex', '0 0 30%')
-      .style('min-width', '180px')
-      .style('max-width', '250px')
+      .style('flex', '0 0 40%')      
+      .style('min-width', '240px') 
+      .style('max-width', '500px')   
+      .style('padding', '10px 12px')
+      .style('margin-top', '0')
       .style('box-sizing', 'border-box')
       .style('display', 'flex')
       .style('flex-direction', 'column')
-      .style('gap', '4px')
-      .style('padding', '8px 4px')
-      .style('margin-top', '0');
+      .style('gap', '6px');
+
 
     // ─── SVG y ejes ───────────────────────────────────────────────
     const svg = container.append('svg')
@@ -452,7 +466,7 @@ function initializeChart() {
         .attr('offset', d => d.offset)
         .attr('stop-color', d => d.color);
 
-    // clipPath para recortar dentro de los ejes
+    // clipPath para recortar dentro de los ejes y que al Alfonso no le de TOC
     defs.append('clipPath')
       .attr('id', 'plot-area-clip')
       .append('rect')
@@ -498,19 +512,37 @@ function initializeChart() {
     const controls = controlsWrapper.append('div')
       .attr('id','plot-controls')
       .style('display','flex')
-      .style('justify-content','center')
+      .style('flex-direction','column')
+      .style('gap','8px')
       .style('align-items','center')
-      .style('gap','20px')
-      .style('margin-top','12px')
-      .style('flex-wrap','wrap');
+      .style('margin-top','12px');
 
-    controls.append('button')
+
+    // Primera fila: checkboxes
+    const row1 = controls.append('div')
+      .style('display', 'flex')
+      .style('gap', '20px')
+      .style('justify-content', 'center');
+
+    row1.append('label')
+      .html('<input type="checkbox" id="toggleGrid" checked> Show grid');
+
+    row1.append('label')
+      .html('<input type="checkbox" id="togglePoints"> Show points');
+
+    // Segunda fila: botones
+    const row2 = controls.append('div')
+      .style('display', 'flex')
+      .style('gap', '20px')
+      .style('justify-content', 'center');
+
+    row2.append('button')
       .attr('type','button')
       .attr('class','reset-zoom-button')
       .text('Reset Zoom')
       .on('click', resetZoom);
-    // Clear All Plots
-    controls.append('button')
+
+    row2.append('button')
       .attr('type','button')
       .attr('class','reset-zoom-button')
       .text('Clear All Plots')
@@ -518,19 +550,11 @@ function initializeChart() {
         activePlots = []; 
         colorIndex = 0;            
         updatePlotListUI();            
-        renderAll();                   
-
+        renderAll();
         const infoBox = document.getElementById('plot-meta-info');
         if (infoBox) infoBox.style.display = 'none';
       });
 
-
-
-
-    controls.append('label')
-      .html('<input type="checkbox" id="toggleGrid" checked> Show grid');
-    controls.append('label')
-      .html('<input type="checkbox" id="togglePoints"> Show points');
 
     window.__zoom = d3.zoom().scaleExtent([1,10]).on('zoom', zoomed);
     window.__svg.call(window.__zoom);
@@ -1177,6 +1201,21 @@ function toggleManualInputs() {
     manual.style.display = visible ? 'none' : 'block';
     btn.textContent = visible ? 'Add manually' : 'Hide manual inputs';
 }
+// Hide and Show Advanced Parameters
+function toggleAdvancedParams() {
+  const toggle = document.getElementById('advanced-toggle');
+  const content = document.getElementById('advanced-params');
+  const isOpen = content.classList.contains('open');
+
+  if (isOpen) {
+    content.classList.remove('open');
+    toggle.classList.remove('open');
+  } else {
+    content.classList.add('open');
+    toggle.classList.add('open');
+  }
+}
+
 
 // ------------------------ CHATBOT SCRIPT -----------------------------------
 function sendMessage() {
