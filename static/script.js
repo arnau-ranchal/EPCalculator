@@ -303,7 +303,18 @@ function drawContourPlot(x1, x2, zMatrix) {
       type: 'contour',
       x1, x2, z: zMatrix,
       label,
-      color: gradient
+      color: gradient,
+      metadata: {
+        M: document.getElementById('M').value,
+        SNR: document.getElementById('SNR').value,
+        Rate: document.getElementById('R').value,
+        N: document.getElementById('N').value,
+        n: document.getElementById('n').value,
+        th: document.getElementById('th').value,
+        typeModulation: document.getElementById('TypeModulation').value,
+        xVar: document.getElementById('xVar').value,
+        xVar2: document.getElementById('xVar2').value  // nou
+      }
     });
   
     // 5) Re-renderitzar tot
