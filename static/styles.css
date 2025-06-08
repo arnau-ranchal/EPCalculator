@@ -4,6 +4,7 @@ body {
   color: #222 !important;
   font-family: 'Inter', Arial, sans-serif;
   min-height: 100vh;
+  height: 100vh; /* FIXED: Added this */
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -51,7 +52,7 @@ body {
 .main-layout {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: stretch; /* FIXED: Changed from flex-start to stretch */
   gap: 40px;
   max-width: 1920px;
   width: 100%;
@@ -59,9 +60,117 @@ body {
   justify-content: center;
   background: transparent;
   flex: 1;
-  padding: 15px;
+  padding: 15px 15px 60px 15px; /* FIXED: Added bottom padding to account for fixed footer */
   min-height: 0;
   box-sizing: border-box;
+  /* FIXED: Removed height: 100vh */
+  position: relative; /* Added for toggle button positioning */
+}
+
+/* ======== SIDEBAR TOGGLE BUTTONS ======== */
+.sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  background: #DCDCDC;
+  color: #666;
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 10px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.sidebar-toggle:hover {
+  background: #BDBDBD;
+  color: #444;
+}
+
+.left-toggle {
+  right: 10px; /* Position inside the left sidebar */
+}
+
+.right-toggle {
+  left: 10px; /* Position inside the right sidebar */
+}
+
+.toggle-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* ======== SIDEBAR COLLAPSED STATES ======== */
+.parameters-area.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  margin-right: -40px; /* Prevent layout shift */
+}
+
+.chatbot-sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  margin-left: -40px; /* Prevent layout shift */
+}
+
+/* Show toggle buttons when sidebars are collapsed */
+.main-layout::before {
+  content: "▶";
+  position: absolute;
+  top: 20px;
+  left: 15px;
+  background: #DCDCDC;
+  color: #666;
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 10px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  line-height: 20px;
+  text-align: center;
+}
+
+.main-layout::after {
+  content: "◀";
+  position: absolute;
+  top: 20px;
+  right: 15px;
+  background: #DCDCDC;
+  color: #666;
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 10px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  line-height: 20px;
+  text-align: center;
+}
+
+.parameters-area.collapsed ~ .main-layout::before {
+  display: flex;
+}
+
+.chatbot-sidebar.collapsed ~ .main-layout::after {
+  display: flex;
 }
 
 /* ======== SECTION CONTAINERS ======== */
@@ -72,6 +181,7 @@ body {
   box-shadow: none !important;
   border-radius: 0 !important;
   padding: 0 !important;
+  transition: width 0.15s ease, margin 0.15s ease; /* Faster, smoother transition */
 }
 
 /* ======== SECTION TITLES ======== */
@@ -297,7 +407,13 @@ button:hover,
 }
 
 .chatbot-area {
-  height: 180px;
+  /* FIXED: Use same natural flow as parameters area */
+  width: 100%;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  /* FIXED: Remove all flex properties */
 }
 
 /* ======== INPUT ROWS FOR PLOT SECTION ======== */
@@ -348,6 +464,11 @@ button:hover,
     min-width: 300px;
     max-width: 100%;
   }
+
+  /* Hide toggle buttons on mobile */
+  .sidebar-toggle {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
@@ -369,15 +490,42 @@ button:hover,
   margin-top: 10px;
 }
 
+/* ======== CHATBOT STYLING FIXES ======== */
 .chat-messages {
   background: #FFF !important;
   border: 1px solid #DCDCDC !important;
-  border-radius: 7px !important;
+  border-radius: 0 !important;
   padding: 10px !important;
   font-size: 0.85em !important;
   color: #222 !important;
-  height: 100px;
   overflow-y: auto;
+  font-family: inherit;
+  height: 719px;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.chat-message {
+  margin-bottom: 8px;
+  padding: 6px 0;
+  line-height: 1.4;
+}
+
+.chat-message.system {
+  color: #666;
+  font-style: italic;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.chat-message.user {
+  color: #222;
+  font-weight: 500;
+}
+
+.chat-message.assistant {
+  color: #444;
 }
 
 .chat-input-container {
@@ -385,12 +533,62 @@ button:hover,
   gap: 8px;
   width: 100%;
   margin-top: 8px;
+  flex-shrink: 0;
+}
+
+#chat-input {
+  font-family: inherit;
+  background: #FFF;
+  border: 1px solid #DCDCDC;
+  border-radius: 0;
+  font-size: 0.9em;
+  padding: 8px 11px;
+  transition: border 0.14s;
+  outline: none;
+  color: #222;
+  flex: 1;
+  box-sizing: border-box;
+  appearance: none;
+}
+
+#chat-input:focus {
+  border: 1.5px solid #222;
+  background: #FFF;
+}
+
+#chat-input::placeholder {
+  color: #bcbcbc;
+  font-weight: 400;
+  opacity: 1;
+}
+
+.send-button {
+  background: #222;
+  color: #FFF;
+  border: none;
+  padding: 8px 16px;
+  font-weight: 500;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background 0.14s, transform 0.12s;
+  box-shadow: none;
+  letter-spacing: 0;
+  margin-top: 0;
+  border-radius: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.send-button:hover {
+  background: #222;
+  opacity: 0.8;
 }
 
 .chatbox {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 #plot-output {
@@ -431,10 +629,16 @@ footer {
   background: #FFF;
   color: #222;
   text-align: center;
-  padding: 12px;
+  padding: 5px 0 5px 0;
   font-size: 0.8em;
-  flex-shrink: 0;
-  margin-top: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  border-top: 1px solid #DCDCDC;
+  box-sizing: border-box;
 }
 
 /* ─────────── Override form width on mobile ─────────── */
@@ -492,6 +696,8 @@ footer {
   background: #FFF;
   padding: 0;
   box-sizing: border-box;
+  transition: width 0.15s ease, margin 0.15s ease; /* Faster, smoother transition */
+  position: relative; /* For toggle button positioning */
 }
 
 .chatbot-sidebar {
@@ -501,9 +707,9 @@ footer {
   background: #FFF;
   padding: 0 0 0 10px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  transition: width 0.15s ease, margin 0.15s ease; /* Faster, smoother transition */
+  position: relative; /* For toggle button positioning */
+  /* FIXED: Remove flex completely - use natural content flow like parameters */
 }
 
 .plot-area {
@@ -558,4 +764,45 @@ footer {
     flex-direction: column;
     gap: 10px;
   }
+}
+
+/* ======== CHATBOT FULL HEIGHT FIX ======== */
+/* FIXED: Use natural content flow exactly like parameters area */
+.chatbox {
+  /* FIXED: Remove all flex properties - natural content flow */
+  width: 100%;
+}
+
+/* FIXED: Updated all chatbot button styling */
+.chatbot-area .button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  width: 100%;
+  /* FIXED: Remove flex-shrink and min-height - use natural sizing */
+}
+
+/* Make Clear Chat button fill full width */
+.chatbot-area .button-group button {
+  flex: 1; /* FIXED: Fill available space */
+  width: 100%;
+  background: #222;
+  color: #FFF;
+  border: none;
+  padding: 10px 22px;
+  font-weight: 500;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background 0.14s, transform 0.12s;
+  box-shadow: none;
+  letter-spacing: 0;
+  margin-top: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+.chatbot-area .button-group button:hover {
+  background: #222;
+  opacity: 0.8;
 }
