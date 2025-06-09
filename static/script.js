@@ -116,7 +116,12 @@ function plotFromFunction() {
     } 
 
     const lineType = document.getElementById('lineType').value || '-';
-    const color = document.getElementById('lineColor').value;
+    let color = document.getElementById('lineColor').value;
+    // Si no s'ha modificat, deixem el color per defecte
+    if (!document.getElementById('lineColor').dataset.userModified) {
+      color = ""; 
+    }
+
     const plotType = document.getElementById('plotType').value;
 
     // CONTOUR CASE
@@ -359,17 +364,18 @@ function initializeChart() {
   const container = outer
     .append('div')
     .attr('class', 'plot-container')
-    .style('flex', '1 1 70%')
+    .style('flex', '1 1 100%')
     .style('min-width', '400px')
     .style('position', 'relative')
     .style('width', '100%')         
     .style('height', '100%');
 
+  // Contenedor de la metadata
   container.append('div')
     .attr('id', 'plot-meta-info')
     .style('position', 'absolute')
-    .style('top', '10px')
-    .style('right', '10px')
+    .style('top', '80px') 
+    .style('right', '320px') // 250 ancho + 10 padding + 60 separación
     .style('background', 'rgba(50,50,50,0.95)')
     .style('color', 'white')
     .style('padding', '10px 16px')
@@ -383,23 +389,26 @@ function initializeChart() {
     .style('transition', 'opacity 250ms ease, transform 250ms ease')
     .style('display', 'none');
 
-  const legend = outer
-    .append('div')
+    
+  // Contenedor de la lista de plots
+  container.append('div')
     .attr('id', 'plot-list')
-    .style('min-width', '300px')
-    .style('max-width', '400px')
-    .style('flex', '0 0 28%')
-    .style('box-sizing', 'border-box')
-    .style('display', 'flex')
-    .style('flex-direction', 'column')
-    .style('gap', '4px')
-    .style('padding', '8px 4px')
-    .style('margin-top', '0');
+    .style('position', 'absolute')
+    .style('top', '80px')
+    .style('right', '50px')
+    .style('background', 'rgba(255, 255, 255, 0)')
+    .style('border', '1px solid #ccc')
+    .style('padding', '10px 0px 10px 10px')
+    .style('border-radius', '0px')
+    .style('max-height', '60%')
+    .style('overflow-y', 'auto')
+    .style('z-index', '10')
+    .style('min-width', '250px');
 
   // SVG
-  const margin = { top: 20, right: 30, bottom: 50, left: 100 };
+  const margin = { top: 70, right: 30, bottom: 100, left: 100 };
   // Mida gràfic
-  const width = 1000
+  const width = 1200
   const height = 850;
 
   const svg = container.append('svg')
@@ -920,14 +929,6 @@ function renderAll() {
     // 8) Actualizar leyenda de plots y controles
     updatePlotListUI();
     d3.select('#plot-controls-wrapper').style('display', 'flex');
-    const chartBox = document.querySelector('.plot-container');
-    const listBox  = document.getElementById('plot-list');
-    if (chartBox && listBox) {
-      // miden alto real tras dibujar el SVG
-      const H = chartBox.getBoundingClientRect().height;
-      listBox.style.height = H + 'px';
-      listBox.style.boxSizing = 'border-box';
-    }
 
     // Limpiar puntos de plots eliminados
     window.__pointLayer.selectAll('.point')
@@ -1397,7 +1398,7 @@ function clearAllPlots() {
   const infoBox = document.getElementById('plot-meta-info');
   if (infoBox) infoBox.style.display = 'none';
 }
-// Efecte clic botons
+// Efecte clic botons + colors plots
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1405,6 +1406,13 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => btn.classList.remove('clicked'), 60); // efecto corto
     });
   });
+  const colorSelect = document.getElementById('lineColor');
+  if (colorSelect) {
+    colorSelect.dataset.userModified = "";  // marcador inicial
+    colorSelect.addEventListener('change', () => {
+      colorSelect.dataset.userModified = "true";  // solo si el usuario lo toca
+    });
+  }
 });
 
 
