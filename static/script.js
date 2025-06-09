@@ -1,11 +1,11 @@
 // Ensure DOM is loaded before initializing and binding functions
 window.addEventListener('DOMContentLoaded', () => {
     initializeChart();
-    onLineTypeChange(); 
-    //toggleManualInputs();
+    onLineTypeChange();
     setTimeout(() => drawDefaultGrid(), 0);
 });
 
+/* Global parameters */
 const axisLabelsMap = {
   M:   'Modulation',
   SNR: 'SNR',
@@ -14,6 +14,10 @@ const axisLabelsMap = {
   n:   'Code length',
   th:  'Threshold'
 };
+let lastYVar = null;
+let lastXVar = null;
+let skipPlotWarning = false;
+
 
 
 function calculateExponents(event) {
@@ -23,9 +27,9 @@ function calculateExponents(event) {
     const typeM = document.getElementById('TypeModulation').value;
     const SNR = document.getElementById('SNR').value;
     const R = document.getElementById('R').value;
-    const N = document.getElementById('N').value || 20;
+    const N = document.getElementById('N').value || 20; // Valor per defecte
     const n = document.getElementById('n').value;
-    const th = document.getElementById('th').value || 1e-6;
+    const th = document.getElementById('th').value || 1e-6; // Valor per defecte
     const resultDiv = document.getElementById('result');
 
     // Neteja resultats anteriors
@@ -42,7 +46,7 @@ function calculateExponents(event) {
         .then(data => {
             resultDiv.innerHTML = `
                 <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
-                <p><strong>Error exponent:</strong> ${data["Exponents"].toFixed(4)}</p>
+                <p><strong>Exponents:</strong> ${data["Exponents"].toFixed(4)}</p>
                 <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
             `;
             resultDiv.classList.add('show');
@@ -57,6 +61,7 @@ function calculateExponents(event) {
 
 /* Plot Using the ENDPOINT */
 function plotFromFunction() {
+
     const y = document.getElementById('yVar').value;
     const x = document.getElementById('xVar').value;
     const x2 = document.getElementById('xVar2').value; /* Pel contour plot */
@@ -70,11 +75,34 @@ function plotFromFunction() {
     const typeModulation = document.getElementById('TypeModulation').value;
     const SNR = document.getElementById('SNR').value;
     const Rate = document.getElementById('R').value;
-    const N = document.getElementById('N').value || 20;
+    const N = document.getElementById('N').value || 20; // Valor per defecte
     const n = document.getElementById('n').value;
-    const th = document.getElementById('th').value || 1e-6;
+    const th = document.getElementById('th').value || 1e-6; // Valor per defecte
 
     const inputs = { M, SNR, Rate, N, n, th };
+
+    /* ----------------- PEL WARNING --------------------- */
+    const plotChanged = (lastYVar !== null && (y !== lastYVar || x !== lastXVar));
+    const hasPlots = activePlots.length > 0;
+
+    if (plotChanged && hasPlots) {
+        if (skipPlotWarning) {
+            clearAllPlots();
+        } else {
+            showPlotWarningModal(() => {
+                clearAllPlots();
+                lastYVar = y;
+                lastXVar = x;
+                plotFromFunction(); // Reintenta
+            });
+            return;
+        }
+    }
+
+
+    lastYVar = y;
+    lastXVar = x;
+    /* ----------------------------------------------------- */
 
     // Validar inputs
     const resultDiv = document.getElementById('plot-result');
@@ -133,16 +161,11 @@ function plotFromFunction() {
           },
           body: JSON.stringify(payload)
         })
-        .then(response => response.json())
-        .then(data => {
-          drawContourPlot(data.x1, data.x2, data.z);
-        })
-        .catch(error => {
-          console.error("Error plotting data", error);
-          const resultDiv = document.getElementById('plot-result');
-          resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">⚠️ Unable to process the data. Please verify your inputs.</p>`;
-          resultDiv.classList.add('show');
-        }); 
+          .then(response => response.json())
+          .then(data => {
+            drawContourPlot(data.x1, data.x2, data.z);
+          })
+          .catch(error => console.error("Error:", error));
     }
     // LINEAR I LOG CASE
     else{
@@ -164,7 +187,10 @@ function plotFromFunction() {
           Rate: parseFloat(Rate) || 0,
           N: parseFloat(N) || 0,
           n: parseFloat(n) || 0,
-          th: parseFloat(th) || 0
+          th: parseFloat(th) || 0,
+          color,
+          lineType,
+          plotType
       };
   
       document.getElementById('plot-result').innerHTML = "";
@@ -180,6 +206,7 @@ function plotFromFunction() {
           return response.json();
       })
       .then(data => {
+          console.log("Datos recibidos del backend:", data); 
           // Info que passarem per a poder visualitzar les dades
           const metadata = {
             M, SNR, Rate, N, n, th,
@@ -205,7 +232,7 @@ function plotFromFunction() {
 }
 
 
-/* Plot Manually */
+/* Plot Manually  ---> Unused */
 function plotManually() {
     const xInputEl = document.getElementById('xValues');
     const yInputEl = document.getElementById('yValues');
@@ -267,23 +294,6 @@ function plotManually() {
     }
 }
 
-// Contour plot case
-function onLineTypeChange() {
-    const plotType = document.getElementById("plotType").value;
-    const x2Group = document.getElementById("x2-group");
-    const xRange2Group = document.getElementById("xRange2-group");
-    const xPoints2Group = document.getElementById("xPoints2-group");
-
-    if (plotType === "contour") {
-        x2Group.style.display = "flex";
-        xRange2Group.style.display = "flex";
-        xPoints2Group.style.display = "flex";
-    } else {
-        x2Group.style.display = "none";
-        xRange2Group.style.display = "none";
-        xPoints2Group.style.display = "none";
-    }
-}
 
 
 function drawContourPlot(x1, x2, zMatrix) {
@@ -303,18 +313,7 @@ function drawContourPlot(x1, x2, zMatrix) {
       type: 'contour',
       x1, x2, z: zMatrix,
       label,
-      color: gradient,
-      metadata: {
-        M: document.getElementById('M').value,
-        SNR: document.getElementById('SNR').value,
-        Rate: document.getElementById('R').value,
-        N: document.getElementById('N').value,
-        n: document.getElementById('n').value,
-        th: document.getElementById('th').value,
-        typeModulation: document.getElementById('TypeModulation').value,
-        xVar: document.getElementById('xVar').value,
-        xVar2: document.getElementById('xVar2').value  // nou
-      }
+      color: gradient
     });
   
     // 5) Re-renderitzar tot
@@ -333,253 +332,236 @@ const defaultColors = [
 let colorIndex = 0;
 let plotIdCounter = 1;
 
+
 function initializeChart() {
-    const margin = { top: 20, right: 30, bottom: 50, left: 80 }; // Marge pels eixos
-    // MIDA GRÀFIC !!! -- ORIGINAL 800x600
-    const width = 650;
-    const height = 500;
-    
-    // Limpia cualquier gráfico previo
-    d3.select('#plot-output').html('');
+  const plotOutput = d3.select('#plot-output');
+  plotOutput.html(''); // Limpia contenido previo
 
-    // ─── Layout flex para gráfico + lista ─────────────────────────
-    const wrapper = d3.select('#plot-output')
-      .append('div')
-      .attr('id', 'plot-wrapper')
-      .style('width', '100%')
-      .style('display', 'flex')
-      .style('justify-content', 'flex-start')
-      .style('padding-left', '40px');        
+  const plotWrapper = plotOutput
+    .append('div')
+    .attr('id', 'plot-wrapper')
+    .style('display', 'flex')
+    .style('flex-direction', 'column')
+    .style('align-items', 'center')
+    .style('width', '100%')
+    .style('height', '100%'); 
 
-
-    const outer = wrapper
-      .append('div')
-      .attr('id', 'plot-layout')
-      .style('display', 'flex')
-      .style('gap', '20px')
-      .style('align-items', 'stretch')
-      .style('flex-wrap', 'nowrap');
+  const outer = plotWrapper
+    .append('div')
+    .attr('id', 'plot-layout')
+    .style('display', 'flex')
+    .style('gap', '20px')
+    .style('align-items', 'stretch')
+    .style('flex-wrap', 'nowrap')
+    .style('height', '100%');
 
 
-    const container = outer
-      .append('div')
-      .attr('class','plot-container')
-      .style('flex', '1 1 75%') // más espacio para el gráfico
-      .style('min-width', '480px')
-      .style('margin-right', '20px') // empuja la lista más a la derecha
-      .style('position','relative');
+  const container = outer
+    .append('div')
+    .attr('class', 'plot-container')
+    .style('flex', '1 1 70%')
+    .style('min-width', '400px')
+    .style('position', 'relative')
+    .style('width', '100%')         
+    .style('height', '100%');
+
+  container.append('div')
+    .attr('id', 'plot-meta-info')
+    .style('position', 'absolute')
+    .style('top', '10px')
+    .style('right', '10px')
+    .style('background', 'rgba(50,50,50,0.95)')
+    .style('color', 'white')
+    .style('padding', '10px 16px')
+    .style('border-radius', '10px')
+    .style('font-size', '0.9em')
+    .style('max-width', '280px')
+    .style('line-height', '1.5em')
+    .style('z-index', '10')
+    .style('opacity', '0')
+    .style('transform', 'scale(0.95)')
+    .style('transition', 'opacity 250ms ease, transform 250ms ease')
+    .style('display', 'none');
+
+  const legend = outer
+    .append('div')
+    .attr('id', 'plot-list')
+    .style('min-width', '300px')
+    .style('max-width', '400px')
+    .style('flex', '0 0 28%')
+    .style('box-sizing', 'border-box')
+    .style('display', 'flex')
+    .style('flex-direction', 'column')
+    .style('gap', '4px')
+    .style('padding', '8px 4px')
+    .style('margin-top', '0');
+
+  // SVG
+  const margin = { top: 20, right: 30, bottom: 50, left: 100 };
+  // Mida gràfic
+  const width = 1000
+  const height = 850;
+
+  const svg = container.append('svg')
+    .attr('viewBox', `0 0 ${width} ${height}`)
+    .attr('preserveAspectRatio', 'xMidYMid meet')
+    .style('width', '100%')
+    .style('height', '100%');
+
+  svg.append('line')
+    .attr('x1', margin.left).attr('x2', width - margin.right)
+    .attr('y1', height - margin.bottom).attr('y2', height - margin.bottom)
+    .attr('stroke', 'black');
+  svg.append('line')
+    .attr('x1', margin.left).attr('x2', margin.left)
+    .attr('y1', margin.top).attr('y2', height - margin.bottom)
+    .attr('stroke', 'black');
+
+  window.__svg = svg;
+  window.__g = svg.append('g')
+    .attr('class', 'main-group')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  window.__innerWidth = width - margin.left - margin.right;
+  window.__innerHeight = height - margin.top - margin.bottom;
+  window.__xScale = d3.scaleLinear().range([0, window.__innerWidth]);
+  window.__yScale = d3.scaleLinear().range([window.__innerHeight, 0]);
+
+  window.__gridX = window.__g.append('g')
+    .attr('class', 'grid-x')
+    .attr('transform', `translate(0,${window.__innerHeight})`);
+  window.__gridY = window.__g.append('g').attr('class', 'grid-y');
+  window.__gX = window.__g.append('g')
+    .attr('class', 'axis x-axis')
+    .attr('transform', `translate(0,${window.__innerHeight})`);
+  window.__gY = window.__g.append('g').attr('class', 'axis y-axis');
+
+  // Etiqueta de cada eix
+  window.__g.append('text')
+    .attr('class', 'x-axis-label')
+    .attr('text-anchor', 'middle')
+    .attr('x', window.__innerWidth / 2 - 10)
+    .attr('y', window.__innerHeight + 65) // Posició
+    .style('font-size', '25px')
+    .style('font-weight', 'bold')
+    .text('');
+  window.__g.append('text')
+    .attr('class', 'y-axis-label')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-90)')
+    .attr('x', -window.__innerHeight / 2)
+    .attr('y', -60)
+    .style('font-size', '25px')
+    .style('font-weight', 'bold')
+    .text('');
+
+  const defs = svg.append('defs');
+  defs.append('linearGradient')
+    .attr('id', 'contour-gradient')
+    .attr('x1', '0%').attr('y1', '100%')
+    .attr('x2', '0%').attr('y2', '0%')
+    .selectAll('stop')
+    .data([
+      { offset: '0%', color: '#ffeda0' },
+      { offset: '25%', color: '#feb24c' },
+      { offset: '50%', color: '#fd8d3c' },
+      { offset: '75%', color: '#f03b20' },
+      { offset: '100%', color: '#bd0026' }
+    ])
+    .enter().append('stop')
+    .attr('offset', d => d.offset)
+    .attr('stop-color', d => d.color);
+
+  defs.append('clipPath')
+    .attr('id', 'plot-area-clip')
+    .append('rect')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('width', window.__innerWidth)
+    .attr('height', window.__innerHeight);
+
+  window.__content = window.__g.append('g')
+    .attr('class', 'content')
+    .attr('clip-path', 'url(#plot-area-clip)');
+  window.__lineLayer = window.__g.append('g')
+    .attr('class', 'line-layer')
+    .attr('clip-path', 'url(#plot-area-clip)');
+  window.__pointLayer = window.__g.append('g')
+    .attr('class', 'point-layer');
+
+  window.__tooltip = plotWrapper.append('div')
+    .attr('class', 'tooltip')
+    .style('position', 'absolute')
+    .style('background', 'rgba(0,0,0,0.75)')
+    .style('color', 'white')
+    .style('padding', '5px 10px')
+    .style('border-radius', '5px')
+    .style('pointer-events', 'none')
+    .style('opacity', 0);
+
+  const controlsWrapper = plotWrapper
+    .append('div')
+    .attr('id', 'plot-controls-wrapper')
+    .style('display', 'flex')
+    .style('justify-content', 'center')
+    .style('width', '100%');
+
+  const controls = controlsWrapper.append('div')
+    .attr('id', 'plot-controls')
+    .style('display', 'flex')
+    .style('justify-content', 'center')
+    .style('align-items', 'center')
+    .style('gap', '20px')
+    .style('margin-top', '12px')
+    .style('flex-wrap', 'wrap');
+
+  controls.append('button')
+    .attr('type', 'button')
+    .attr('class', 'reset-zoom-button')
+    .text('Reset Zoom')
+    .on('click', resetZoom);
+
+  controls.append('button')
+    .attr('type', 'button')
+    .attr('class', 'reset-zoom-button')
+    .text('Clear All Plots')
+    .on('click', () => {
+      activePlots = [];
+      colorIndex = 0;
+      updatePlotListUI();
+      renderAll();
+      const infoBox = document.getElementById('plot-meta-info');
+      if (infoBox) infoBox.style.display = 'none';
+    });
+
+  controls.append('label')
+    .html('<input type="checkbox" id="toggleGrid" checked> Show grid');
+  controls.append('label')
+    .html('<input type="checkbox" id="togglePoints"> Show points');
+
+  window.__zoom = d3.zoom().scaleExtent([1, 10]).on('zoom', zoomed);
+  window.__svg.call(window.__zoom);
+
+  d3.select('#toggleGrid').on('change', () =>
+    zoomed({ transform: d3.zoomTransform(window.__svg.node()) })
+  );
+  d3.select('#togglePoints').on('change', () =>
+    zoomed(window.__lastZoomEvent || { transform: d3.zoomTransform(window.__svg.node()) })
+  );
+
+  // Efecte botó Reset Zoom & Clear All Plots
+  controls.selectAll('button').each(function() {
+    const btn = d3.select(this);
+    const originalClick = btn.on('click');
+    btn.on('click', function(event, d) {
+      btn.classed('clicked', true);
+      setTimeout(() => btn.classed('clicked', false), 60);
+      if (originalClick) originalClick.call(this, event, d);
+    });
+  });
 
 
-    container.append('div')
-      .attr('id', 'plot-meta-info')
-      .style('position', 'absolute')
-      .style('top', '10px')
-      .style('right', '10px')
-      .style('background', 'rgba(50,50,50,0.95)')
-      .style('color', 'white')
-      .style('padding', '10px 16px')
-      .style('border-radius', '10px')
-      .style('font-size', '0.9em')
-      .style('max-width', '280px')
-      .style('line-height', '1.5em')
-      .style('z-index', '10')
-      .style('opacity', '0')                       
-      .style('transform', 'scale(0.95)')           
-      .style('transition', 'opacity 250ms ease, transform 250ms ease')
-      .style('display', 'none');
-
-    const legend = outer
-      .append('div')
-      .attr('id', 'plot-list')
-      .style('flex', '0 0 40%')      
-      .style('min-width', '240px') 
-      .style('max-width', '500px')   
-      .style('padding', '10px 12px')
-      .style('margin-top', '0')
-      .style('box-sizing', 'border-box')
-      .style('display', 'flex')
-      .style('flex-direction', 'column')
-      .style('gap', '6px');
-
-
-    // ─── SVG y ejes ───────────────────────────────────────────────
-    const svg = container.append('svg')
-      .attr('viewBox', `0 0 ${width} ${height}`)
-      .attr('preserveAspectRatio','xMidYMid meet')
-      .style('width','100%')
-      .style('height','auto');
-
-    // ejes
-    svg.append('line')
-      .attr('x1', margin.left).attr('x2', width - margin.right)
-      .attr('y1', height - margin.bottom).attr('y2', height - margin.bottom)
-      .attr('stroke','black');
-    svg.append('line')
-      .attr('x1', margin.left).attr('x2', margin.left)
-      .attr('y1', margin.top).attr('y2', height - margin.bottom)
-      .attr('stroke','black');
-
-    window.__svg = svg;
-    window.__g = svg.append('g')
-      .attr('class','main-group')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    window.__innerWidth  = width  - margin.left - margin.right;
-    window.__innerHeight = height - margin.top  - margin.bottom;
-    window.__xScale = d3.scaleLinear().range([0, window.__innerWidth]);
-    window.__yScale = d3.scaleLinear().range([window.__innerHeight, 0]);
-
-    window.__gridX = window.__g.append('g')
-      .attr('class','grid-x')
-      .attr('transform', `translate(0,${window.__innerHeight})`);
-    window.__gridY = window.__g.append('g').attr('class','grid-y');
-    window.__gX   = window.__g.append('g')
-      .attr('class','axis x-axis')
-      .attr('transform', `translate(0,${window.__innerHeight})`);
-    window.__gY   = window.__g.append('g').attr('class','axis y-axis');
-
-    // ─── Axis labels ───────────────────────────────────────
-    window.__g.append('text')
-      .attr('class', 'x-axis-label')
-      .attr('text-anchor', 'middle')
-      .attr('x', window.__innerWidth  / 2 - 10)
-      .attr('y', window.__innerHeight + 40) 
-      .style('font-size', '20px')
-      .style('font-weight', 'bold')
-      .text('');  // se actualizará más adelante
-
-    window.__g.append('text')
-      .attr('class', 'y-axis-label')
-      .attr('text-anchor', 'middle')
-      .attr('transform', `rotate(-90)`)
-      .attr('x', -window.__innerHeight / 2)
-      .attr('y', -60)
-      .style('font-size', '20px')
-      .style('font-weight', 'bold')
-      .text('');
-
-    // ─── Definiciones SVG: gradiente + clipPath ────────────────
-    const defs = svg.append('defs');
-    // gradiente para contour
-    defs.append('linearGradient')
-      .attr('id', 'contour-gradient')
-      .attr('x1', '0%').attr('y1', '100%')
-      .attr('x2', '0%').attr('y2', '0%')
-      .selectAll('stop')
-      .data([
-        { offset: '0%',   color: '#ffeda0' },
-        { offset: '25%',  color: '#feb24c' },
-        { offset: '50%',  color: '#fd8d3c' },
-        { offset: '75%',  color: '#f03b20' },
-        { offset: '100%', color: '#bd0026' }
-      ])
-      .enter().append('stop')
-        .attr('offset', d => d.offset)
-        .attr('stop-color', d => d.color);
-
-    // clipPath para recortar dentro de los ejes y que al Alfonso no le de TOC
-    defs.append('clipPath')
-      .attr('id', 'plot-area-clip')
-      .append('rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width',  window.__innerWidth)
-        .attr('height', window.__innerHeight);
-
-    window.__content = window.__g.append('g')
-        .attr('class','content')
-        .attr('clip-path','url(#plot-area-clip)');
-
-    // Capa de LINEAS (clippeada)
-    window.__lineLayer = window.__g.append('g')
-        .attr('class','line-layer')
-        .attr('clip-path','url(#plot-area-clip)');
-
-    // Capa de PUNTOS (sin clip, para que puedan tocar ejes)
-    window.__pointLayer = window.__g.append('g')
-        .attr('class','point-layer');
-
-
-    // tooltip
-    window.__tooltip = d3.select('#plot-output').append('div')
-      .attr('class','tooltip')
-      .style('position','absolute')
-      .style('background','rgba(0,0,0,0.75)')
-      .style('color','white')
-      .style('padding','5px 10px')
-      .style('border-radius','5px')
-      .style('pointer-events','none')
-      .style('opacity',0);
-
-    // ─── Controles: zoom, clear, grid, points ────────────────────
-    const controlsWrapper = d3.select('#plot-output')
-      .append('div')
-      .attr('id','plot-controls-wrapper')
-      .style('display','flex')
-      .style('justify-content','center')
-      .style('width','100%');
-
-    // Clear All Plots
-    const controls = controlsWrapper.append('div')
-      .attr('id','plot-controls')
-      .style('display','flex')
-      .style('flex-direction','column')
-      .style('gap','8px')
-      .style('align-items','center')
-      .style('margin-top','12px');
-
-
-    // Primera fila: checkboxes
-    const row1 = controls.append('div')
-      .style('display', 'flex')
-      .style('gap', '20px')
-      .style('justify-content', 'center');
-
-    row1.append('label')
-      .html('<input type="checkbox" id="toggleGrid" checked> Show grid');
-
-    row1.append('label')
-      .html('<input type="checkbox" id="togglePoints"> Show points');
-
-    // Segunda fila: botones
-    const row2 = controls.append('div')
-      .style('display', 'flex')
-      .style('gap', '20px')
-      .style('justify-content', 'center');
-
-    row2.append('button')
-      .attr('type','button')
-      .attr('class','reset-zoom-button')
-      .text('Reset Zoom')
-      .on('click', resetZoom);
-
-    row2.append('button')
-      .attr('type','button')
-      .attr('class','reset-zoom-button')
-      .text('Clear All Plots')
-      .on('click', () => {
-        activePlots = []; 
-        colorIndex = 0;            
-        updatePlotListUI();            
-        renderAll();
-        const infoBox = document.getElementById('plot-meta-info');
-        if (infoBox) infoBox.style.display = 'none';
-      });
-
-
-    window.__zoom = d3.zoom().scaleExtent([1,10]).on('zoom', zoomed);
-    window.__svg.call(window.__zoom);
-
-    // toggles re-render sin reset zoom
-    d3.select('#toggleGrid').on('change', () =>
-      zoomed({ transform: d3.zoomTransform(window.__svg.node()) })
-    );
-    d3.select('#togglePoints').on('change', () =>
-      zoomed(window.__lastZoomEvent || { transform: d3.zoomTransform(window.__svg.node()) })
-    );
-
-    // mostar header aunque no haya plots
-    updatePlotListUI();
+  updatePlotListUI();
 }
 
 
@@ -1074,12 +1056,26 @@ function updatePlotListUI() {
         });
 
         const btn = document.createElement('button');
-        btn.textContent = '❌';
-        btn.style.padding = '2px 6px';
-        btn.style.fontSize = '0.85em';
+        btn.innerHTML = '&times;';
         btn.type = 'button';
-        btn.style.marginRight = '10px';
         btn.onclick = () => removePlot(p.plotId);
+
+        // Estil creu
+        btn.style.width = '22px';
+        btn.style.height = '22px';
+        btn.style.border = '1.5px solid black';
+        btn.style.borderRadius = '50%';
+        btn.style.background = 'transparent';
+        btn.style.color = 'black';
+        btn.style.fontSize = '14px';
+        btn.style.fontWeight = 'normal';
+        btn.style.cursor = 'pointer';
+        btn.style.lineHeight = '1';
+        btn.style.textAlign = 'center';
+        btn.style.padding = '0';
+        btn.style.marginRight = '8px';
+
+
 
         item.appendChild(colorBox);
         item.appendChild(textSpan);
@@ -1165,7 +1161,6 @@ function removePlot(plotId) {
 }
 
 
-
 function highlightPlot(plotId, highlight) {
     const group = d3.select(`.plot-group.${plotId}`);
     if (!group.empty()) {
@@ -1200,31 +1195,6 @@ function drawDefaultGrid(forceLog = false) {
 
     document.getElementById('toggleGrid')?.setAttribute('checked', 'true');
     zoomed({ transform: d3.zoomIdentity });
-}
-
-
-
-/* Hide and Show Manual Inputs */
-function toggleManualInputs() {
-    const manual = document.getElementById('manual-section');
-    const btn = document.getElementById('toggleManualBtn');
-    const visible = manual.style.display === 'block';
-    manual.style.display = visible ? 'none' : 'block';
-    btn.textContent = visible ? 'Add manually' : 'Hide manual inputs';
-}
-// Hide and Show Advanced Parameters
-function toggleAdvancedParams() {
-  const toggle = document.getElementById('advanced-toggle');
-  const content = document.getElementById('advanced-params');
-  const isOpen = content.classList.contains('open');
-
-  if (isOpen) {
-    content.classList.remove('open');
-    toggle.classList.remove('open');
-  } else {
-    content.classList.add('open');
-    toggle.classList.add('open');
-  }
 }
 
 
@@ -1270,4 +1240,172 @@ function clearChat() {
     const chatBox = document.getElementById('chat-messages');
     chatBox.innerHTML = ''; // Borra todo el historial de mensajes
 }
+
+// ------------------------ Funcions auxiliars pel html -----------------------------------
+/* Hide and Show Manual Inputs ---> Unused*/
+function toggleManualInputs() {
+    const manual = document.getElementById('manual-section');
+    const btn = document.getElementById('toggleManualBtn');
+    const visible = manual.style.display === 'block';
+    manual.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? 'Add manually' : 'Hide manual inputs';
+}
+
+// Contour plot case
+function onLineTypeChange() {
+    const plotType = document.getElementById("plotType").value;
+    const x2Group = document.getElementById("x2-group");
+    const xRange2Group = document.getElementById("xRange2-group");
+    const xPoints2Group = document.getElementById("xPoints2-group");
+
+    if (plotType === "contour") {
+        x2Group.style.display = "flex";
+        xRange2Group.style.display = "flex";
+        xPoints2Group.style.display = "flex";
+    } else {
+        x2Group.style.display = "none";
+        xRange2Group.style.display = "none";
+        xPoints2Group.style.display = "none";
+    }
+}
+    // Sidebar toggle functionality
+    let leftCollapsed = false;
+    let rightCollapsed = false;
+
+    function toggleLeftSidebar() {
+      const sidebar = document.getElementById('left-sidebar');
+      const toggle = sidebar.querySelector('.toggle-icon');
+      
+      leftCollapsed = !leftCollapsed;
+      sidebar.classList.toggle('collapsed');
+
+       document.body.classList.toggle('left-collapsed', leftCollapsed); //MOD
+      
+      if (leftCollapsed) {
+        toggle.textContent = '▶';
+        // Create external toggle button
+        createExternalToggle('left');
+      } else {
+        toggle.textContent = '◀';
+        removeExternalToggle('left');
+      }
+    }
+
+    function toggleRightSidebar() {
+      const sidebar = document.getElementById('right-sidebar');
+      const toggle = sidebar.querySelector('.toggle-icon');
+      
+      rightCollapsed = !rightCollapsed;
+      sidebar.classList.toggle('collapsed');
+      
+      if (rightCollapsed) {
+        toggle.textContent = '◀';
+        createExternalToggle('right');
+      } else {
+        toggle.textContent = '▶';
+        removeExternalToggle('right');
+      }
+    }
+
+    function createExternalToggle(side) {
+      const mainLayout = document.querySelector('.main-layout');
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = `external-toggle external-${side}-toggle`;
+      toggleBtn.innerHTML = side === 'left' ? '▶' : '◀';
+      toggleBtn.onclick = side === 'left' ? toggleLeftSidebar : toggleRightSidebar;
+      
+      // Position the button
+      toggleBtn.style.position = 'absolute';
+      toggleBtn.style.top = '20px';
+      toggleBtn.style[side] = '15px';
+      toggleBtn.style.background = '#DCDCDC';
+      toggleBtn.style.color = '#666';
+      toggleBtn.style.border = 'none';
+      toggleBtn.style.width = '20px';
+      toggleBtn.style.height = '20px';
+      toggleBtn.style.cursor = 'pointer';
+      toggleBtn.style.zIndex = '1000';
+      toggleBtn.style.fontSize = '10px';
+      toggleBtn.style.display = 'flex';
+      toggleBtn.style.alignItems = 'center';
+      toggleBtn.style.justifyContent = 'center';
+      toggleBtn.style.borderRadius = '3px';
+      toggleBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      
+      mainLayout.appendChild(toggleBtn);
+    }
+
+    function removeExternalToggle(side) {
+      const existingToggle = document.querySelector(`.external-${side}-toggle`);
+      if (existingToggle) {
+        existingToggle.remove();
+      }
+    }
+
+    function toggleAdvancedParams() {
+      const toggle = document.querySelector('.advanced-toggle');
+      const section = document.getElementById('advanced-params');
+
+      const isOpen = section.classList.contains('show');
+      toggle.classList.toggle('open', !isOpen);
+      section.classList.toggle('show', !isOpen);
+    }
+
+    function toggleAdditionalParams() {
+      const toggle = document.querySelector('.additional-toggle');
+      const section = document.getElementById('additional-params');
+
+      const isOpen = section.classList.contains('show');
+      toggle.classList.toggle('open', !isOpen);
+      section.classList.toggle('show', !isOpen);
+    }
+
+    function showPlotWarningModal(onConfirm) {
+    const modal = document.getElementById('plot-warning-modal');
+    modal.style.display = 'flex';
+
+    const cancelBtn = document.getElementById('cancelWarningBtn');
+    const confirmBtn = document.getElementById('confirmWarningBtn');
+    const checkbox = document.getElementById('suppressWarningCheckbox');
+
+    function close() {
+        modal.style.display = 'none';
+        cancelBtn.removeEventListener('click', onCancel);
+        confirmBtn.removeEventListener('click', onContinue);
+    }
+
+    function onCancel() {
+        close();
+    }
+
+    function onContinue() {
+        if (checkbox.checked) skipPlotWarning = true;
+        close();
+        onConfirm();
+    }
+
+    cancelBtn.addEventListener('click', onCancel);
+    confirmBtn.addEventListener('click', onContinue);
+}
+
+/* Clear all plots del WARNING */
+function clearAllPlots() {
+  activePlots = [];
+  colorIndex = 0;
+  updatePlotListUI();
+  renderAll();
+  const infoBox = document.getElementById('plot-meta-info');
+  if (infoBox) infoBox.style.display = 'none';
+}
+// Efecte clic botons
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.classList.add('clicked');
+      setTimeout(() => btn.classList.remove('clicked'), 60); // efecto corto
+    });
+  });
+});
+
+
 

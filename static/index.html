@@ -7,421 +7,364 @@
     <!-- Inter font -->
     <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700&display=swap" rel="stylesheet">
     <!-- Your stylesheet -->
-    <link rel="stylesheet" href="/static/styles.css?v=1.51">
+    <link rel="stylesheet" href="/static/styles.css?v=1.89">
     <!-- D3 for plots -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <!-- Your script -->
-    <script src="/static/script.js?v=2.1"></script>
+    <script src="/static/script.js?v=2.25"></script>
 </head>
 <body>
-    <header id="header" class="center-header">
-        <h1 id="titulo">TSimTool</h1>
-        <h2 id="subtitulo">A tool for simulating transmission systems</h2>
-        <h3 id="subtitulo2"><a href="https://www.upf.edu/web/matcom">UPF MatCom Research Group</a></h3>
-    </header>
+  <header id="header" class="center-header">
+      <h1 id="titulo">TSimTool</h1>
+      <h2 id="subtitulo">A tool for simulating transmission systems, by <a href="https://www.upf.edu/web/matcom">UPF MatCom Research Group</a></h2>
+  </header>
 
-    <section class="main-layout">
-      <!-- Parameters (Left) -->
-      <aside class="parameters-area">
-        <h2 class="section-title">Configure Simulation</h2>
-        <form method="get">
-          <div class="input-group-block">
-            <!-- ‣ Modulation Field -->
+  <section class="main-layout">
+    <!-- Parameters (Left Sidebar) -->
+    <aside class="parameters-area" id="left-sidebar">
+      <button class="sidebar-toggle left-toggle" onclick="toggleLeftSidebar()">
+        <span class="toggle-icon">◀</span>
+      </button>
+      <h2 class="section-title">Configure Simulation</h2>
+      <form method="get">
+        <div class="input-group-block">
+          <!-- Simulation Parameters -->
+          <!-- ‣ Modulation Field -->
+          <div class="input-group">
+            <label for="M">
+              Modulation
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Enter the modulation order (e.g., "16" for 16-QAM or 16-PAM).
+                </span>
+              </span>
+            </label>
+            <input type="text" id="M" placeholder="e.g. 16">
+          </div>
+
+          <!-- ‣ Type Field -->
+          <div class="input-group">
+            <label for="TypeModulation">
+              Type
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Choose the modulation type: PAM, QAM, or PSK.
+                </span>
+              </span>
+            </label>
+            <select id="TypeModulation" class="custom-select">
+              <option value="PAM">PAM</option>
+              <option value="QAM">QAM</option>
+              <option value="PSK">PSK</option>
+            </select>
+          </div>
+
+          <!-- ‣ SNR Field -->
+          <div class="input-group">
+            <label for="SNR">
+              SNR
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Signal-to-noise ratio in dB (e.g., "7" dB).
+                </span>
+              </span>
+            </label>
+            <input type="text" id="SNR" placeholder="e.g. 7">
+          </div>
+
+          <!-- ‣ Rate Field -->
+          <div class="input-group">
+            <label for="R">
+              Rate
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Code rate (bits/symbol), for example "0.5".
+                </span>
+              </span>
+            </label>
+            <input type="text" id="R" placeholder="e.g. 0.5">
+          </div>
+
+          <!-- ‣ Code Length Field -->
+          <div class="input-group">
+            <label for="n">
+              Code Length
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Length of the codeword (e.g., 100).
+                </span>
+              </span>
+            </label>
+            <input type="text" id="n" placeholder="e.g. 100">
+          </div>
+
+          <!-- Advanced Parameters Toggle -->
+          <div class="advanced-toggle" onclick="toggleAdvancedParams()">
+            <span class="arrow-icon">▶</span>
+            <span class="label-text">Advanced Parameters</span>
+          </div>
+
+          <!-- Advanced Parameters Section -->
+          <div id="advanced-params" class="advanced-section">
+            <!-- Quadrature -->
             <div class="input-group">
-              <label for="M">
-                Modulation
+              <label for="N">
+                Quadrature
                 <span class="tooltip">ⓘ
-                  <span class="tooltip-text">
-                    Enter the modulation order (e.g., “16” for 16-QAM or 16-PAM).
-                  </span>
+                  <span class="tooltip-text">Number of quadrature components (e.g., 2).</span>
                 </span>
               </label>
-              <input type="text" id="M" placeholder="e.g. 16">
+              <input type="text" id="N" placeholder="20">
             </div>
 
-            <!-- ‣ Type Field -->
+            <!-- Threshold -->
             <div class="input-group">
-              <label for="TypeModulation">
-                Type
+              <label for="th">
+                Threshold
                 <span class="tooltip">ⓘ
-                  <span class="tooltip-text">
-                    Choose the modulation type: PAM, QAM, or PSK.
-                  </span>
+                  <span class="tooltip-text">Decision threshold value (e.g., 0.1).</span>
                 </span>
               </label>
-              <select id="TypeModulation" class="custom-select">
-                <option value="PAM">PAM</option>
-                <option value="QAM">QAM</option>
-                <option value="PSK">PSK</option>
-              </select>
+              <input type="text" id="th" placeholder="1e-6">
             </div>
+          </div>
 
-            <!-- ‣ SNR Field -->
-            <div class="input-group">
-              <label for="SNR">
-                SNR
-                <span class="tooltip">ⓘ
-                  <span class="tooltip-text">
-                    Signal-to-noise ratio in dB (e.g., “7” dB).
-                  </span>
+
+          <!-- Plot Configuration -->
+          <h2 class="section-title">Configure Plot</h2>
+          <!-- ‣ Plot Type -->
+          <div class="input-group">
+            <label for="plotType">
+              Plot Type
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Select how to scale axes: Linear, log–log, etc.
                 </span>
-              </label>
-              <input type="text" id="SNR" placeholder="e.g. 7">
-            </div>
+              </span>
+            </label>
+            <select id="plotType" onchange="onLineTypeChange()" class="custom-select">
+              <option value="linear">Linear</option>
+              <option value="logLog">LogLog</option>
+              <option value="logX">Log X</option>
+              <option value="logY">Log Y</option>
+              <option value="contour">Contour</option>
+            </select>
+          </div>
 
-            <!-- ‣ Rate Field -->
-            <div class="input-group">
-              <label for="R">
-                Rate
-                <span class="tooltip">ⓘ
-                  <span class="tooltip-text">
-                    Code rate (bits/symbol), for example “0.5”.
-                  </span>
+          <!-- ‣ Y Variable -->
+          <div class="input-group">
+            <label for="yVar">
+              Y
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Select the dependent variable to plot (e.g., Error probability).
                 </span>
-              </label>
-              <input type="text" id="R" placeholder="e.g. 0.5">
-            </div>
+              </span>
+            </label>
+            <select id="yVar" class="custom-select">
+              <option value="ErrorProb">Error probability</option>
+              <option value="Exponents">Exponents</option>
+              <option value="Rho">Optimal rho</option>
+            </select>
+          </div>
 
-            <!-- ‣ Code Length Field -->
-            <div class="input-group">
-              <label for="n">
-                Code Length
-                <span class="tooltip">ⓘ
-                  <span class="tooltip-text">
-                    Length of the codeword (e.g., 100).
-                  </span>
+          <!-- ‣ X1 Variable -->
+          <div class="input-group">
+            <label for="xVar">
+              X1
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Select independent variable for x-axis (e.g., M, SNR).
                 </span>
-              </label>
-              <input type="text" id="n" placeholder="e.g. 100">
-            </div>
+              </span>
+            </label>
+            <select id="xVar" class="custom-select">
+              <option value="M">M</option>
+              <option value="SNR">SNR</option>
+              <option value="Rate">Rate</option>
+              <option value="N">N</option>
+              <option value="n">n</option>
+              <option value="th">Threshold</option>
+            </select>
+          </div>
 
-            <div id="advanced-toggle" class="advanced-toggle" onclick="toggleAdvancedParams()">
-              <span>Advanced Parameters</span>
-              <span class="arrow">&#9654;</span>
-            </div>
-            <div id="advanced-params" class="advanced-params">
-              <!-- ‣ Quadrature Field -->
-              <div class="input-group">
-                <label for="N">
-                  Quadrature
-                  <span class="tooltip">ⓘ
-                    <span class="tooltip-text">
-                      Number of quadrature components (e.g., 2).
-                    </span>
-                  </span>
-                </label>
-                <input type="text" id="N" placeholder="20">
-              </div>
-              <!-- ‣ Threshold Field -->
-              <div class="input-group">
-                <label for="th">
-                  Threshold
-                  <span class="tooltip">ⓘ
-                    <span class="tooltip-text">
-                      Decision threshold value (e.g., 0.1).
-                    </span>
-                  </span>
-                </label>
-                <input type="text" id="th" placeholder="1e-10">
-              </div>
-            </div>
+          <!-- ‣ X2 Variable (conditionally shown) -->
+          <div class="input-group" id="x2-group" style="display: none;">
+            <label for="xVar2">
+              X2
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  (Optional) Second independent variable if needed.
+                </span>
+              </span>
+            </label>
+            <select id="xVar2" class="custom-select">
+              <option value="M">M</option>
+              <option value="SNR">SNR</option>
+              <option value="Rate">Rate</option>
+              <option value="N">N</option>
+              <option value="n">n</option>
+              <option value="th">Threshold</option>
+            </select>
+          </div>
 
+          <!-- ‣ X1 Range -->
+          <div class="input-group">
+            <label for="xRange">
+              X1 Range
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Comma-separated min and max (e.g., "1,100").
+                </span>
+              </span>
+            </label>
+            <input type="text" id="xRange" placeholder="e.g. 1,100">
+          </div>
+
+          <!-- ‣ X2 Range (conditionally shown) -->
+          <div class="input-group" id="xRange2-group" style="display: none;">
+            <label for="xRange2">
+              X2 Range
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  (Optional) Comma-separated min/max for X2.
+                </span>
+              </span>
+            </label>
+            <input type="text" id="xRange2" placeholder="e.g. 1,100">
+          </div>
+
+          <!-- ‣ X1 Points -->
+          <div class="input-group">
+            <label for="points">
+              X1 Points
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Number of points along X1 (e.g., 50).
+                </span>
+              </span>
+            </label>
+            <input type="number" id="points" value="50">
+          </div>
+
+          <!-- ‣ X2 Points (conditionally shown) -->
+          <div class="input-group" id="xPoints2-group" style="display: none;">
+            <label for="points2">
+              X2 Points
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  (Optional) Number of points along X2.
+                </span>
+              </span>
+            </label>
+            <input type="number" id="points2" value="50" min="1">
+          </div>
+        </div>
+
+        <!-- Additional Parameters Toggle -->
+        <div class="additional-toggle" onclick="toggleAdditionalParams()">
+          <span class="arrow-icon">▶</span>
+          <span class="label-text">Additional Parameters</span>
+        </div>
+
+        <!-- Additional Parameters Section -->
+        <div id="additional-params" class="additional-section">
+          <!-- Line Type -->
+          <div class="input-group">
+            <label for="lineType">Line Type
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Select the style of line: solid, dashed, dotted, etc.
+                </span>
+              </span>
+            </label>
+            <select id="lineType" class="custom-select">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="dot-dash">Dot-Dash</option>
+            </select>
+          </div>
+
+          <!-- Line Color -->
+          <div class="input-group">
+            <label for="lineColor">Color
+              <span class="tooltip">ⓘ
+                <span class="tooltip-text">
+                  Choose a line color from the list (e.g. "steelblue").
+                </span>
+              </span>
+            </label>
+            <select id="lineColor" class="custom-select">
+              <option value="steelblue">steelblue</option>
+              <option value="tomato">tomato</option>
+              <option value="orange">orange</option>
+              <option value="mediumseagreen">mediumseagreen</option>
+              <option value="royalblue">royalblue</option>
+              <option value="orchid">orchid</option>
+              <option value="goldenrod">goldenrod</option>
+              <option value="crimson">crimson</option>
+            </select>
+          </div>
+        </div>
+
+
+        <div class="button-group">
           <button type="submit" class="compute-error" onclick="calculateExponents(event)">
             Compute Error Metrics
           </button>
-          <div class="result" id="result"></div>
-        </form>
-      </aside>
-      
-      <!-- Right: Plot and Chatbot -->
-      <div class="right-panel">
-        <!-- Plot Area -->
-        <section class="plot-area">
-          <h2 class="section-title">Plot</h2>
-          <form onsubmit="generateGraph(event)">
-            <div class="input-group-block">
-              <div class="input-row">
-                <!-- ‣ Plot Type -->
-                <div class="input-group">
-                  <label for="plotType">
-                    Plot Type
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Select how to scale axes: Linear, log–log, etc.
-                      </span>
-                    </span>
-                  </label>
-                  <select id="plotType" onchange="onLineTypeChange()">
-                    <option value="linear">Linear</option>
-                    <option value="logLog">LogLog</option>
-                    <option value="logX">Log X</option>
-                    <option value="logY">Log Y</option>
-                    <option value="contour">Contour</option>
-                  </select>
-                </div>
-
-                <!-- ‣ Line Type -->
-                <div class="input-group">
-                  <label for="lineType">
-                    Line Type
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Select the style of line: solid, dashed, dotted, etc.
-                      </span>
-                    </span>
-                  </label>
-                  <select id="lineType">
-                    <option value="solid">Solid</option>
-                    <option value="dashed">Dashed</option>
-                    <option value="dotted">Dotted</option>
-                    <option value="dot-dash">Dot-Dash</option>
-                  </select>      
-                </div>
-
-
-              <!-- After: plain <select> (so it picks up your existing CSS) -->
-              <div class="input-group">
-                <label for="lineColor">
-                  Color
-                  <span class="tooltip">ⓘ
-                    <span class="tooltip-text">
-                      Choose a line color from the list (e.g. “steelblue”).
-                    </span>
-                  </span>
-                </label>
-                <select id="lineColor" class="custom-select">
-                  <option value="steelblue">steelblue</option>
-                  <option value="tomato">tomato</option>
-                  <option value="orange">orange</option>
-                  <option value="mediumseagreen">mediumseagreen</option>
-                  <option value="royalblue">royalblue</option>
-                  <option value="orchid">orchid</option>
-                  <option value="goldenrod">goldenrod</option>
-                  <option value="crimson">crimson</option>
-                </select>
-              </div>
-
-              <div class="input-row">
-                <!-- ‣ Y Variable -->
-                <div class="input-group">
-                  <label for="yVar">
-                    Y
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Select the dependent variable to plot (e.g., Error probability).
-                      </span>
-                    </span>
-                  </label>
-                  <select id="yVar">
-                    <option value="ErrorProb">Error probability</option>
-                    <option value="Exponents">Exponents</option>
-                    <option value="Rho">Optimal rho</option>
-                  </select>
-                </div>
-
-                <!-- ‣ X1 Variable -->
-                <div class="input-group">
-                  <label for="xVar">
-                    X1
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Select independent variable for x-axis (e.g., M, SNR).
-                      </span>
-                    </span>
-                  </label>
-                  <select id="xVar">
-                    <option value="M">M</option>
-                    <option value="SNR">SNR</option>
-                    <option value="Rate">Rate</option>
-                    <option value="N">N</option>
-                    <option value="n">n</option>
-                    <option value="th">Threshold</option>
-                  </select>
-                </div>
-
-                <!-- ‣ X2 Variable (conditionally shown) -->
-                <div class="input-group" id="x2-group" style="display: none;">
-                  <label for="xVar2">
-                    X2
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        (Optional) Second independent variable if needed.
-                      </span>
-                    </span>
-                  </label>
-                  <select id="xVar2">
-                    <option value="M">M</option>
-                    <option value="SNR">SNR</option>
-                    <option value="Rate">Rate</option>
-                    <option value="N">N</option>
-                    <option value="n">n</option>
-                    <option value="th">Threshold</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="input-row">
-                <!-- ‣ X1 Range -->
-                <div class="input-group">
-                  <label for="xRange">
-                    X1 Range
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Comma-separated min and max (e.g., “1,100”).
-                      </span>
-                    </span>
-                  </label>
-                  <input type="text" id="xRange" placeholder="e.g. 1,100">
-                </div>
-
-                <!-- ‣ X2 Range (conditionally shown) -->
-                <div class="input-group" id="xRange2-group" style="display: none;">
-                  <label for="xRange2">
-                    X2 Range
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        (Optional) Comma-separated min/max for X2.
-                      </span>
-                    </span>
-                  </label>
-                  <input type="text" id="xRange2" placeholder="e.g. 1,100">
-                </div>
-
-                <!-- ‣ X1 Points -->
-                <div class="input-group">
-                  <label for="points">
-                    X1 Points
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Number of points along X1 (e.g., 50).
-                      </span>
-                    </span>
-                  </label>
-                  <input type="number" id="points" value="50">
-                </div>
-
-                <!-- ‣ X2 Points (conditionally shown) -->
-                <div class="input-group" id="xPoints2-group" style="display: none;">
-                  <label for="points2">
-                    X2 Points
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        (Optional) Number of points along X2.
-                      </span>
-                    </span>
-                  </label>
-                  <input type="number" id="points2" value="50" min="1">
-                </div>
-              </div>
-            </div>
-
-            <div class="button-group">
-              <button type="button" onclick="plotFromFunction()">Generate Plot</button>
-              <button type="button" id="toggleManualBtn" onclick="toggleManualInputs()">Manual Inputs</button> 
-            </div>
-            <div class="result" id="plot-result"></div>
-
-            <!-- Manual section (hidden by default) -->
-            <div id="manual-section" style="display: none;">
-              <h3 style="margin-top: 20px;">Manual Plot</h3>
-              <div class="input-group-block">
-                <!-- ‣ Manual Plot Title -->
-                <div class="input-group">
-                  <label for="manualTitle">
-                    Plot Title
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Enter a title for your manual plot.
-                      </span>
-                    </span>
-                  </label>
-                  <input type="text" id="manualTitle" placeholder="Enter chart title here">
-                </div>
-                <!-- ‣ X Values -->
-                <div class="input-group">
-                  <label for="xValues">
-                    X values
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Comma-separated X coordinates (e.g., “1,2,3”).
-                      </span>
-                    </span>
-                  </label>
-                  <textarea id="xValues" placeholder="e.g. 1, 2, 3, 4"></textarea>
-                </div>
-                <!-- ‣ Y Values -->
-                <div class="input-group">
-                  <label for="yValues">
-                    Y values
-                    <span class="tooltip">ⓘ
-                      <span class="tooltip-text">
-                        Comma-separated Y coordinates (e.g., “10,20,30,40”).
-                      </span>
-                    </span>
-                  </label>
-                  <textarea id="yValues" placeholder="e.g. 10, 20, 30, 40"></textarea>
-                </div>
-                <div class="manual-button-row">
-                  <button type="button" onclick="plotManually()">Plot Manually</button>
-                </div>
-              </div>
-            </div>
-
-            <div id="plot-output"></div>
-          </form>
-        </section>
-
-        <!-- Chatbot Area -->
-        <section class="chatbot-area">
-          <h2 class="section-title">Chatbot</h2>
-          <div class="chatbox">
-            <div class="chat-messages" id="chat-messages"></div>
-            <div class="chat-input-container">
-              <input type="text" id="chat-input" placeholder="Ask the chat something..." />
-              <button type="button" class="send-button" onclick="sendMessage()">➤</button>
-            </div>
-          </div>
-          <div class="button-group">
-            <button type="button" class="create-graphic" onclick="clearChat()">Clear Chat</button>
-          </div>
-        </section>
-      </div>
+          <button type="button" onclick="plotFromFunction()">Generate Plot</button>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="result" id="plot-result"></div>
+      </form>
+    </aside>
+    
+    <!-- Center: Plot Area -->
+    <section class="plot-area">
+      <h2 class="section-title">Plot</h2>
+      <div id="plot-output"></div>
     </section>
 
-    <footer>
-        <p>© Universitat Pompeu Fabra Barcelona, 2025</p>
-    </footer>
+    <!-- Right Sidebar: Chatbot -->
+    <aside class="chatbot-sidebar" id="right-sidebar">
+      <button class="sidebar-toggle right-toggle" onclick="toggleRightSidebar()">
+        <span class="toggle-icon">▶</span>
+      </button>
+      <section class="chatbot-area">
+        <h2 class="section-title">Assistant</h2>
+        <div class="chatbox">
+          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Ask the assistant something..." />
+            <button type="button" class="send-button" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+        <div class="button-group">
+          <button type="button" class="create-graphic" onclick="clearChat()">Clear Chat</button>
+        </div>
+      </section>
+    </aside>
+  </section>
+
+  <footer>
+      <p>© Universitat Pompeu Fabra Barcelona, 2025</p>
+  </footer>
+  <!-- Warning -->
+  <div id="plot-warning-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <p><strong>⚠️ Attention:</strong> Changing Y or X1 will remove the previous plots.</p>
+      <label style="display: flex; align-items: center; gap: 5px; margin-top: 10px;">
+        <input type="checkbox" id="suppressWarningCheckbox">
+        Do not show this warning again
+      </label>
+      <div class="modal-buttons">
+        <button id="cancelWarningBtn">Cancel</button>
+        <button id="confirmWarningBtn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+
 </body>
 </html>
-
-<script>
-  function onSNRUnitChange(selectElem) {
-    const chosenUnit = selectElem.value;      // “dB” or “linear”
-    const inputElem = document.getElementById('snr-input-full');
-    const currentValue = parseFloat(inputElem.value);
-
-    // If the current input is not a number, do nothing.
-    if (isNaN(currentValue)) {
-      // Just store the new unit in data‐attribute
-      inputElem.dataset.unit = chosenUnit;
-      return;
-    }
-
-    // Convert between dB ↔ linear
-    let newValue;
-    if (chosenUnit === 'linear' && inputElem.dataset.unit === 'dB') {
-      // dB → linear: linear = 10^(dB/10)
-      newValue = Math.pow(10, currentValue / 10);
-    } else if (chosenUnit === 'dB' && inputElem.dataset.unit === 'linear') {
-      // linear → dB: dB = 10 * log10(linear)
-      newValue = 10 * Math.log10(currentValue);
-    } else {
-      // No change in units (e.g. same selection)
-      newValue = currentValue;
-    }
-
-    // Update the text field and its data-unit
-    inputElem.value = isFinite(newValue) ? newValue.toFixed(3) : '';
-    inputElem.dataset.unit = chosenUnit;
-  }
-</script>
