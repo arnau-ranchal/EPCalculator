@@ -79,7 +79,7 @@ body {
   cursor: pointer;
   z-index: 1000;
   font-size: 10px;
-  transition: all 0.15s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,7 +181,7 @@ body {
   box-shadow: none !important;
   border-radius: 0 !important;
   padding: 0 !important;
-  transition: width 0.15s ease, margin 0.15s ease; /* Faster, smoother transition */
+  transition: width 0.3s ease, margin 0.3s ease; /* Faster, smoother transition */
 }
 
 /* ======== SECTION TITLES ======== */
@@ -496,13 +496,14 @@ button:hover,
   border: 1px solid #DCDCDC !important;
   border-radius: 0 !important;
   padding: 10px !important;
-  font-size: 0.85em !important;
+  font-size: 1em !important; /*MOD --> + gran*/
   color: #222 !important;
   overflow-y: auto;
   font-family: inherit;
   height: 719px;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .chat-message {
@@ -528,6 +529,37 @@ button:hover,
   color: #444;
 }
 
+/* Chat bubbles */
+/* MOD: Updated chat bubble styles for better readability */	  
+.chat-bubble {
+  max-width: 90%;
+  padding: 8px 12px;
+  margin: 6px 0;
+  border-radius: 0px;
+  display: inline-block;
+  font-size: 1em;
+}
+
+.chat-bubble.user {
+  background-color: #e6f2ff;
+  align-self: flex-end;
+  text-align: right;
+}
+
+.chat-bubble.bot {
+  background-color: #f0f0f0;
+  align-self: flex-start;
+  text-align: left;
+}
+
+.chat-bubble.error {
+  background-color: #ffe6e6;
+  color: #b00020;
+  align-self: flex-start;
+  text-align: left;
+}
+
+/* chat input style */
 .chat-input-container {
   display: flex;
   gap: 8px;
@@ -591,11 +623,12 @@ button:hover,
   min-height: 0;
 }
 
+/* ======== PLOT OUTPUT AREA ======== */
 /*MOD*/
 #plot-output {
   margin-top: 0px;
   height: 819px; /* La mateixa altura que la secció del xatbot */
-  width: calc(100% - 3px); /* He afegit una mica de marge pq el quadrat de la secció es*/
+  width: calc(100% - 7px); /* He afegit una mica de marge pel contenidor del chat*/
   border: 1px solid #DCDCDC;
   border-radius: 0px;
   background: #FFF;
@@ -697,7 +730,7 @@ footer {
   background: #FFF;
   padding: 0;
   box-sizing: border-box;
-  transition: width 0.15s ease, margin 0.15s ease; /* Faster, smoother transition */
+  transition: width 0.3s ease, margin 0.3s ease; /* Faster, smoother transition */
   position: relative; /* For toggle button positioning */
 }
 
@@ -708,7 +741,7 @@ footer {
   background: #FFF;
   padding: 0 0 0 10px;
   box-sizing: border-box;
-  transition: width 0.15s ease, margin 0.15s ease; /* Faster, smoother transition */
+  transition: width 0.3s ease, margin 0.3s ease; /* Faster, smoother transition */
   position: relative; /* For toggle button positioning */
   /* FIXED: Remove flex completely - use natural content flow like parameters */
 }
@@ -730,7 +763,7 @@ footer {
 
 /* MOD: Per a que el Plot tingui una mica de marge */
 .left-collapsed .plot-area .section-title {
-  padding-left: 60px;
+  padding-left: 80px;
 } 
 
 
@@ -938,7 +971,7 @@ footer {
   background-color: white;
   padding: 20px 25px;
   border: 1px solid #aaa;
-  border-radius: 8px;
+  border-radius: 0px;
   max-width: 400px;
   width: 90%;
   font-size: 1em;
@@ -989,6 +1022,71 @@ button.clicked,
   z-index: 10;
   height: fit-content;
 }
+
+/* POSICIÓ FLECHA SIDEBAR */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-header.right-align {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.sidebar-header .section-title {
+  margin: 0;
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #222;
+}
+
+.sidebar-header .sidebar-toggle {
+  position: static;
+  margin: 0;
+  box-shadow: none;
+}
+
+.sidebar-header.split-align {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.sidebar-header.split-align .spacer {
+  flex: 1;
+}
+
+.sidebar-header.split-align .sidebar-toggle {
+  order: 1;
+}
+
+.sidebar-header.split-align .section-title {
+  order: 3;
+}
+
+.sidebar-header.align-ends {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.sidebar-header.align-ends .sidebar-toggle {
+  order: 1;
+}
+
+.sidebar-header.align-ends .section-title {
+  order: 2;
+  margin-left: auto;
+}
+
+
 
 
 
