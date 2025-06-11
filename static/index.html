@@ -7,11 +7,11 @@
     <!-- Inter font -->
     <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700&display=swap" rel="stylesheet">
     <!-- Your stylesheet -->
-    <link rel="stylesheet" href="/static/styles.css?v=1.97">
+    <link rel="stylesheet" href="/static/styles.css?v=2.20">
     <!-- D3 for plots -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <!-- Your script -->
-    <script src="/static/script.js?v=2.36"></script>
+    <script src="/static/script.js?v=2.72"></script>
 </head>
 <body>
   <header id="header" class="center-header">
@@ -22,10 +22,13 @@
   <section class="main-layout">
     <!-- Parameters (Left Sidebar) -->
     <aside class="parameters-area" id="left-sidebar">
+    <div class="sidebar-header">
+      <h2 class="section-title">Configure Simulation</h2>
       <button class="sidebar-toggle left-toggle" onclick="toggleLeftSidebar()">
         <span class="toggle-icon">◀</span>
       </button>
-      <h2 class="section-title">Configure Simulation</h2>
+    </div>
+      <!-- Formulari -->
       <form method="get">
         <div class="input-group-block">
           <!-- Simulation Parameters -->
@@ -328,11 +331,15 @@
 
     <!-- Right Sidebar: Chatbot -->
     <aside class="chatbot-sidebar" id="right-sidebar">
-      <button class="sidebar-toggle right-toggle" onclick="toggleRightSidebar()">
-        <span class="toggle-icon">▶</span>
-      </button>
-      <section class="chatbot-area">
+      <div class="sidebar-header align-ends">
+        <button class="sidebar-toggle right-toggle" onclick="toggleRightSidebar()">
+          <span class="toggle-icon">▶</span>
+        </button>
         <h2 class="section-title">Assistant</h2>
+      </div>
+
+      <section class="chatbot-area">
+        <!-- <h2 class="section-title">Assistant</h2> -->
         <div class="chatbox">
           <div class="chat-messages" id="chat-messages"></div>
           <div class="chat-input-container">
@@ -367,4 +374,5 @@
 
 
 </body>
+
 </html>

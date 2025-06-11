@@ -2,8 +2,12 @@
 window.addEventListener('DOMContentLoaded', () => {
     initializeChart();
     onLineTypeChange();
-    setTimeout(() => drawDefaultGrid(), 0);
+    setTimeout(() => {
+      drawDefaultGrid();
+      plotInitialGraph();  // <- esta es la llamada nueva
+    }, 100);
 });
+
 
 /* Global parameters */
 const axisLabelsMap = {
@@ -375,7 +379,7 @@ function initializeChart() {
     .attr('id', 'plot-meta-info')
     .style('position', 'absolute')
     .style('top', '80px') 
-    .style('right', '320px') // 250 ancho + 10 padding + 60 separación
+    .style('right', '330px')
     .style('background', 'rgba(50,50,50,0.95)')
     .style('color', 'white')
     .style('padding', '10px 16px')
@@ -425,6 +429,12 @@ function initializeChart() {
     .attr('x1', margin.left).attr('x2', margin.left)
     .attr('y1', margin.top).attr('y2', height - margin.bottom)
     .attr('stroke', 'black');
+  window.__xAxisBaseLine = svg.append('line')
+  .attr('x1', margin.left).attr('x2', width - margin.right)
+  .attr('y1', height - margin.bottom).attr('y2', height - margin.bottom)
+  .attr('stroke', 'black');
+
+    
 
   window.__svg = svg;
   window.__g = svg.append('g')
@@ -798,7 +808,10 @@ function renderAll() {
         dotted:  '2,4',
         'dot-dash': '4,2,2,2'
       };
-  
+      // Config linea
+      const baseWidth = 1200;
+      const scaleFactor = window.__innerWidth / baseWidth;
+
       g.select('path.line')
         .datum(d.y)
         .attr('fill', 'none')
@@ -806,10 +819,11 @@ function renderAll() {
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', dashMap[d.dashStyle] || '')
         .attr('d', lineGen);
-  
+
+      // Config puntos
       const pts = window.__pointLayer.selectAll(`.point-${d.plotId}`)
           .data(d.x.map((xVal,i) => ({ x:xVal, y:d.y[i], plotId:d.plotId })));
-  
+
       pts.enter().append('circle')
         .attr('class', p => `point point-${p.plotId}`)
         .merge(pts)
@@ -818,13 +832,22 @@ function renderAll() {
         .attr('cx', pt => window.__xScale(pt.x))
         .attr('cy', pt => window.__yScale(pt.y))
         .attr('visibility', d3.select('#togglePoints').property('checked') ? 'visible' : 'hidden')
+        // Posició caixa punts
         .on('mouseover', (event, pt) => {
+          const svgRect = window.__svg.node().getBoundingClientRect();
+          const offsetX = 80;
+          const offsetY = 50;
+
+          const x = event.clientX - svgRect.left + offsetX;
+          const y = event.clientY - svgRect.top - offsetY;
+
           window.__tooltip
             .html(`x: ${pt.x}<br>y: ${pt.y.toFixed(4)}`)
-            .style('left', (event.offsetX + 15) + 'px')
-            .style('top', (event.offsetY - 25) + 'px')
+            .style('left', `${x}px`)
+            .style('top', `${y}px`)
             .style('opacity', 1);
         })
+
         .on('mouseout', () => window.__tooltip.style('opacity', 0));
   
       pts.exit().remove();
@@ -910,12 +933,13 @@ function renderAll() {
 
     // ─── Actualizar etiquetas de ejes según el último plot ────
     if (activePlots.length) {
-      const last = activePlots[activePlots.length - 1],
-            xKey = document.getElementById('xVar').value,
-            xLabel = axisLabelsMap[xKey] || xKey,
-            yLabel = last.type === 'contour'
-              ? (axisLabelsMap[document.getElementById('xVar2').value] || document.getElementById('xVar2').value)
-              : document.getElementById('yVar').selectedOptions[0].text;
+    const last = activePlots[activePlots.length - 1],
+      xKey = last.metadata?.xVar || document.getElementById('xVar').value,
+      xLabel = axisLabelsMap[xKey] || xKey,
+      yLabel = last.type === 'contour'
+        ? (axisLabelsMap[document.getElementById('xVar2').value] || document.getElementById('xVar2').value)
+        : document.getElementById('yVar')?.selectedOptions[0]?.text || 'Y';
+
       d3.select('.x-axis-label').text(xLabel);
       d3.select('.y-axis-label').text(yLabel);
     } else {
@@ -1273,120 +1297,129 @@ function onLineTypeChange() {
     let leftCollapsed = false;
     let rightCollapsed = false;
 
-    function toggleLeftSidebar() {
-      const sidebar = document.getElementById('left-sidebar');
-      const toggle = sidebar.querySelector('.toggle-icon');
-      
-      leftCollapsed = !leftCollapsed;
-      sidebar.classList.toggle('collapsed');
+function toggleLeftSidebar() {
+  const sidebar = document.getElementById('left-sidebar');
+  const toggle = sidebar.querySelector('.toggle-icon');
 
-       document.body.classList.toggle('left-collapsed', leftCollapsed); //MOD
-      
-      if (leftCollapsed) {
-        toggle.textContent = '▶';
-        // Create external toggle button
-        createExternalToggle('left');
-      } else {
-        toggle.textContent = '◀';
-        removeExternalToggle('left');
-      }
-    }
+  leftCollapsed = !leftCollapsed;
+  sidebar.classList.toggle('collapsed');
+  document.body.classList.toggle('left-collapsed', leftCollapsed);
 
-    function toggleRightSidebar() {
-      const sidebar = document.getElementById('right-sidebar');
-      const toggle = sidebar.querySelector('.toggle-icon');
-      
-      rightCollapsed = !rightCollapsed;
-      sidebar.classList.toggle('collapsed');
-      
-      if (rightCollapsed) {
-        toggle.textContent = '◀';
-        createExternalToggle('right');
-      } else {
-        toggle.textContent = '▶';
-        removeExternalToggle('right');
-      }
-    }
+  if (leftCollapsed) {
+    toggle.textContent = '▶';
+    setTimeout(() => createExternalToggle('left'), 300);
+  } else {
+    toggle.textContent = '◀';
+    removeExternalToggle('left');
+  }
 
-    function createExternalToggle(side) {
-      const mainLayout = document.querySelector('.main-layout');
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = `external-toggle external-${side}-toggle`;
-      toggleBtn.innerHTML = side === 'left' ? '▶' : '◀';
-      toggleBtn.onclick = side === 'left' ? toggleLeftSidebar : toggleRightSidebar;
-      
-      // Position the button
-      toggleBtn.style.position = 'absolute';
-      toggleBtn.style.top = '20px';
-      toggleBtn.style[side] = '15px';
-      toggleBtn.style.background = '#DCDCDC';
-      toggleBtn.style.color = '#666';
-      toggleBtn.style.border = 'none';
-      toggleBtn.style.width = '20px';
-      toggleBtn.style.height = '20px';
-      toggleBtn.style.cursor = 'pointer';
-      toggleBtn.style.zIndex = '1000';
-      toggleBtn.style.fontSize = '10px';
-      toggleBtn.style.display = 'flex';
-      toggleBtn.style.alignItems = 'center';
-      toggleBtn.style.justifyContent = 'center';
-      toggleBtn.style.borderRadius = '3px';
-      toggleBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-      
-      mainLayout.appendChild(toggleBtn);
-    }
+  setTimeout(adjustPlotWidthBasedOnSidebar, 100); 
+}
 
-    function removeExternalToggle(side) {
-      const existingToggle = document.querySelector(`.external-${side}-toggle`);
-      if (existingToggle) {
-        existingToggle.remove();
-      }
-    }
+function toggleRightSidebar() {
+  const sidebar = document.getElementById('right-sidebar');
+  const toggle = sidebar.querySelector('.toggle-icon');
 
-    function toggleAdvancedParams() {
-      const toggle = document.querySelector('.advanced-toggle');
-      const section = document.getElementById('advanced-params');
+  rightCollapsed = !rightCollapsed;
+  sidebar.classList.toggle('collapsed');
 
-      const isOpen = section.classList.contains('show');
-      toggle.classList.toggle('open', !isOpen);
-      section.classList.toggle('show', !isOpen);
-    }
+  if (rightCollapsed) {
+    toggle.textContent = '◀';
+    setTimeout(() => createExternalToggle('right'), 300); 
+  } else {
+    toggle.textContent = '▶';
+    removeExternalToggle('right');
+  }
 
-    function toggleAdditionalParams() {
-      const toggle = document.querySelector('.additional-toggle');
-      const section = document.getElementById('additional-params');
+  setTimeout(adjustPlotWidthBasedOnSidebar, 100);
+}
 
-      const isOpen = section.classList.contains('show');
-      toggle.classList.toggle('open', !isOpen);
-      section.classList.toggle('show', !isOpen);
-    }
 
-    function showPlotWarningModal(onConfirm) {
-    const modal = document.getElementById('plot-warning-modal');
-    modal.style.display = 'flex';
 
-    const cancelBtn = document.getElementById('cancelWarningBtn');
-    const confirmBtn = document.getElementById('confirmWarningBtn');
-    const checkbox = document.getElementById('suppressWarningCheckbox');
+function createExternalToggle(side) {
+  const mainLayout = document.querySelector('.main-layout');
+  const sidebar    = document.getElementById(side === 'left' ? 'left-sidebar'
+                                                             : 'right-sidebar');
+  const header     = sidebar.querySelector('.sidebar-header');
+  const toggleBtn  = document.createElement('button');
 
-    function close() {
-        modal.style.display = 'none';
-        cancelBtn.removeEventListener('click', onCancel);
-        confirmBtn.removeEventListener('click', onContinue);
-    }
+  toggleBtn.className = `external-toggle external-${side}-toggle`;
+  toggleBtn.innerHTML = side === 'left' ? '▶' : '◀';
+  toggleBtn.onclick   = side === 'left' ? toggleLeftSidebar : toggleRightSidebar;
 
-    function onCancel() {
-        close();
-    }
+  Object.assign(toggleBtn.style, {
+    position:  'absolute',
+    top:       `10px`,    // MOD --> He tret pq es veia raro un cop replegat...
+    [side]:    '15px',
+    background:'#DCDCDC',
+    color:     '#666',
+    border:    'none',
+    width:     '20px',
+    height:    '20px',
+    cursor:    'pointer',
+    zIndex:    '1000',
+    fontSize:  '10px',
+    display:   'flex',
+    alignItems:'center',
+    justifyContent:'center',
+    borderRadius:'3px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+  });
 
-    function onContinue() {
-        if (checkbox.checked) skipPlotWarning = true;
-        close();
-        onConfirm();
-    }
+  mainLayout.appendChild(toggleBtn);
+}
 
-    cancelBtn.addEventListener('click', onCancel);
-    confirmBtn.addEventListener('click', onContinue);
+function removeExternalToggle(side) {
+  const existingToggle = document.querySelector(`.external-${side}-toggle`);
+  if (existingToggle) {
+    existingToggle.remove();
+  }
+}
+
+function toggleAdvancedParams() {
+  const toggle = document.querySelector('.advanced-toggle');
+  const section = document.getElementById('advanced-params');
+
+  const isOpen = section.classList.contains('show');
+  toggle.classList.toggle('open', !isOpen);
+  section.classList.toggle('show', !isOpen);
+}
+
+function toggleAdditionalParams() {
+  const toggle = document.querySelector('.additional-toggle');
+  const section = document.getElementById('additional-params');
+
+  const isOpen = section.classList.contains('show');
+  toggle.classList.toggle('open', !isOpen);
+  section.classList.toggle('show', !isOpen);
+}
+
+function showPlotWarningModal(onConfirm) {
+  const modal = document.getElementById('plot-warning-modal');
+  modal.style.display = 'flex';
+
+  const cancelBtn = document.getElementById('cancelWarningBtn');
+  const confirmBtn = document.getElementById('confirmWarningBtn');
+  const checkbox = document.getElementById('suppressWarningCheckbox');
+
+  function close() {
+      modal.style.display = 'none';
+      cancelBtn.removeEventListener('click', onCancel);
+      confirmBtn.removeEventListener('click', onContinue);
+  }
+
+  function onCancel() {
+      close();
+  }
+
+  function onContinue() {
+      if (checkbox.checked) skipPlotWarning = true;
+      close();
+      onConfirm();
+  }
+
+  cancelBtn.addEventListener('click', onCancel);
+  confirmBtn.addEventListener('click', onContinue);
 }
 
 /* Clear all plots del WARNING */
@@ -1415,5 +1448,102 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Ajusta el ancho del plot según el estado de los sidebars
+function adjustPlotWidthBasedOnSidebar() {
+  const leftCollapsed = document.getElementById('left-sidebar')?.classList.contains('collapsed');
+  const rightCollapsed = document.getElementById('right-sidebar')?.classList.contains('collapsed');
+
+  let newWidth = 1200;
+  if (leftCollapsed && rightCollapsed) {
+    newWidth = 1700;
+  } else if (leftCollapsed || rightCollapsed) {
+    newWidth = 1400;
+  }
+
+  const height = 850;
+  const svg = d3.select("#plot-output svg");
+  if (!svg.empty()) {
+    svg.attr("viewBox", `0 0 ${newWidth} ${height}`);
+
+    // ACTUALIZAR DIMENSIONES INTERNAS DEL PLOT
+    window.__innerWidth = newWidth - 100 - 30;
+    window.__xScale.range([0, window.__innerWidth]);
+    if (window.__xAxisBaseLine) {
+      window.__xAxisBaseLine
+        .attr('x2', newWidth - 30); // margin.right
+    }
 
 
+    // Actualizar el clipPath del contenido
+    d3.select("#plot-area-clip rect")
+      .attr("width", window.__innerWidth);
+
+    // Reposiciona ejes
+    if (window.__gridX) window.__gridX.attr("transform", `translate(0,${window.__innerHeight})`);
+    if (window.__gX) {
+      window.__gX
+        .attr("transform", `translate(0,${window.__innerHeight})`)
+        .call(d3.axisBottom(window.__xScale)); // 🔥 fuerza eje completo
+    }
+
+
+    renderAll();
+    resetZoom();
+    setTimeout(() => zoomed({ transform: d3.zoomTransform(window.__svg.node()) }), 10);
+
+  }
+}
+
+// Inicializa el gráfico al cargar la página
+function plotInitialGraph() {
+  const payload = {
+    y: 'ErrorProb',
+    x: 'n',
+    rang_x: [1, 80],
+    points: 50,
+    typeModulation: 'PAM',
+    M: 2,
+    SNR: 2,
+    Rate: 0.5,
+    N: 20,
+    th: 1e-6,
+    n: 0,
+    color: '',
+    lineType: 'solid',
+    plotType: 'linear'
+    // NOTA: n NO debe enviarse porque es la variable x
+  };
+
+  fetch('/plot_function', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Error al cargar el gráfico inicial");
+      return res.json();
+    })
+    .then(data => {
+      const metadata = {
+        M: 2,
+        SNR: 2,
+        Rate: 0.5,
+        N: 20,
+        th: 1e-6,
+        typeModulation: 'PAM',
+        xVar: 'n'
+      };
+      drawInteractivePlot(data.x, data.y, {
+        color: '',
+        lineType: 'solid',
+        plotType: 'linear',
+        metadata,
+        label: 'Error Probability / n'
+      });
+    })
+    .catch(err => console.error("Error al cargar el gráfico inicial:", err));
+
+  lastYVar = 'ErrorProb';
+  lastXVar = 'n';
+
+}
