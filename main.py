@@ -153,8 +153,6 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating plot data: {str(e)}")
-    
-
 
 class ContourPlotRequest(BaseModel):
     y: str
@@ -260,34 +258,10 @@ async def chatbot_with_bot(request: ChatbotRequest):
                     results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): Failed - {result.error_message}")
             # Combine LLM reply and results
             combined = response_text + "\n\n" + "\n".join(results_summary)
-            return {"response": combined}
-        else:
-            # If no function call, just return the LLM's text
-            return {"response": response_text}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")
-
-@app.post("/chatbot")
-async def chatbot_with_bot(request: ChatbotRequest):
-    try:
-        # 1. Get the LLM's response as a string
-        response_text = "".join(chatbot_agent.generate_response_stream(request.message))
-        
-        # 2. Parse for function calls
-        function_calls = chatbot_agent.parse_function_calls(response_text)
-        
-        # 3. If function calls found, execute them and return results
-        if function_calls:
-            execution_results = chatbot_agent.execute_function_calls(function_calls)
-            # You can format the results as you wish; here's a simple example:
-            results_summary = []
-            for i, result in enumerate(execution_results):
-                if result.success:
-                    value_str = str(result.result_value)
-                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): {value_str}")
-                else:
-                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): Failed - {result.error_message}")
-            return {"response": "\n".join(results_summary)}
+            return {
+                "response": combined,
+                "parameters": function_calls[0].parameters if function_calls else None
+            }
         else:
             # If no function call, just return the LLM's text
             return {"response": response_text}

@@ -1233,7 +1233,7 @@ function sendMessage() {
 
     const userMsg = document.createElement('div');
     userMsg.className = 'chat-bubble user';
-    userMsg.textContent = msg + "🧑‍💻 ";
+    userMsg.textContent = msg;
     chatBox.appendChild(userMsg);
 
     input.value = '';
@@ -1248,9 +1248,32 @@ function sendMessage() {
     .then(data => {
         const botMsg = document.createElement('div');
         botMsg.className = 'chat-bubble bot';
-        botMsg.textContent = "🤖 " + data.response;
+        botMsg.textContent = data.response;
         chatBox.appendChild(botMsg);
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        // --- NEW: Fill input fields if parameters are present ---
+        if (data.parameters) {
+            if (data.parameters.M !== undefined) document.getElementById('M').value = data.parameters.M;
+            // Accept both typeModulation, typeM, or modulation for robustness
+            const typeMod = data.parameters.typeModulation || data.parameters.typeM || data.parameters.modulation;
+            if (typeMod !== undefined) {
+                // If it's in the form '2-PAM' or '16-QAM', split it
+                const match = /^([0-9]+)[- ]?([A-Za-z]+)$/i.exec(typeMod);
+                if (match) {
+                    document.getElementById('M').value = match[1];
+                    document.getElementById('TypeModulation').value = match[2].toUpperCase();
+                } else {
+                    // fallback: just set the type if not in '2-PAM' format
+                    document.getElementById('TypeModulation').value = typeMod.toUpperCase();
+                }
+            }
+            if (data.parameters.SNR !== undefined) document.getElementById('SNR').value = data.parameters.SNR;
+            if (data.parameters.R !== undefined) document.getElementById('R').value = data.parameters.R;
+            if (data.parameters.N !== undefined) document.getElementById('N').value = data.parameters.N;
+            if (data.parameters.n !== undefined) document.getElementById('n').value = data.parameters.n;
+            if (data.parameters.th !== undefined) document.getElementById('th').value = data.parameters.th;
+        }
     })
     .catch(err => {
         const errMsg = document.createElement('div');
