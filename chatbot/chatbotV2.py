@@ -53,32 +53,44 @@ def dummy_plotFromFunction(**params) -> str:
     return f"Plot generated: {y_var} vs {x_var} for {modulation}"
 
 def computeErrorProbability(**params) -> float:
-    """Calculate error probability using call_exponents."""
     results = call_exponents(
-        M=params.get('M', 2),  # Default to BPSK
+        M=params.get('M', 2),
         typeModulation=params.get('typeModulation', 'PAM'),
         SNR=params.get('SNR', 5.0),
         R=params.get('R', 0.5),
         N=params.get('N', 20)
     )
-    return results[0]  # Return Pe (error probability)
+    return results[0]
 
 def computeErrorExponent(**params) -> float:
-    """Calculate error exponent using call_exponents."""
     results = call_exponents(
-        M=params.get('M', 2),  # Default to BPSK
+        M=params.get('M', 2),
         typeModulation=params.get('typeModulation', 'PAM'),
         SNR=params.get('SNR', 5.0),
         R=params.get('R', 0.5),
         N=params.get('N', 20)
     )
-    return results[1]  # Return exponent
+    return results[1]
 
 def plotFromFunction(**params) -> str:
     """Generate plot data using call_exponents."""
     # For plotting, we'll return a string indicating the plot parameters
     # The actual plotting will be handled by the frontend
     return f"Plot data generated for {params.get('typeModulation', 'PAM')} modulation"
+
+def call_exponents_api(M, typeM, SNR, R, N, n, th, base_url="http://localhost:8000"):
+    params = {
+        "M": M,
+        "typeM": typeM,
+        "SNR": SNR,
+        "R": R,
+        "N": N,
+        "n": n,
+        "th": th
+    }
+    response = requests.get(f"{base_url}/exponents", params=params)
+    response.raise_for_status()
+    return response.json()
 
 FUNCTION_REGISTRY = {
     'computeErrorProbability': computeErrorProbability,
