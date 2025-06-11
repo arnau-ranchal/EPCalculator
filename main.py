@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException, Response
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from typing import List, Literal
@@ -11,8 +11,10 @@ import math
 # Importar mòdul chatbot
 import sys
 sys.path.append("chatbot")
-from chatbot.chatbot import respond
+from chatbot.chatbotV2 import OpenRouterAgent
 
+API_KEY = os.environ.get('API_KEY')  # Make sure this is set in your environment
+chatbot_agent = OpenRouterAgent(api_key=API_KEY)
 
 app = FastAPI()
 
@@ -55,7 +57,7 @@ async def exponents(
     typeM: str = Query("PAM", description="Tipo de modulación: PAM, QAM, etc."),
     SNR: float = Query(1.0, description="Signal to Noise Ratio"), 
     R: float = Query(1.0, description="Rate"), 
-    N: float = Query(1, description="quadrature"),
+    N: float = Query(20, description="quadrature"),
     n: float = Query(1, description="Code length"),
     th: float = Query(1, description="Threshold"),
 ):
@@ -239,11 +241,55 @@ class ChatbotRequest(BaseModel):
 
 @app.post("/chatbot")
 async def chatbot_with_bot(request: ChatbotRequest):
-    """
-    Endpoint per interactuar amb el chatbot.
-    """
     try:
-        response = respond(request.message)
-        return {"response": response}
+        # 1. Get the LLM's response as a string
+        response_text = "".join(chatbot_agent.generate_response_stream(request.message))
+        
+        # 2. Parse for function calls
+        function_calls = chatbot_agent.parse_function_calls(response_text)
+        
+        # 3. If function calls found, execute them and return results
+        if function_calls:
+            execution_results = chatbot_agent.execute_function_calls(function_calls)
+            results_summary = []
+            for i, result in enumerate(execution_results):
+                if result.success:
+                    value_str = str(result.result_value)
+                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): {value_str}")
+                else:
+                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): Failed - {result.error_message}")
+            # Combine LLM reply and results
+            combined = response_text + "\n\n" + "\n".join(results_summary)
+            return {"response": combined}
+        else:
+            # If no function call, just return the LLM's text
+            return {"response": response_text}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")    
+        raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")
+
+@app.post("/chatbot")
+async def chatbot_with_bot(request: ChatbotRequest):
+    try:
+        # 1. Get the LLM's response as a string
+        response_text = "".join(chatbot_agent.generate_response_stream(request.message))
+        
+        # 2. Parse for function calls
+        function_calls = chatbot_agent.parse_function_calls(response_text)
+        
+        # 3. If function calls found, execute them and return results
+        if function_calls:
+            execution_results = chatbot_agent.execute_function_calls(function_calls)
+            # You can format the results as you wish; here's a simple example:
+            results_summary = []
+            for i, result in enumerate(execution_results):
+                if result.success:
+                    value_str = str(result.result_value)
+                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): {value_str}")
+                else:
+                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): Failed - {result.error_message}")
+            return {"response": "\n".join(results_summary)}
+        else:
+            # If no function call, just return the LLM's text
+            return {"response": response_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")
