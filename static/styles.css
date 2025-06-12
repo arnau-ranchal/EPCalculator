@@ -181,8 +181,9 @@ body {
   box-shadow: none !important;
   border-radius: 0 !important;
   padding: 0 !important;
-  transition: width 0.3s ease, margin 0.3s ease; /* Faster, smoother transition */
+  transition: all 0.35s ease; /* MOD */
 }
+
 
 /* ======== SECTION TITLES ======== */
 .section-title {
@@ -308,6 +309,8 @@ select.custom-select:focus,
 select:focus {
   border: 1.5px solid #222;
 }
+
+
 
 /* ======== TOOLTIP STYLES ======== */
 .tooltip {
@@ -500,7 +503,7 @@ button:hover,
   color: #222 !important;
   overflow-y: auto;
   font-family: inherit;
-  height: 719px;
+  height: 750px; /*MOD --> Altura xatbot, chatbot */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -745,6 +748,20 @@ footer {
   position: relative; /* For toggle button positioning */
   /* FIXED: Remove flex completely - use natural content flow like parameters */
 }
+
+/* ======== EXPANDING SIDEBARS Animació - tmb afegit al js ======== */
+.parameters-area.expanding,
+.chatbot-sidebar.expanding {
+  width: 0 !important;
+  margin-right: -40px;
+  overflow: hidden;
+}
+
+/* ======== Flechita assistant para fuera ======== */
+.external-right-toggle {
+  right: 30px !important;
+}
+
 
 .plot-area {
   flex: 1 1 0%;
@@ -1006,22 +1023,31 @@ button.clicked,
 }
 
 /* ======== ACTIVE PLOTS ======== */
-/* MOD --> Aixo tmb esta definit al script */
+/* MOD --> Aixo només esta definit aquí ara */
 #plot-list {
-  font-size: 0.85em;
-  max-height: 60%;
-  overflow-y: auto;
+  position: absolute;
+  top: 80px;    
+  right: 60px;
   background: rgba(255, 255, 255, 0);
   border: 1px solid #ccc;
   padding: 10px 0px 10px 10px;
   border-radius: 0px;
-  position: absolute;
-  top: 80px;
-  right: 50px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
   min-width: 240px;
-  z-index: 10;
-  height: fit-content;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 0.85em;
+  cursor: move;
+  z-index: 999;
 }
+/* MOD --> Evita estiraments raros del activplots */
+#plot-list {
+  width: 300px;       
+  height: auto;
+  max-height: 300px;  
+  resize: none;  
+}
+
 
 /* POSICIÓ FLECHA SIDEBAR */
 .sidebar-header {
@@ -1085,6 +1111,62 @@ button.clicked,
   order: 2;
   margin-left: auto;
 }
+
+/* ======== LOGO UPF ======== */
+.logo-upf {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  height: 70px;
+  z-index: 10;
+}
+
+.title-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ======== SCALE TOGGLE BUTTONS ======== */
+
+.scale-toggle-group {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 0 0;
+  padding-left: 0px;
+}
+
+
+.scale-btn {
+  background: white;
+  color: #222;
+  border: 1px solid #DCDCDC;
+  border-radius: 0;
+  padding: 6px 14px;
+  font-weight: 500;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+
+.scale-btn:hover {
+  background: #f5f5f5;
+}
+
+.scale-btn.selected {
+  background: #f0f0f0;
+  border-color: #C0C0C0;
+}
+
+#contourScaleButton .scale-btn {
+  cursor: default;
+  pointer-events: none;
+}
+
+
 
 
 

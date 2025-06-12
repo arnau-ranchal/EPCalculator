@@ -4,24 +4,28 @@ window.addEventListener('DOMContentLoaded', () => {
     onLineTypeChange();
     setTimeout(() => {
       drawDefaultGrid();
-      plotInitialGraph();  // <- esta es la llamada nueva
+      plotInitialGraph();  // init primer graph
     }, 100);
 });
 
 
-/* Global parameters */
+/* Global parameters pels eixos*/
 const axisLabelsMap = {
-  M:   'Modulation',
+  M:   'Modulation size',
   SNR: 'SNR',
   Rate:'Rate',
   N:   'Quadrature',
   n:   'Code length',
   th:  'Threshold'
 };
+
+/* Global variables for last plot state  -- pel warning*/
 let lastYVar = null;
 let lastXVar = null;
-let skipPlotWarning = false;
+let lastPlotType = null;
 
+let skipPlotWarning = false;
+let currentScaleType = 'linear';  // Scale por defecto
 
 
 function calculateExponents(event) {
@@ -49,8 +53,8 @@ function calculateExponents(event) {
         })
         .then(data => {
             resultDiv.innerHTML = `
-                <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
-                <p><strong>Exponents:</strong> ${data["Exponents"].toFixed(4)}</p>
+                <p><strong>Error Probability:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
+                <p><strong>Error exponents:</strong> ${data["Exponents"].toFixed(4)}</p>
                 <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
             `;
             resultDiv.classList.add('show');
@@ -85,8 +89,18 @@ function plotFromFunction() {
 
     const inputs = { M, SNR, Rate, N, n, th };
 
+    
+    let selectedPlotType = document.getElementById('plotType').value;
+    let plotType = (selectedPlotType === 'lineLog') ? currentScaleType : 'contour';
+
+
+
     /* ----------------- PEL WARNING --------------------- */
-    const plotChanged = (lastYVar !== null && (y !== lastYVar || x !== lastXVar));
+    const plotChanged = (
+      lastYVar !== null &&
+      (y !== lastYVar || x !== lastXVar || selectedPlotType !== lastPlotType)
+    );
+
     const hasPlots = activePlots.length > 0;
 
     if (plotChanged && hasPlots) {
@@ -106,6 +120,7 @@ function plotFromFunction() {
 
     lastYVar = y;
     lastXVar = x;
+    lastPlotType = selectedPlotType;
     /* ----------------------------------------------------- */
 
     // Validar inputs
@@ -126,7 +141,6 @@ function plotFromFunction() {
       color = ""; 
     }
 
-    const plotType = document.getElementById('plotType').value;
 
     // CONTOUR CASE
     if (plotType === "contour") {
@@ -334,10 +348,9 @@ function drawContourPlot(x1, x2, zMatrix) {
 
 // Interactive multi-plot with zoom, grid, tooltip, overlay & removal
 let activePlots = [];
-const defaultColors = [
-  "steelblue", "crimson", "purple", "seagreen", "goldenrod",
-  "orange", "royalblue", "orchid", "darkcyan", "tomato"
-];
+const defaultColors = ["black", "#C8102E", "steelblue", "crimson", "purple", "seagreen", "goldenrod",
+  "orange", "royalblue", "orchid", "darkcyan", "tomato"];
+
 let colorIndex = 0;
 let plotIdCounter = 1;
 
@@ -378,8 +391,9 @@ function initializeChart() {
   container.append('div')
     .attr('id', 'plot-meta-info')
     .style('position', 'absolute')
-    .style('top', '80px') 
-    .style('right', '330px')
+    .style('top', '80px') // Más cercano al borde superior
+    .style('left', '45%') // Centramos horizontalmente
+    .style('transform', 'translateX(-50%) scale(0.95)') // Compensa el 50% del ancho
     .style('background', 'rgba(50,50,50,0.95)')
     .style('color', 'white')
     .style('padding', '10px 16px')
@@ -389,25 +403,14 @@ function initializeChart() {
     .style('line-height', '1.5em')
     .style('z-index', '10')
     .style('opacity', '0')
-    .style('transform', 'scale(0.95)')
     .style('transition', 'opacity 250ms ease, transform 250ms ease')
     .style('display', 'none');
+
 
     
   // Contenedor de la lista de plots
   container.append('div')
-    .attr('id', 'plot-list')
-    .style('position', 'absolute')
-    .style('top', '80px')
-    .style('right', '50px')
-    .style('background', 'rgba(255, 255, 255, 0)')
-    .style('border', '1px solid #ccc')
-    .style('padding', '10px 0px 10px 10px')
-    .style('border-radius', '0px')
-    .style('max-height', '60%')
-    .style('overflow-y', 'auto')
-    .style('z-index', '10')
-    .style('min-width', '250px');
+    .attr('id', 'plot-list');
 
   // SVG
   const margin = { top: 70, right: 30, bottom: 100, left: 100 };
@@ -706,12 +709,12 @@ function zoomed(event) {
     // 5) Ajusta grosores de línea según zoom
     const scaleFactor = 1 / t.k;
     d3.selectAll('path.line')
-      .attr('stroke-width', 2 * scaleFactor);
+      .attr('stroke-width', 4 * scaleFactor); // Gruix linea zoom
 
     // 6) Ajusta radios y visibilidad de puntos
     const showPoints = d3.select('#togglePoints').property('checked') ? 'visible' : 'hidden';
     d3.selectAll('circle.point')
-      .attr('r', 4 * scaleFactor)
+      .attr('r', 6 * scaleFactor) // Gruix punt zoom
       .attr('visibility', showPoints);
 }
 
@@ -816,7 +819,7 @@ function renderAll() {
         .datum(d.y)
         .attr('fill', 'none')
         .attr('stroke', d.color)
-        .attr('stroke-width', 2)
+        .attr('stroke-width', 4) // Gruix linea
         .attr('stroke-dasharray', dashMap[d.dashStyle] || '')
         .attr('d', lineGen);
 
@@ -827,7 +830,7 @@ function renderAll() {
       pts.enter().append('circle')
         .attr('class', p => `point point-${p.plotId}`)
         .merge(pts)
-        .attr('r', 4)
+        .attr('r', 6) // Gruix punt
         .attr('fill', d.color)
         .attr('cx', pt => window.__xScale(pt.x))
         .attr('cy', pt => window.__yScale(pt.y))
@@ -835,7 +838,7 @@ function renderAll() {
         // Posició caixa punts
         .on('mouseover', (event, pt) => {
           const svgRect = window.__svg.node().getBoundingClientRect();
-          const offsetX = 80;
+          const offsetX = 90;
           const offsetY = 50;
 
           const x = event.clientX - svgRect.left + offsetX;
@@ -970,7 +973,31 @@ function drawInteractivePlot(x, y, opts) {
     // 1) Etiqueta
     let label = opts.label && opts.label.length > 0
       ? opts.label
-      : `${document.getElementById('yVar')?.selectedOptions[0]?.text || 'Y'} / ${document.getElementById('xVar')?.selectedOptions[0]?.text || 'X'}`;
+      : (() => {
+          const yVal = document.getElementById('yVar').value;
+          const xVar = document.getElementById('xVar').value;
+
+          const M    = opts.metadata?.M;
+          const type = opts.metadata?.typeModulation || '';
+          const SNR  = opts.metadata?.SNR;
+          const R    = opts.metadata?.Rate;
+          const n    = opts.metadata?.n;
+
+          const parts = [];
+
+          if (M && type) parts.push(`${M}-${type}`);
+
+          if (yVal === 'ErrorProb') {
+            if (xVar !== 'SNR' && SNR !== undefined) parts.push(`SNR=${SNR}`);
+            if (xVar !== 'Rate' && R !== undefined) parts.push(`R=${R}`);
+            if (xVar !== 'n' && n !== undefined) parts.push(`n=${n}`);
+          } else {
+            if (xVar !== 'SNR' && SNR !== undefined) parts.push(`SNR=${SNR}`);
+            if (xVar !== 'Rate' && R !== undefined) parts.push(`R=${R}`);
+          }
+
+          return parts.join(', ');
+        })();
 
     const color = opts.color && opts.color.trim() !== ""
   ? opts.color
@@ -1027,9 +1054,17 @@ function updatePlotListUI() {
 
     container.innerHTML = ''; // Neteja tot
 
-    const title = document.createElement('h4');
+    // Si no hi ha plots actius, amaga el contenidor
+    if (activePlots.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = 'block';
+
+    // Title opcional -- els profes m'han demanat que no es mostri
+    /* const title = document.createElement('h4');
     title.textContent = 'Active plots:';
-    container.appendChild(title);
+    container.appendChild(title); */
 
     if (activePlots.length === 0) return;
 
@@ -1060,6 +1095,7 @@ function updatePlotListUI() {
             colorBox.style.background = p.color;
         }
 
+        // DOBLECLIK PER EDITAR LABEL
         const textSpan = document.createElement('span');
         textSpan.textContent = p.label;
         textSpan.style.wordBreak = 'break-word';
@@ -1118,15 +1154,10 @@ function updatePlotListUI() {
           }
 
           const meta = p.metadata || {};
-          const lines = [];
+          const lines = []; // Parametres a mostrar de la metadata
+          if (meta.N !== undefined) lines.push(`Quadrature: ${meta.N}`);
+          if (meta.th !== undefined) lines.push(`Threshold: ${meta.th}`);
 
-          if (meta.typeModulation) lines.push(`Type: ${meta.typeModulation}`);
-          if (meta.xVar !== 'M' && meta.M !== undefined) lines.push(`Modulation: ${meta.M}`);
-          if (meta.xVar !== 'SNR' && meta.SNR !== undefined) lines.push(`SNR: ${meta.SNR}`);
-          if (meta.xVar !== 'Rate' && meta.Rate !== undefined) lines.push(`Rate: ${meta.Rate}`);
-          if (meta.xVar !== 'N' && meta.N !== undefined) lines.push(`Quadrature: ${meta.N}`);
-          if (meta.xVar !== 'n' && meta.n !== undefined) lines.push(`Code Length: ${meta.n}`);
-          if (meta.xVar !== 'th' && meta.th !== undefined) lines.push(`Threshold: ${meta.th}`);
 
           if (infoBox) {
             infoBox.innerHTML = lines.map(l => `<div>${l}</div>`).join('');
@@ -1150,8 +1181,60 @@ function updatePlotListUI() {
         });
 
     });
+    makePlotListDraggable();
 }
 
+// Mou active plots per la grafica
+function makePlotListDraggable() {
+  const el = document.getElementById('plot-list');
+  if (!el) return;
+
+  let isDragging = false;
+  let offsetX, offsetY;
+
+  el.addEventListener('pointerdown', (e) => {
+    // Ignorar clicks si están dentro de elementos interactivos
+    if (
+      e.target.closest('input') ||
+      e.target.closest('button') ||
+      e.target.closest('textarea')
+    ) return;
+
+    isDragging = true;
+    const containerRect = document.getElementById('plot-output').getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    offsetX = e.clientX - elRect.left;
+    offsetY = e.clientY - elRect.top;
+
+    el.setPointerCapture(e.pointerId);
+  });
+
+
+
+  el.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+
+    const container = document.getElementById('plot-output');
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+
+    let newLeft = e.clientX - offsetX - containerRect.left;
+    let newTop = e.clientY - offsetY - containerRect.top;
+
+    // Limita el movimiento para mantener el contenedor dentro del gráfico
+    newLeft = Math.max(0, Math.min(newLeft, container.clientWidth - el.offsetWidth));
+    newTop = Math.max(0, Math.min(newTop, container.clientHeight - el.offsetHeight));
+
+    el.style.left = `${newLeft}px`;
+    el.style.top = `${newTop}px`;
+  });
+
+
+
+  el.addEventListener('pointerup', () => {
+    isDragging = false;
+  });
+}
 
 
 function removePlot(plotId) {
@@ -1191,11 +1274,11 @@ function highlightPlot(plotId, highlight) {
     if (!group.empty()) {
         group.select('path.line')
             .transition().duration(250)
-            .attr('stroke-width', highlight ? 4 : 2)
+            .attr('stroke-width', highlight ? 6 : 4) // Gruix linea highlight
             .attr('opacity', highlight ? 1 : 0.8);
         group.selectAll('circle')
             .transition().duration(250)
-            .attr('r', highlight ? 6 : 4)
+            .attr('r', highlight ? 8 : 6) // Gruix punt highlight
             .attr('opacity', highlight ? 1 : 0.8);
     }
 
@@ -1278,24 +1361,35 @@ function toggleManualInputs() {
 
 // Contour plot case
 function onLineTypeChange() {
-    const plotType = document.getElementById("plotType").value;
-    const x2Group = document.getElementById("x2-group");
-    const xRange2Group = document.getElementById("xRange2-group");
-    const xPoints2Group = document.getElementById("xPoints2-group");
+  const plotType = document.getElementById("plotType").value;
+  const x2Group = document.getElementById("x2-group");
+  const xRange2Group = document.getElementById("xRange2-group");
+  const xPoints2Group = document.getElementById("xPoints2-group");
+  const scaleToggle = document.getElementById("scale-toggle");
+  const linearScaleButtons = document.getElementById("linearScaleButtons");
+  const contourScaleButton = document.getElementById("contourScaleButton");
 
-    if (plotType === "contour") {
-        x2Group.style.display = "flex";
-        xRange2Group.style.display = "flex";
-        xPoints2Group.style.display = "flex";
-    } else {
-        x2Group.style.display = "none";
-        xRange2Group.style.display = "none";
-        xPoints2Group.style.display = "none";
-    }
+  if (plotType === "contour") {
+    x2Group.style.display = "flex";
+    xRange2Group.style.display = "flex";
+    xPoints2Group.style.display = "flex";
+    scaleToggle.style.display = "flex";
+    linearScaleButtons.style.display = "none";
+    contourScaleButton.style.display = "flex";
+  } else {
+    x2Group.style.display = "none";
+    xRange2Group.style.display = "none";
+    xPoints2Group.style.display = "none";
+    scaleToggle.style.display = "flex";
+    linearScaleButtons.style.display = "flex";
+    contourScaleButton.style.display = "none";
+  }
 }
-    // Sidebar toggle functionality
-    let leftCollapsed = false;
-    let rightCollapsed = false;
+
+
+// Sidebar toggle functionality
+let leftCollapsed = false;
+let rightCollapsed = false;
 
 function toggleLeftSidebar() {
   const sidebar = document.getElementById('left-sidebar');
@@ -1311,10 +1405,17 @@ function toggleLeftSidebar() {
   } else {
     toggle.textContent = '◀';
     removeExternalToggle('left');
+
+    // Animació d'expansió
+    sidebar.classList.add('expanding');
+    requestAnimationFrame(() => {
+      sidebar.classList.remove('expanding');
+    });
   }
 
   setTimeout(adjustPlotWidthBasedOnSidebar, 100); 
 }
+
 
 function toggleRightSidebar() {
   const sidebar = document.getElementById('right-sidebar');
@@ -1329,6 +1430,13 @@ function toggleRightSidebar() {
   } else {
     toggle.textContent = '▶';
     removeExternalToggle('right');
+
+    // Animació d'expansió
+    sidebar.classList.add('expanding');
+    requestAnimationFrame(() => {
+      sidebar.classList.remove('expanding');
+    });
+
   }
 
   setTimeout(adjustPlotWidthBasedOnSidebar, 100);
@@ -1468,11 +1576,14 @@ function adjustPlotWidthBasedOnSidebar() {
     // ACTUALIZAR DIMENSIONES INTERNAS DEL PLOT
     window.__innerWidth = newWidth - 100 - 30;
     window.__xScale.range([0, window.__innerWidth]);
+
+    d3.select('.x-axis-label')
+      .attr('x', window.__innerWidth / 2);
+
     if (window.__xAxisBaseLine) {
       window.__xAxisBaseLine
         .attr('x2', newWidth - 30); // margin.right
     }
-
 
     // Actualizar el clipPath del contenido
     d3.select("#plot-area-clip rect")
@@ -1483,10 +1594,8 @@ function adjustPlotWidthBasedOnSidebar() {
     if (window.__gX) {
       window.__gX
         .attr("transform", `translate(0,${window.__innerHeight})`)
-        .call(d3.axisBottom(window.__xScale)); // 🔥 fuerza eje completo
+        .call(d3.axisBottom(window.__xScale)); 
     }
-
-
     renderAll();
     resetZoom();
     setTimeout(() => zoomed({ transform: d3.zoomTransform(window.__svg.node()) }), 10);
@@ -1538,7 +1647,7 @@ function plotInitialGraph() {
         lineType: 'solid',
         plotType: 'linear',
         metadata,
-        label: 'Error Probability / n'
+        label: '2-PAM, SNR=2, R=0.5'
       });
     })
     .catch(err => console.error("Error al cargar el gráfico inicial:", err));
@@ -1547,3 +1656,41 @@ function plotInitialGraph() {
   lastXVar = 'n';
 
 }
+
+// Cambia la escala de los plots (lineal o logarítmica)
+function changePlotScale(button) {
+  const newScale = button.dataset.scale;
+  if (!newScale || newScale === currentScaleType) return;
+
+  currentScaleType = newScale;
+
+  // Marcar visualmente el botón activo
+  document.querySelectorAll('.scale-btn').forEach(b => {
+    b.classList.remove('selected');
+  });
+  button.classList.add('selected');
+
+  // Cambiar el tipo de plot de todos los gráficos ya hechos
+  activePlots.forEach(p => {
+    if (p.type !== 'contour') {
+      p.plotType = newScale;
+
+      // Re-filtrar los datos si se cambia a log
+      const newX = [], newY = [];
+      for (let i = 0; i < p.x.length; i++) {
+        const xi = p.x[i], yi = p.y[i];
+        const validX = (newScale === 'logX' || newScale === 'logLog') ? xi > 0 : true;
+        const validY = (newScale === 'logY' || newScale === 'logLog') ? yi > 0 : true;
+        if (validX && validY) {
+          newX.push(xi);
+          newY.push(yi);
+        }
+      }
+      p.x = newX;
+      p.y = newY;
+    }
+  });
+
+  renderAll(); // Redibuja con las nuevas escalas y datos filtrados
+}
+
