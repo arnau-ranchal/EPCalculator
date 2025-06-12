@@ -7,16 +7,22 @@
     <!-- Inter font -->
     <link href="https://fonts.googleapis.com/css?family=Inter:400,500,600,700&display=swap" rel="stylesheet">
     <!-- Your stylesheet -->
-    <link rel="stylesheet" href="/static/styles.css?v=2.20">
+    <link rel="stylesheet" href="/static/styles.css?v=2.40">
     <!-- D3 for plots -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <!-- Your script -->
-    <script src="/static/script.js?v=2.72"></script>
+    <script src="/static/script.js?v=3.3"></script>
 </head>
 <body>
-  <header id="header" class="center-header">
+  <header id="header" class="center-header" style="position: relative;">
+    <!-- <img src="/static/logo_upf.jpg" alt="UPF Logo" class="logo-upf" /> -->
+    <div class="title-block">
       <h1 id="titulo">TSimTool</h1>
-      <h2 id="subtitulo">A tool for simulating transmission systems, by <a href="https://www.upf.edu/web/matcom">UPF MatCom Research Group</a></h2>
+      <h2 id="subtitulo">
+        A tool for simulating transmission systems, by
+        <a href="https://www.upf.edu/web/matcom">UPF MatCom Research Group</a>
+      </h2>
+    </div>
   </header>
 
   <section class="main-layout">
@@ -38,7 +44,7 @@
               Modulation
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Enter the modulation order (e.g., "16" for 16-QAM or 16-PAM).
+                  Modulation size, e.g., "16".
                 </span>
               </span>
             </label>
@@ -51,7 +57,7 @@
               Type
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Choose the modulation type: PAM, QAM, or PSK.
+                  Modulation type: PAM, QAM, or PSK.
                 </span>
               </span>
             </label>
@@ -68,7 +74,7 @@
               SNR
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Signal-to-noise ratio in dB (e.g., "7" dB).
+                  Signal-to-noise ratio (lineal), e.g., "7".
                 </span>
               </span>
             </label>
@@ -81,7 +87,7 @@
               Rate
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Code rate (bits/symbol), for example "0.5".
+                  Code rate (bits/symbol), e.g., "0.5".
                 </span>
               </span>
             </label>
@@ -94,7 +100,7 @@
               Code Length
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Length of the codeword (e.g., 100).
+                  Length of the codeword, e.g., "100".
                 </span>
               </span>
             </label>
@@ -114,7 +120,7 @@
               <label for="N">
                 Quadrature
                 <span class="tooltip">ⓘ
-                  <span class="tooltip-text">Number of quadrature components (e.g., 2).</span>
+                  <span class="tooltip-text">Number of quadrature components, e.g., 2.</span>
                 </span>
               </label>
               <input type="text" id="N" placeholder="20">
@@ -125,7 +131,7 @@
               <label for="th">
                 Threshold
                 <span class="tooltip">ⓘ
-                  <span class="tooltip-text">Decision threshold value (e.g., 0.1).</span>
+                  <span class="tooltip-text">Decision threshold value, e.g., 0.1.</span>
                 </span>
               </label>
               <input type="text" id="th" placeholder="1e-6">
@@ -141,15 +147,12 @@
               Plot Type
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Select how to scale axes: Linear, log–log, etc.
+                  Select how the plot should be displayed.
                 </span>
               </span>
             </label>
             <select id="plotType" onchange="onLineTypeChange()" class="custom-select">
-              <option value="linear">Linear</option>
-              <option value="logLog">LogLog</option>
-              <option value="logX">Log X</option>
-              <option value="logY">Log Y</option>
+              <option value="lineLog">Linear/Log</option>
               <option value="contour">Contour</option>
             </select>
           </div>
@@ -160,13 +163,13 @@
               Y
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Select the dependent variable to plot (e.g., Error probability).
+                  Select the dependent variable to plot.
                 </span>
               </span>
             </label>
             <select id="yVar" class="custom-select">
               <option value="ErrorProb">Error probability</option>
-              <option value="Exponents">Exponents</option>
+              <option value="Exponents">Error exponents</option>
               <option value="Rho">Optimal rho</option>
             </select>
           </div>
@@ -177,7 +180,7 @@
               X1
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Select independent variable for x-axis (e.g., M, SNR).
+                  Select independent variable for x-axis.
                 </span>
               </span>
             </label>
@@ -217,7 +220,7 @@
               X1 Range
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Comma-separated min and max (e.g., "1,100").
+                  Comma-separated min and max, e.g., "1,100".
                 </span>
               </span>
             </label>
@@ -243,7 +246,7 @@
               X1 Points
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Number of points along X1 (e.g., 50).
+                  Number of points along X1, e.g., 50.
                 </span>
               </span>
             </label>
@@ -294,14 +297,16 @@
             <label for="lineColor">Color
               <span class="tooltip">ⓘ
                 <span class="tooltip-text">
-                  Choose a line color from the list (e.g. "steelblue").
+                  Choose a line color from the list.
                 </span>
               </span>
             </label>
             <select id="lineColor" class="custom-select">
+              <option value="black">black</option>
+              <option value="#C8102E">UPF color</option>
               <option value="steelblue">steelblue</option>
-              <option value="tomato">tomato</option>
               <option value="orange">orange</option>
+              <option value="tomato">tomato</option>
               <option value="mediumseagreen">mediumseagreen</option>
               <option value="royalblue">royalblue</option>
               <option value="orchid">orchid</option>
@@ -326,6 +331,18 @@
     <!-- Center: Plot Area -->
     <section class="plot-area">
       <h2 class="section-title">Plot</h2>
+      <div id="scale-toggle" class="scale-toggle-group" style="display: none;">
+        <div id="linearScaleButtons">
+          <button type="button" class="scale-btn selected" data-scale="linear" onclick="changePlotScale(this)">Linear</button>
+          <button type="button" class="scale-btn" data-scale="logLog" onclick="changePlotScale(this)">LogLog</button>
+          <button type="button" class="scale-btn" data-scale="logX" onclick="changePlotScale(this)">LogX</button>
+          <button type="button" class="scale-btn" data-scale="logY" onclick="changePlotScale(this)">LogY</button>
+        </div>
+        <div id="contourScaleButton" style="display: none;">
+          <button type="button" class="scale-btn selected" disabled>Contour</button>
+        </div>
+      </div>
+
       <div id="plot-output"></div>
     </section>
 
@@ -360,7 +377,7 @@
   <!-- Warning -->
   <div id="plot-warning-modal" class="modal" style="display: none;">
     <div class="modal-content">
-      <p><strong>⚠️ Attention:</strong> Changing Y or X1 will remove the previous plots.</p>
+      <p><strong>⚠️ Attention:</strong> Changing <strong>Y</strong>, <strong>X1</strong> or <strong>Plot Type</strong> will remove all previous plots.</p>
       <label style="display: flex; align-items: center; gap: 5px; margin-top: 10px;">
         <input type="checkbox" id="suppressWarningCheckbox">
         Do not show this warning again
