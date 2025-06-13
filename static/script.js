@@ -1254,7 +1254,7 @@ function sendMessage() {
 
         // --- NEW: Fill input fields if parameters are present ---
         if (data.parameters) {
-            if (data.parameters.M !== undefined) document.getElementById('M').value = data.parameters.M;
+            if (data.parameters.modulation !== undefined) document.getElementById('M').value = data.parameters.modulation;
             // Accept both typeModulation, typeM, or modulation for robustness
             const typeMod = data.parameters.typeModulation || data.parameters.typeM || data.parameters.modulation;
             if (typeMod !== undefined) {
@@ -1265,14 +1265,15 @@ function sendMessage() {
                     document.getElementById('TypeModulation').value = match[2].toUpperCase();
                 } else {
                     // fallback: just set the type if not in '2-PAM' format
-                    document.getElementById('TypeModulation').value = typeMod.toUpperCase();
+                    document.getElementById('TypeModulation').value = typeMod.toUpperCase(); // todo buggy
                 }
             }
-            if (data.parameters.SNR !== undefined) document.getElementById('SNR').value = data.parameters.SNR;
-            if (data.parameters.R !== undefined) document.getElementById('R').value = data.parameters.R;
-            if (data.parameters.N !== undefined) document.getElementById('N').value = data.parameters.N;
+            console.log(data.parameters.rate)
+            if (data.parameters.snr !== undefined) document.getElementById('SNR').value = data.parameters.snr;
+            if (data.parameters.rate !== undefined) document.getElementById('R').value = data.parameters.rate;
+            if (data.parameters.quadrature_nodes !== undefined) document.getElementById('N').value = data.parameters.quadrature_nodes;
             if (data.parameters.n !== undefined) document.getElementById('n').value = data.parameters.n;
-            if (data.parameters.th !== undefined) document.getElementById('th').value = data.parameters.th;
+            //if (data.parameters.th !== undefined) document.getElementById('th').value = data.parameters.th;
         }
     })
     .catch(err => {

@@ -242,10 +242,10 @@ async def chatbot_with_bot(request: ChatbotRequest):
     try:
         # 1. Get the LLM's response as a string
         response_text = "".join(chatbot_agent.generate_response_stream(request.message))
-        
+
         # 2. Parse for function calls
         function_calls = chatbot_agent.parse_function_calls(response_text)
-        
+
         # 3. If function calls found, execute them and return results
         if function_calls:
             execution_results = chatbot_agent.execute_function_calls(function_calls)
@@ -267,3 +267,4 @@ async def chatbot_with_bot(request: ChatbotRequest):
             return {"response": response_text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")
+
