@@ -1268,12 +1268,48 @@ function sendMessage() {
                     document.getElementById('TypeModulation').value = typeMod.toUpperCase(); // todo buggy
                 }
             }
-            console.log(data.parameters.rate)
+            const safelySetValue = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = value;
+                } else {
+                // This message will appear in the F12 Developer Console if an ID is wrong.
+                console.warn(`Warning: HTML element with id="${id}" was not found.`);
+            }
+            };
+
+            if (!('x' in data.parameters)){ // not plot mode
+                safelySetValue('SNR',data.parameters.snr);
+                safelySetValue('R',data.parameters.rate);
+                safelySetValue('N',data.parameters.quadrature_nodes);
+                safelySetValue('n',data.parameters.n);
+            }
+            /*
             if (data.parameters.snr !== undefined) document.getElementById('SNR').value = data.parameters.snr;
             if (data.parameters.rate !== undefined) document.getElementById('R').value = data.parameters.rate;
             if (data.parameters.quadrature_nodes !== undefined) document.getElementById('N').value = data.parameters.quadrature_nodes;
             if (data.parameters.n !== undefined) document.getElementById('n').value = data.parameters.n;
-            //if (data.parameters.th !== undefined) document.getElementById('th').value = data.parameters.th;
+            if (data.parameters.th !== undefined) document.getElementById('th').value = data.parameters.th;
+            */
+            else{ // plot mode
+                // Update the plot variables
+                safelySetValue('SNR',data.parameters.SNR);
+                safelySetValue('R',data.parameters.rate);
+                //safelySetValue('N',data.parameters.quadrature_nodes);
+                safelySetValue('N',data.parameters.N);
+
+                safelySetValue('xVar', data.parameters.x.toLowerCase());
+                if (data.parameters.y.toLowerCase() ==! 'n'){
+                    safelySetValue('yVar', data.parameters.y.toLowerCase());
+                }
+                else{
+                    safelySetValue('yVar', data.parameters.y);
+                }
+                safelySetValue('points', data.parameters.points);
+
+                // Update the range fields using their unique IDs
+                // safelySetValue('xRange', (${data.parameters.min},${data.parameters.max}));
+            }
         }
     })
     .catch(err => {
