@@ -1283,6 +1283,8 @@ function sendMessage() {
                 safelySetValue('R',data.parameters.rate);
                 safelySetValue('N',data.parameters.quadrature_nodes);
                 safelySetValue('n',data.parameters.n);
+
+                document.querySelector('button.compute-error').click();
             }
             /*
             if (data.parameters.snr !== undefined) document.getElementById('SNR').value = data.parameters.snr;
@@ -1294,9 +1296,10 @@ function sendMessage() {
             else{ // plot mode
                 // Update the plot variables
                 safelySetValue('SNR',data.parameters.SNR);
-                safelySetValue('R',data.parameters.rate);
-                //safelySetValue('N',data.parameters.quadrature_nodes);
-                safelySetValue('N',data.parameters.N);
+                safelySetValue('R',data.parameters.Rate);
+
+                safelySetValue('N',data.parameters.quadrature_nodes);
+                //safelySetValue('N',data.parameters.N);
 
                 safelySetValue('xVar', data.parameters.x.toLowerCase());
                 if (data.parameters.y.toLowerCase() ==! 'n'){
@@ -1308,8 +1311,12 @@ function sendMessage() {
                 safelySetValue('points', data.parameters.points);
 
                 // Update the range fields using their unique IDs
-                // safelySetValue('xRange', (${data.parameters.min},${data.parameters.max}));
+                safelySetValue('xRange', `${data.parameters.min},${data.parameters.max}`);
+
+                document.querySelector('button[type="button"][onclick*="plotFromFunction"]').click();
             }
+
+
         }
     })
     .catch(err => {
@@ -1557,7 +1564,7 @@ function adjustPlotWidthBasedOnSidebar() {
 // Inicializa el gráfico al cargar la página
 function plotInitialGraph() {
   const payload = {
-    y: 'ErrorProb',
+    y: 'error_probability',
     x: 'n',
     rang_x: [1, 80],
     points: 50,
