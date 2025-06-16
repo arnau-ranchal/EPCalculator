@@ -2,10 +2,8 @@
 window.addEventListener('DOMContentLoaded', () => {
     initializeChart();
     onLineTypeChange();
-    setTimeout(() => {
-      drawDefaultGrid();
-      plotInitialGraph();  // init primer graph
-    }, 100);
+    drawDefaultGrid();
+    plotInitialGraph();  // init primer graph
 });
 
 
@@ -1691,6 +1689,6 @@ function changePlotScale(button) {
     }
   });
 
-  renderAll(); // Redibuja con las nuevas escalas y datos filtrados
+  renderAll(); 
 }
 
