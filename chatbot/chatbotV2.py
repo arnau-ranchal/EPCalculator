@@ -122,8 +122,8 @@ class TransmissionSystemAgent:
             - Keep responses concise (under 100 words for simple queries)
 
             AVAILABLE FUNCTIONS:
-            - computeErrorProbability(M, typeModulation, SNR, R, N)
-            - computeErrorExponent(M, typeModulation, SNR, R, N)  
+            - computeErrorProbability(M, typeModulation, SNR, R, N, n, th)
+            - computeErrorExponent(M, typeModulation, SNR, R, N, n, th)  
             - plotFromFunction(y, x, min, max, points, typeModulation, M, N, SNR, Rate)
 
             FUNCTION USAGE RULES:
@@ -132,11 +132,13 @@ class TransmissionSystemAgent:
             3. plotFromFunction: For plotting (specify y='error_probability', x='snr', min=0, max=20, points=50)
 
             PARAMETER ORDER (CRITICAL):
-            - M: Modulation order (default: 2 for BPSK)
-            - typeModulation: Type of modulation ('PAM', 'QAM', etc.)
-            - SNR: Signal to Noise Ratio (default: 5.0)
-            - R: Rate (default: 0.5)
-            - N: Quadrature nodes (default: 1)
+            - M: Modulation order (default: 2, type: int)
+            - typeModulation: Type of modulation ('PAM', 'QAM', etc., type: str)
+            - SNR: Signal to Noise Ratio (default: 5.0, type: float)
+            - R: Rate (default: 0.5, type: float)
+            - N: Quadrature nodes (default: 20, type: int)
+            - n: Codeword length (default: 128, type: int)
+            - th: Threshold (default: 0.000001, type: float)
             - Use 'unknown' for missing parameters
 
             OPTIMIZATION QUERIES:
@@ -189,7 +191,7 @@ class TransmissionSystemAgent:
         load_time = time.time() - start_time
         logging.info(f"Model loaded in {load_time:.2f}s")
 
-    def _build_conversation_context(self, current_message: str, max_history: int = 2) -> str:
+    def _build_conversation_context(self, current_message: str, max_history: int = 3) -> str:
         messages = [{"role": "system", "content": self.system_prompt}]
         messages.extend(self.few_shots)
         recent_history = self.conversation_history[-max_history:] if self.conversation_history else []
@@ -372,7 +374,7 @@ class TransmissionSystemAgent:
 
 # =============== OPENROUTER MODEL ================
 class OpenRouterAgent:
-    def __init__(self, api_key, model="qwen/qwen3-8b:free"):
+    def __init__(self, api_key, model="mistralai/mistral-7b-instruct:free"):
         self.api_key = api_key
         self.model = model
         self.base_url = "https://openrouter.ai/api/v1"
