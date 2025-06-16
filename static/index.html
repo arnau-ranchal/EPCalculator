@@ -337,6 +337,13 @@
       </div>
 
       <section class="chatbot-area">
+        <div class="input-group" style="margin-bottom: 10px;">
+          <label for="model-selector" style="font-weight: 500;">Chat Model</label>
+          <select id="model-selector" class="custom-select">
+            <option value="openrouter" selected>OpenRouter (Cloud)</option>
+            <option value="local">Local Model</option>
+          </select>
+        </div>
         <!-- <h2 class="section-title">Assistant</h2> -->
         <div class="chatbox">
           <div class="chat-messages" id="chat-messages"></div>
