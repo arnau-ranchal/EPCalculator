@@ -1242,7 +1242,10 @@ function sendMessage() {
     fetch('/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg })
+        body: JSON.stringify({
+        message: msg,
+        model_choice: document.getElementById('model-selector').value
+})
     })
     .then(res => res.json())
     .then(data => {
@@ -1584,7 +1587,9 @@ function plotInitialGraph() {
   fetch('/plot_function', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+        message: message
+    }),
   })
     .then(res => {
       if (!res.ok) throw new Error("Error al cargar el gráfico inicial");

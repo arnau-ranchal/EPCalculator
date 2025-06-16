@@ -15,7 +15,8 @@ sys.path.append("chatbot")
 from chatbot.chatbotV2 import OpenRouterAgent
 
 API_KEY = os.environ.get('API_KEY')  # Make sure this is set in your environment
-chatbot_agent = OpenRouterAgent(api_key=API_KEY)
+openrouter_agent = OpenRouterAgent(api_key=API_KEY)
+#local_agent = Transmission
 
 app = FastAPI()
 
@@ -239,16 +240,20 @@ async def generate_contour_plot(plot_data: ContourPlotRequest):
 # ------------------------ CHATBOT -------------------------------------------------------------------------
 class ChatbotRequest(BaseModel):
     message: str
-
+    model_choice: str
 
 @app.post("/chatbot")
 async def chatbot_with_bot(request: ChatbotRequest):
     try:
-        # 1. Get the LLM's response as a string
-        response_text = "".join(chatbot_agent.generate_response_stream(request.message))
 
-        # 2. Parse for function calls
-        function_calls = chatbot_agent.parse_function_calls(response_text)
+        # Choose the agent based on the user's selection
+        # TODO CHANGE THE FIRST OPENROUTER_AGENT TO THE LOCAL_AGENT
+        agent_to_use = openrouter_agent if request.model_choice == 'local' else openrouter_agent
+
+        # Use the selected agent to process the request
+        response_text = "".join(agent_to_use.generate_response_stream(request.message))
+
+        function_calls = agent_to_use.parse_function_calls(response_text)
 
         # 3. If function calls found, execute them and return results
         if function_calls:
