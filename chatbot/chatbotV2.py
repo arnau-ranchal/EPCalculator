@@ -8,10 +8,11 @@ from dataclasses import dataclass
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 import time
 import threading
-import random
-import sys
 import requests
 from exponents.utils import call_exponents
+
+logging.basicConfig(level=logging.DEBUG, force=True)
+logging.debug("Your debug message")
 
 # ================== AGENT CLASSES ===================
 @dataclass
@@ -79,17 +80,26 @@ def plotFromFunction(**params) -> str:
     return f"Plot data generated for {params.get('typeModulation', 'PAM')} modulation"
 
 def call_exponents_api(M, typeM, SNR, R, N, n, th, base_url="http://localhost:8000"):
-    params = {
-        "M": M,
-        "typeM": typeM,
-        "SNR": SNR,
-        "R": R,
-        "N": N,
-        "n": n,
-        "th": th
+    # Debug: print raw parameters received
+    print(f"[DEBUG] call_exponents_api raw params: M={M}, typeM={typeM}, SNR={SNR}, R={R}, N={N}, n={n}, th={th}", flush=True)
+    # Sanitize parameters: replace 'unknown', 'undefined', '', 'none' with defaults
+    def sanitize(val, default):
+        if str(val).lower() in ['unknown', 'undefined', '', 'none']:
+            return default
+        return val
+
+    sanitized_params = {
+        "M": sanitize(M, 2),
+        "typeM": sanitize(typeM, 'PAM'),
+        "SNR": sanitize(SNR, 5.0),
+        "R": sanitize(R, 0.5),
+        "N": sanitize(N, 20),
+        "n": sanitize(n, 128),
+        "th": sanitize(th, 0.000001)
     }
-    response = requests.get(f"{base_url}/exponents", params=params)
-    print(response.json())
+    print(f"[DEBUG] call_exponents_api sanitized params: {sanitized_params}", flush=True)
+    response = requests.get(f"{base_url}/exponents", params=sanitized_params)
+    print(f"[DEBUG] call_exponents_api response: {response.status_code} {response.text}", flush=True)
     response.raise_for_status()
     return response.json()
 
@@ -313,9 +323,34 @@ class TransmissionSystemAgent:
         except Exception as e:
             return False, f"Validation error: {str(e)}"
 
+    @staticmethod
+    def sanitize_param(key, value):
+        """Sanitize a single parameter value based on key."""
+        if str(value).lower() in ['unknown', 'undefined', '', 'none']:
+            defaults = {
+                'N': 20,
+                'R': 0.5,
+                'SNR': 5.0,
+                'M': 2,
+                'n': 128,
+                'th': 0.000001,
+                'typeModulation': 'PAM',
+            }
+            return defaults.get(key, value)
+        return value
+
+    @staticmethod
+    def get_param(params, key, default):
+        """Get a sanitized parameter from a dict, with fallback to default."""
+        val = params.get(key, default)
+        if str(val).lower() in ['unknown', 'undefined', '', 'none']:
+            return default
+        return val
+
     def execute_function_calls(self, function_calls: List[FunctionCall]) -> List[ExecutionResult]:
         results = []
         for func_call in function_calls:
+            print(f"[DEBUG] execute_function_calls: received FunctionCall: {func_call}", flush=True)
             if not func_call.is_valid:
                 results.append(ExecutionResult(
                     success=False,
@@ -328,25 +363,33 @@ class TransmissionSystemAgent:
             if func_call.function_name in FUNCTION_REGISTRY:
                 try:
                     start_time = time.time()
-                    clean_params = {}
-                    for key, value in func_call.parameters.items():
-                        if value == 'unknown':
-                            if key == 'N':
-                                clean_params[key] = 1  # Default quadrature nodes
-                            elif key == 'R':
-                                clean_params[key] = 0.5  # Default rate
-                            elif key == 'SNR':
-                                clean_params[key] = 5.0  # Default SNR
-                            elif key == 'M':
-                                clean_params[key] = 2  # Default to BPSK
-                            elif key == 'typeModulation':
-                                clean_params[key] = 'PAM'  # Default modulation type
-                            else:
-                                clean_params[key] = value
-                        else:
-                            clean_params[key] = value
-                    func = FUNCTION_REGISTRY[func_call.function_name]
-                    result_value = func(**clean_params)
+                    # Sanitize all parameters in one pass
+                    clean_params = {k: self.sanitize_param(k, v) for k, v in func_call.parameters.items()}
+                    print(f"[DEBUG] execute_function_calls: sanitized params for {func_call.function_name}: {clean_params}", flush=True)
+
+                    # Normalize keys for typeModulation/typeM
+                    if 'typeM' in clean_params and 'typeModulation' not in clean_params:
+                        clean_params['typeModulation'] = clean_params['typeM']
+                    if 'typeModulation' in clean_params and 'typeM' not in clean_params:
+                        clean_params['typeM'] = clean_params['typeModulation']
+
+                    # Always use call_exponents_api for these functions
+                    if func_call.function_name in ['computeErrorProbability', 'computeErrorExponent']:
+                        api_typeM = self.get_param(clean_params, 'typeModulation', 'PAM')
+                        api_result = call_exponents_api(
+                            self.get_param(clean_params, 'M', 2),
+                            api_typeM,
+                            self.get_param(clean_params, 'SNR', 5.0),
+                            self.get_param(clean_params, 'R', 0.5),
+                            self.get_param(clean_params, 'N', 20),
+                            self.get_param(clean_params, 'n', 128),
+                            self.get_param(clean_params, 'th', 0.000001)
+                        )
+                        # For error probability, return first value; for exponent, second
+                        result_value = api_result[0] if func_call.function_name == 'computeErrorProbability' else api_result[1]
+                    else:
+                        func = FUNCTION_REGISTRY[func_call.function_name]
+                        result_value = func(**clean_params)
                     execution_time = time.time() - start_time
                     results.append(ExecutionResult(
                         success=True,
@@ -356,6 +399,7 @@ class TransmissionSystemAgent:
                         error_message=None
                     ))
                 except Exception as e:
+                    print(f"[DEBUG] execute_function_calls: Exception: {e}", flush=True)
                     results.append(ExecutionResult(
                         success=False,
                         result_value=None,
@@ -364,6 +408,7 @@ class TransmissionSystemAgent:
                         error_message=f"Execution error: {str(e)}"
                     ))
             else:
+                print(f"[DEBUG] execute_function_calls: Function '{func_call.function_name}' not implemented", flush=True)
                 results.append(ExecutionResult(
                     success=False,
                     result_value=None,
@@ -555,20 +600,29 @@ class OpenRouterAgent:
                 try:
                     start_time = time.time()
                     clean_params = {}
-                    for key, value in func_call.parameters.items():
-                        if value == 'unknown':
-                            if key == 'quadrature_nodes':
-                                clean_params[key] = 'default'
+                    def sanitize_param(key, value):
+                        if value in ['unknown', 'undefined', '', None]:
+                            # Set defaults for each key
+                            if key == 'N':
+                                return 20
+                            elif key == 'R':
+                                return 0.5
+                            elif key == 'SNR':
+                                return 5.0
+                            elif key == 'M':
+                                return 2
                             elif key == 'n':
-                                clean_params[key] = 1000
-                            elif key == 'rate':
-                                clean_params[key] = 0.5
-                            elif key == 'snr':
-                                clean_params[key] = 5.0
+                                return 128
+                            elif key == 'th':
+                                return 0.000001
+                            elif key == 'typeModulation':
+                                return 'PAM'
                             else:
-                                clean_params[key] = value
-                        else:
-                            clean_params[key] = value
+                                return value
+                        return value
+
+                    for key, value in func_call.parameters.items():
+                        clean_params[key] = sanitize_param(key, value)
                     func = FUNCTION_REGISTRY[func_call.function_name]
                     result_value = func(**clean_params)
                     execution_time = time.time() - start_time
