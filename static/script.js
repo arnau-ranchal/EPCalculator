@@ -57,7 +57,7 @@ function calculateExponents(event) {
         })
         .catch(error => {
             console.error("Error fetching exponents:", error);
-            resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">⚠️ Unable to process the data. Please verify your inputs.</p>`;
+            resultDiv.innerHTML = `<p style="color: #000; font-weight: bold;">Unable to process the data. Please verify your inputs.</p>`;
             resultDiv.classList.add('show');
         });
 }
