@@ -1257,10 +1257,15 @@ function sendMessage() {
 
         // --- NEW: Fill input fields if parameters are present ---
         if (data.parameters) {
-            const safelySetValue = (id, value) => {
+            const safelySetValue = (id, value, defaultvalue) => {
                 const element = document.getElementById(id);
                 if (element) {
-                    element.value = value;
+                    if(!(value === "unknown")){ // if we dont find unknown then update normally
+                        element.value = value;
+                    }
+                    else{
+                        element.value = defaultvalue; // else, we fill with default parameters
+                    }
                 } else {
                 // This message will appear in the F12 Developer Console if an ID is wrong.
                 console.warn(`Warning: HTML element with id="${id}" was not found.`);
@@ -1268,16 +1273,14 @@ function sendMessage() {
             };
 
             if (!('x' in data.parameters)){ // not plot mode
-                safelySetValue('M', data.parameters.M);
-                safelySetValue('TypeModulation', data.parameters.typeModulation);
-                safelySetValue('SNR',data.parameters.SNR);
-                safelySetValue('R',data.parameters.R);
-                safelySetValue('N',data.parameters.N);
-                safelySetValue('n',data.parameters.n);
-                safelySetValue('th',data.parameters.th);
-                if(data.parameters.th === "unknown"){
-                    safelySetValue('th',0.0000001);
-                }
+                safelySetValue('M', data.parameters.M, 2);
+                safelySetValue('TypeModulation', data.parameters.typeModulation, "PAM");
+                safelySetValue('SNR',data.parameters.SNR, 1);
+                safelySetValue('R',data.parameters.R, 0.5);
+                safelySetValue('N',data.parameters.N, 20);
+                safelySetValue('n',data.parameters.n, 128);
+                safelySetValue('th',data.parameters.th, 0.000001);
+
                 document.querySelector('button.compute-error').click();
             }
             /*
@@ -1289,24 +1292,24 @@ function sendMessage() {
             */
             else{ // plot mode
                 // Update the plot variables
-                safelySetValue('M',data.parameters.M);
-                safelySetValue('SNR',data.parameters.SNR);
-                safelySetValue('R',data.parameters.Rate);
+                safelySetValue('M',data.parameters.M, 2);
+                safelySetValue('SNR',data.parameters.SNR, 1);
+                safelySetValue('R',data.parameters.Rate, 0.5);
 
-                safelySetValue('N',data.parameters.N);
+                safelySetValue('N',data.parameters.N, 20);
                 //safelySetValue('N',data.parameters.N);
 
-                safelySetValue('xVar', data.parameters.x.toLowerCase());
-                if (data.parameters.y.toLowerCase() ==! 'n'){
-                    safelySetValue('yVar', data.parameters.y.toLowerCase());
+                safelySetValue('yVar', data.parameters.y.toLowerCase(), "error_probability");
+                if (data.parameters.x.toLowerCase() ==! 'n'){
+                    safelySetValue('xVar', data.parameters.x.toLowerCase(), 'm');
                 }
                 else{
-                    safelySetValue('yVar', data.parameters.y);
+                    safelySetValue('xVar', data.parameters.x, 'n');
                 }
-                safelySetValue('points', data.parameters.points);
+                safelySetValue('points', data.parameters.points, 50);
 
                 // Update the range fields using their unique IDs
-                safelySetValue('xRange', `${data.parameters.min},${data.parameters.max}`);
+                safelySetValue('xRange', `${data.parameters.min},${data.parameters.max}`, `${1},${100}`);
 
                 document.querySelector('button[type="button"][onclick*="plotFromFunction"]').click();
             }
