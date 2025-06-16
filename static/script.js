@@ -1257,20 +1257,6 @@ function sendMessage() {
 
         // --- NEW: Fill input fields if parameters are present ---
         if (data.parameters) {
-            if (data.parameters.modulation !== undefined) document.getElementById('M').value = data.parameters.modulation;
-            // Accept both typeModulation, typeM, or modulation for robustness
-            const typeMod = data.parameters.typeModulation || data.parameters.typeM || data.parameters.modulation;
-            if (typeMod !== undefined) {
-                // If it's in the form '2-PAM' or '16-QAM', split it
-                const match = /^([0-9]+)[- ]?([A-Za-z]+)$/i.exec(typeMod);
-                if (match) {
-                    document.getElementById('M').value = match[1];
-                    document.getElementById('TypeModulation').value = match[2].toUpperCase();
-                } else {
-                    // fallback: just set the type if not in '2-PAM' format
-                    document.getElementById('TypeModulation').value = typeMod.toUpperCase(); // todo buggy
-                }
-            }
             const safelySetValue = (id, value) => {
                 const element = document.getElementById(id);
                 if (element) {
@@ -1282,11 +1268,16 @@ function sendMessage() {
             };
 
             if (!('x' in data.parameters)){ // not plot mode
-                safelySetValue('SNR',data.parameters.snr);
-                safelySetValue('R',data.parameters.rate);
-                safelySetValue('N',data.parameters.quadrature_nodes);
+                safelySetValue('M', data.parameters.M);
+                safelySetValue('TypeModulation', data.parameters.typeModulation);
+                safelySetValue('SNR',data.parameters.SNR);
+                safelySetValue('R',data.parameters.R);
+                safelySetValue('N',data.parameters.N);
                 safelySetValue('n',data.parameters.n);
-
+                safelySetValue('th',data.parameters.th);
+                if(data.parameters.th === "unknown"){
+                    safelySetValue('th',0.0000001);
+                }
                 document.querySelector('button.compute-error').click();
             }
             /*
@@ -1298,10 +1289,11 @@ function sendMessage() {
             */
             else{ // plot mode
                 // Update the plot variables
+                safelySetValue('M',data.parameters.M);
                 safelySetValue('SNR',data.parameters.SNR);
                 safelySetValue('R',data.parameters.Rate);
 
-                safelySetValue('N',data.parameters.quadrature_nodes);
+                safelySetValue('N',data.parameters.N);
                 //safelySetValue('N',data.parameters.N);
 
                 safelySetValue('xVar', data.parameters.x.toLowerCase());
