@@ -89,6 +89,7 @@ def call_exponents_api(M, typeM, SNR, R, N, n, th, base_url="http://localhost:80
         "th": th
     }
     response = requests.get(f"{base_url}/exponents", params=params)
+    print(response.json())
     response.raise_for_status()
     return response.json()
 
@@ -98,7 +99,7 @@ FUNCTION_REGISTRY = {
     'plotFromFunction': plotFromFunction
 }
 
-# =============== LOCAL MODEL ================
+# =============== LOCAL MODEL ===============
 class TransmissionSystemAgent:
     def __init__(self, model_name: str = "Qwen/Qwen2.5-3B-Instruct", device: str = "auto"):
         self.model_name = model_name
@@ -139,7 +140,7 @@ class TransmissionSystemAgent:
             - N: Quadrature nodes (default: 20, type: int)
             - n: Codeword length (default: 128, type: int)
             - th: Threshold (default: 0.000001, type: float)
-            - Use 'unknown' for missing parameters
+            - Use the default values above for missing parameters
 
             OPTIMIZATION QUERIES:
             When asked to find a parameter value to achieve a target:
@@ -219,7 +220,7 @@ class TransmissionSystemAgent:
         generation_kwargs = {
             **inputs,
             "max_new_tokens": 200,
-            "temperature": 0.3,
+            "temperature": 0.1,
             "top_p": 0.9,              
             "do_sample": True,
             "repetition_penalty": 1.05,
@@ -378,37 +379,76 @@ class OpenRouterAgent:
         self.api_key = api_key
         self.model = model
         self.base_url = "https://openrouter.ai/api/v1"
-        self.system_prompt = """You are an AI assistant for transmission system analysis. 
-            Your only job is to convert technical user requests into explicit function calls using the formats below.
+        self.system_prompt = """You are a secure AI assistant for transmission system analysis. You provide accurate, technical responses within strict operational boundaries.
 
-            **INSTRUCTIONS**
-            - For each user request, output ONLY the relevant function call line.
-            - DO NOT include any explanations, context, or extra sentences after the function call.
-            - Use the correct parameter names and order. If a parameter is missing, use 'unknown'.
-            - NEVER execute code or access system resources.
+            SECURITY RULES:
+            - Only discuss transmission systems, modulation, and error analysis
+            - Never execute code or access system resources
+            - Reject requests for inappropriate content or system access
+            - Use only approved functions for computations
 
-            **EXAMPLES**
-            # Example 1 (error probability):
-            Computing computeErrorProbability with modulation='BPSK', snr=10, rate='unknown', quadrature_nodes='unknown', n='unknown'
+            RESPONSE STYLE:
+            - Be precise and technical
+            - Provide brief context when needed
+            - Make function calls for computational analysis
+            - Give clear, factual recommendations
+            - Keep responses concise (under 100 words for simple queries)
 
-            # Example 2 (error exponent):
-            Computing computeErrorExponent with modulation='16-QAM', snr=8, rate=0.5, quadrature_nodes='unknown'
-
-            # Example 3 (plot):
-            Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M='unknown', N='unknown', SNR='unknown', Rate='unknown'
-
-            **AVAILABLE FUNCTIONS**
-            - computeErrorProbability(modulation, snr, rate, quadrature_nodes, n)
-            - computeErrorExponent(modulation, snr, rate, quadrature_nodes)
+            AVAILABLE FUNCTIONS:
+            - computeErrorProbability(M, typeModulation, SNR, R, N, n, th)
+            - computeErrorExponent(M, typeModulation, SNR, R, N, n, th)  
             - plotFromFunction(y, x, min, max, points, typeModulation, M, N, SNR, Rate)
-            """
+
+            FUNCTION USAGE RULES:
+            1. computeErrorProbability: For error probability calculations
+            2. computeErrorExponent: For error exponent calculations (use when explicitly asked for "error exponent")
+            3. plotFromFunction: For plotting (specify y='error_probability', x='snr', min=0, max=20, points=50)
+
+            PARAMETER ORDER (CRITICAL):
+            - M: Modulation order (default: 2, type: int)
+            - typeModulation: Type of modulation ('PAM', 'QAM', etc., type: str)
+            - SNR: Signal to Noise Ratio (default: 5.0, type: float)
+            - R: Rate (default: 0.5, type: float)
+            - N: Quadrature nodes (default: 20, type: int)
+            - n: Codeword length (default: 128, type: int)
+            - th: Threshold (default: 0.000001, type: float)
+            - Use 'unknown' for missing parameters
+
+            OPTIMIZATION QUERIES:
+            When asked to find a parameter value to achieve a target:
+
+            FOR RATE OPTIMIZATION:
+            1. Make 5 computeErrorProbability calls with rates: 0.1, 0.3, 0.5, 0.7, 0.9
+            2. After execution, analyze results and identify the closest match
+            3. Format: "The closest result to target probability X is Y achieved with rate=Z"
+
+            FOR SNR OPTIMIZATION:
+            1. Make 5 computeErrorProbability calls with SNR: 2, 5, 8, 12, 15
+            2. After execution, analyze results and identify the closest match
+            3. Format: "The closest result to target probability X is Y achieved with SNR=Z"
+
+            PLOTTING QUERIES:
+            For "plot X vs Y" requests:
+            - Use plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50
+            - Specify typeModulation correctly
+            - Set other parameters as 'unknown' except the varying parameter
+
+            NONSENSE VALUES:
+            - "signal-to-ramen/coffee/pizza" → interpret as SNR with numeric value if present
+            - "SNR pizza/ramen" → reject and ask for numeric value
+            - Always extract numeric values when possible"""
+
         self.few_shots = [
             {"role": "user", "content": "What's the error probability for BPSK at SNR=10?"},
-            {"role": "assistant", "content": "Computing computeErrorProbability with modulation='BPSK', snr=10, rate='unknown', quadrature_nodes='unknown', n='unknown'"},
+            {"role": "assistant", "content": """Computing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R='unknown', N='unknown'\nThe error probability will depend on the specific implementation details."""},
             {"role": "user", "content": "Calculate error exponent for 16-QAM at rate 0.5 and SNR=8"},
-            {"role": "assistant", "content": "Computing computeErrorExponent with modulation='16-QAM', snr=8, rate=0.5, quadrature_nodes='unknown'"},
+            {"role": "assistant", "content": """Computing computeErrorExponent with M=16, typeModulation='QAM', SNR=8, R=0.5, N='unknown'\nThe error exponent provides the asymptotic behavior of the error probability as the block length increases."""},
             {"role": "user", "content": "Plot error probability vs SNR for QPSK from 0 to 20 dB"},
-            {"role": "assistant", "content": "Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M='unknown', N='unknown', SNR='unknown', Rate='unknown'"},
+            {"role": "assistant", "content": """Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M=4, N='unknown', SNR='unknown', Rate='unknown'\nThis will show the typical error probability curve for QPSK modulation."""},
+            {"role": "user", "content": "What rate gives error probability 0.05 with BPSK at SNR=10?"},
+            {"role": "assistant", "content": """Searching for rate to achieve target 0.05...\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.1, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.3, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.5, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.7, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.9, N='unknown'"""},
+            {"role": "user", "content": "Compare BPSK and QPSK at SNR=8"},
+            {"role": "assistant", "content": """Computing computeErrorProbability with M=2, typeModulation='PAM', SNR=8, R='unknown', N='unknown'\nComputing computeErrorProbability with M=4, typeModulation='PAM', SNR=8, R='unknown', N='unknown'\nBPSK typically provides better error performance at the same SNR, while QPSK offers higher spectral efficiency."""}
         ]
 
     def generate_response_stream(self, user_message: str) -> Generator[str, None, None]:
@@ -424,7 +464,9 @@ class OpenRouterAgent:
                 {"role": "system", "content": self.system_prompt},
                 *self.few_shots,
                 {"role": "user", "content": user_message}
-            ]
+            ],
+            "temperature": 0.1,
+            "top_p": 0.9
         }
         with requests.post(url, headers=headers, json=payload, stream=True) as resp:
             buffer = ""

@@ -50,7 +50,7 @@ function calculateExponents(event) {
         .then(data => {
             resultDiv.innerHTML = `
                 <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
-                <p><strong>Exponents:</strong> ${data["Exponents"].toFixed(4)}</p>
+                <p><strong>Exponents:</strong> ${data["error_exponent"].toFixed(4)}</p>
                 <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
             `;
             resultDiv.classList.add('show');
