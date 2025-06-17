@@ -1,3 +1,0 @@
-- Arreglar que cuando se elimina el plot y es Log este se carga el grid y los ejes aaaaaa
-
-- Afegir el chat en algun lloc
