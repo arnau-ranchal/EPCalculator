@@ -51,15 +51,15 @@ function calculateExponents(event) {
         })
         .then(data => {
             resultDiv.innerHTML = `
-                <p><strong>Error Probability:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
-                <p><strong>Error exponents:</strong> ${data["Exponents"].toFixed(4)}</p>
+                <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
+                <p><strong>Exponents:</strong> ${data["error_exponent"].toFixed(4)}</p>
                 <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
             `;
             resultDiv.classList.add('show');
         })
         .catch(error => {
             console.error("Error fetching exponents:", error);
-            resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">⚠️ Unable to process the data. Please verify your inputs.</p>`;
+            resultDiv.innerHTML = `<p style="color: #000; font-weight: bold;">Unable to process the data. Please verify your inputs.</p>`;
             resultDiv.classList.add('show');
         });
 }
@@ -1314,7 +1314,7 @@ function sendMessage() {
 
     const userMsg = document.createElement('div');
     userMsg.className = 'chat-bubble user';
-    userMsg.textContent = msg + "🧑‍💻 ";
+    userMsg.textContent = msg;
     chatBox.appendChild(userMsg);
 
     input.value = '';
@@ -1323,15 +1323,80 @@ function sendMessage() {
     fetch('/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg })
+        body: JSON.stringify({
+        message: msg,
+        model_choice: document.getElementById('model-selector').value
+})
     })
     .then(res => res.json())
     .then(data => {
         const botMsg = document.createElement('div');
         botMsg.className = 'chat-bubble bot';
-        botMsg.textContent = "🤖 " + data.response;
+        botMsg.textContent = data.response;
         chatBox.appendChild(botMsg);
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        // --- NEW: Fill input fields if parameters are present ---
+        if (data.parameters) {
+            const safelySetValue = (id, value, defaultvalue) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if(!(value === "unknown")){ // if we dont find unknown then update normally
+                        element.value = value;
+                    }
+                    else{
+                        element.value = defaultvalue; // else, we fill with default parameters
+                    }
+                } else {
+                // This message will appear in the F12 Developer Console if an ID is wrong.
+                console.warn(`Warning: HTML element with id="${id}" was not found.`);
+            }
+            };
+
+            if (!('x' in data.parameters)){ // not plot mode
+                safelySetValue('M', data.parameters.M, 2);
+                safelySetValue('TypeModulation', data.parameters.typeModulation, "PAM");
+                safelySetValue('SNR',data.parameters.SNR, 1);
+                safelySetValue('R',data.parameters.R, 0.5);
+                safelySetValue('N',data.parameters.N, 20);
+                safelySetValue('n',data.parameters.n, 128);
+                safelySetValue('th',data.parameters.th, 0.000001);
+
+                document.querySelector('button.compute-error').click();
+            }
+            /*
+            if (data.parameters.snr !== undefined) document.getElementById('SNR').value = data.parameters.snr;
+            if (data.parameters.rate !== undefined) document.getElementById('R').value = data.parameters.rate;
+            if (data.parameters.quadrature_nodes !== undefined) document.getElementById('N').value = data.parameters.quadrature_nodes;
+            if (data.parameters.n !== undefined) document.getElementById('n').value = data.parameters.n;
+            if (data.parameters.th !== undefined) document.getElementById('th').value = data.parameters.th;
+            */
+            else{ // plot mode
+                // Update the plot variables
+                safelySetValue('M',data.parameters.M, 2);
+                safelySetValue('SNR',data.parameters.SNR, 1);
+                safelySetValue('R',data.parameters.Rate, 0.5);
+
+                safelySetValue('N',data.parameters.N, 20);
+                //safelySetValue('N',data.parameters.N);
+
+                safelySetValue('yVar', data.parameters.y.toLowerCase(), "error_probability");
+                if (data.parameters.x.toLowerCase() ==! 'n'){
+                    safelySetValue('xVar', data.parameters.x.toLowerCase(), 'm');
+                }
+                else{
+                    safelySetValue('xVar', data.parameters.x, 'n');
+                }
+                safelySetValue('points', data.parameters.points, 50);
+
+                // Update the range fields using their unique IDs
+                safelySetValue('xRange', `${data.parameters.min},${data.parameters.max}`, `${1},${100}`);
+
+                document.querySelector('button[type="button"][onclick*="plotFromFunction"]').click();
+            }
+
+
+        }
     })
     .catch(err => {
         const errMsg = document.createElement('div');
@@ -1604,7 +1669,7 @@ function adjustPlotWidthBasedOnSidebar() {
 // Inicializa el gráfico al cargar la página
 function plotInitialGraph() {
   const payload = {
-    y: 'ErrorProb',
+    y: 'error_probability',
     x: 'n',
     rang_x: [1, 80],
     points: 50,
@@ -1624,7 +1689,9 @@ function plotInitialGraph() {
   fetch('/plot_function', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+        message: message
+    }),
   })
     .then(res => {
       if (!res.ok) throw new Error("Error al cargar el gráfico inicial");
