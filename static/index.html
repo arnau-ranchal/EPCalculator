@@ -168,9 +168,9 @@
               </span>
             </label>
             <select id="yVar" class="custom-select">
-              <option value="ErrorProb">Error probability</option>
-              <option value="Exponents">Error exponents</option>
-              <option value="Rho">Optimal rho</option>
+              <option value="error_probability">Error probability</option>
+              <option value="error_exponent">Exponents</option>
+              <option value="rho">Optimal rho</option>
             </select>
           </div>
 
@@ -185,9 +185,9 @@
               </span>
             </label>
             <select id="xVar" class="custom-select">
-              <option value="M">M</option>
-              <option value="SNR">SNR</option>
-              <option value="Rate">Rate</option>
+              <option value="m">M</option>
+              <option value="snr">SNR</option>
+              <option value="rate">Rate</option>
               <option value="N">N</option>
               <option value="n">n</option>
               <option value="th">Threshold</option>
@@ -318,9 +318,7 @@
 
 
         <div class="button-group">
-          <button type="submit" class="compute-error" onclick="calculateExponents(event)">
-            Compute Error Metrics
-          </button>
+          <button type="submit" class="compute-error" onclick="calculateExponents(event)">Compute Error Metrics</button>
           <button type="button" onclick="plotFromFunction()">Generate Plot</button>
         </div>
         <div class="result" id="result"></div>
@@ -356,6 +354,13 @@
       </div>
 
       <section class="chatbot-area">
+        <div class="input-group" style="margin-bottom: 10px;">
+          <label for="model-selector" style="font-weight: 500;">Chat Model</label>
+          <select id="model-selector" class="custom-select">
+            <option value="openrouter" selected>OpenRouter (Cloud)</option>
+            <option value="local">Local Model</option>
+          </select>
+        </div>
         <!-- <h2 class="section-title">Assistant</h2> -->
         <div class="chatbox">
           <div class="chat-messages" id="chat-messages"></div>
