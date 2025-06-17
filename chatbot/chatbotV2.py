@@ -8,9 +8,11 @@ from dataclasses import dataclass
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 import time
 import threading
-import random
-import sys
 import requests
+from exponents.utils import call_exponents
+
+logging.basicConfig(level=logging.DEBUG, force=True)
+logging.debug("Your debug message")
 
 # ================== AGENT CLASSES ===================
 @dataclass
@@ -36,15 +38,6 @@ class ConversationEntry:
     function_calls: List[FunctionCall]
     timestamp: float
 
-# Dummy functions for demo
-def dummy_computeErrorProbability(**params) -> float:
-    time.sleep(0.1)
-    return random.uniform(0.001, 0.1)
-
-def dummy_computeErrorExponent(**params) -> float:
-    time.sleep(0.1)
-    return random.uniform(0.1, 2.0)
-
 def dummy_plotFromFunction(**params) -> str:
     time.sleep(0.2)
     y_var = params.get('y', 'error_probability')
@@ -60,13 +53,63 @@ def dummy_plotFromFunction(**params) -> str:
     print("     0   5   10  15 (SNR)")
     return f"Plot generated: {y_var} vs {x_var} for {modulation}"
 
+def computeErrorProbability(**params) -> float:
+    results = call_exponents(
+        M=params.get('M', 2),
+        typeModulation=params.get('typeModulation', 'PAM'),
+        SNR=params.get('SNR', 5.0),
+        R=params.get('R', 0.5),
+        N=params.get('N', 20)
+    )
+    return results[0]
+
+def computeErrorExponent(**params) -> float:
+    results = call_exponents(
+        M=params.get('M', 2),
+        typeModulation=params.get('typeModulation', 'PAM'),
+        SNR=params.get('SNR', 5.0),
+        R=params.get('R', 0.5),
+        N=params.get('N', 20)
+    )
+    return results[1]
+
+def plotFromFunction(**params) -> str:
+    """Generate plot data using call_exponents."""
+    # For plotting, we'll return a string indicating the plot parameters
+    # The actual plotting will be handled by the frontend
+    return f"Plot data generated for {params.get('typeModulation', 'PAM')} modulation"
+
+def call_exponents_api(M, typeM, SNR, R, N, n, th, base_url="http://localhost:8000"):
+    # Debug: print raw parameters received
+    print(f"[DEBUG] call_exponents_api raw params: M={M}, typeM={typeM}, SNR={SNR}, R={R}, N={N}, n={n}, th={th}", flush=True)
+    # Sanitize parameters: replace 'unknown', 'undefined', '', 'none' with defaults
+    def sanitize(val, default):
+        if str(val).lower() in ['unknown', 'undefined', '', 'none']:
+            return default
+        return val
+
+    sanitized_params = {
+        "M": sanitize(M, 2),
+        "typeM": sanitize(typeM, 'PAM'),
+        "SNR": sanitize(SNR, 5.0),
+        "R": sanitize(R, 0.5),
+        "N": sanitize(N, 20),
+        "n": sanitize(n, 128),
+        "th": sanitize(th, 0.000001)
+    }
+    print(f"[DEBUG] call_exponents_api sanitized params: {sanitized_params}", flush=True)
+    response = requests.get(f"{base_url}/exponents", params=sanitized_params)
+    print(f"[DEBUG] call_exponents_api response: {response.status_code} {response.text}", flush=True)
+    response.raise_for_status()
+    return response.json()
+
 FUNCTION_REGISTRY = {
-    'computeErrorProbability': dummy_computeErrorProbability,
-    'computeErrorExponent': dummy_computeErrorExponent,
-    'plotFromFunction': dummy_plotFromFunction
+    'computeErrorProbability': computeErrorProbability,
+    'computeErrorExponent': computeErrorExponent,
+    'plotFromFunction': plotFromFunction
 }
 
-# =============== LOCAL MODEL ================
+# =============== LOCAL MODEL ===============
 class TransmissionSystemAgent:
     def __init__(self, model_name: str = "Qwen/Qwen2.5-3B-Instruct", device: str = "auto"):
         self.model_name = model_name
@@ -90,8 +133,8 @@ class TransmissionSystemAgent:
             - Keep responses concise (under 100 words for simple queries)
 
             AVAILABLE FUNCTIONS:
-            - computeErrorProbability(modulation, snr, rate, quadrature_nodes, n)
-            - computeErrorExponent(modulation, snr, rate, quadrature_nodes)  
+            - computeErrorProbability(M, typeModulation, SNR, R, N, n, th)
+            - computeErrorExponent(M, typeModulation, SNR, R, N, n, th)  
             - plotFromFunction(y, x, min, max, points, typeModulation, M, N, SNR, Rate)
 
             FUNCTION USAGE RULES:
@@ -100,10 +143,14 @@ class TransmissionSystemAgent:
             3. plotFromFunction: For plotting (specify y='error_probability', x='snr', min=0, max=20, points=50)
 
             PARAMETER ORDER (CRITICAL):
-            - computeErrorProbability: modulation, snr, rate, quadrature_nodes, n
-            - computeErrorExponent: modulation, snr, rate, quadrature_nodes
-            - Use 'unknown' for missing parameters
-            - Do NOT add extra parameters like M, N to computeErrorProbability/computeErrorExponent
+            - M: Modulation order (default: 2, type: int)
+            - typeModulation: Type of modulation ('PAM', 'QAM', etc., type: str)
+            - SNR: Signal to Noise Ratio (default: 5.0, type: float)
+            - R: Rate (default: 0.5, type: float)
+            - N: Quadrature nodes (default: 20, type: int)
+            - n: Codeword length (default: 128, type: int)
+            - th: Threshold (default: 0.000001, type: float)
+            - Use the default values above for missing parameters
 
             OPTIMIZATION QUERIES:
             When asked to find a parameter value to achieve a target:
@@ -131,15 +178,15 @@ class TransmissionSystemAgent:
 
         self.few_shots = [
             {"role": "user", "content": "What's the error probability for BPSK at SNR=10?"},
-            {"role": "assistant", "content": """Computing computeErrorProbability with modulation='BPSK', snr=10, rate='unknown', quadrature_nodes='unknown', n='unknown'\nThe error probability will depend on the specific implementation details."""},
+            {"role": "assistant", "content": """Computing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R='unknown', N='unknown'\nThe error probability will depend on the specific implementation details."""},
             {"role": "user", "content": "Calculate error exponent for 16-QAM at rate 0.5 and SNR=8"},
-            {"role": "assistant", "content": """Computing computeErrorExponent with modulation='16-QAM', snr=8, rate=0.5, quadrature_nodes='unknown'\nThe error exponent provides the asymptotic behavior of the error probability as the block length increases."""},
+            {"role": "assistant", "content": """Computing computeErrorExponent with M=16, typeModulation='QAM', SNR=8, R=0.5, N='unknown'\nThe error exponent provides the asymptotic behavior of the error probability as the block length increases."""},
             {"role": "user", "content": "Plot error probability vs SNR for QPSK from 0 to 20 dB"},
-            {"role": "assistant", "content": """Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M='unknown', N='unknown', SNR='unknown', Rate='unknown'\nThis will show the typical error probability curve for QPSK modulation."""},
+            {"role": "assistant", "content": """Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M=4, N='unknown', SNR='unknown', Rate='unknown'\nThis will show the typical error probability curve for QPSK modulation."""},
             {"role": "user", "content": "What rate gives error probability 0.05 with BPSK at SNR=10?"},
-            {"role": "assistant", "content": """Searching for rate to achieve target 0.05...\nComputing computeErrorProbability with modulation='BPSK', snr=10, rate=0.1, quadrature_nodes='unknown', n='unknown'\nComputing computeErrorProbability with modulation='BPSK', snr=10, rate=0.3, quadrature_nodes='unknown', n='unknown'\nComputing computeErrorProbability with modulation='BPSK', snr=10, rate=0.5, quadrature_nodes='unknown', n='unknown'\nComputing computeErrorProbability with modulation='BPSK', snr=10, rate=0.7, quadrature_nodes='unknown', n='unknown'\nComputing computeErrorProbability with modulation='BPSK', snr=10, rate=0.9, quadrature_nodes='unknown', n='unknown'"""},
+            {"role": "assistant", "content": """Searching for rate to achieve target 0.05...\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.1, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.3, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.5, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.7, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.9, N='unknown'"""},
             {"role": "user", "content": "Compare BPSK and QPSK at SNR=8"},
-            {"role": "assistant", "content": """Computing computeErrorProbability with modulation='BPSK', snr=8, rate='unknown', quadrature_nodes='unknown', n='unknown'\nComputing computeErrorProbability with modulation='QPSK', snr=8, rate='unknown', quadrature_nodes='unknown', n='unknown'\nBPSK typically provides better error performance at the same SNR, while QPSK offers higher spectral efficiency."""}
+            {"role": "assistant", "content": """Computing computeErrorProbability with M=2, typeModulation='PAM', SNR=8, R='unknown', N='unknown'\nComputing computeErrorProbability with M=4, typeModulation='PAM', SNR=8, R='unknown', N='unknown'\nBPSK typically provides better error performance at the same SNR, while QPSK offers higher spectral efficiency."""}
         ]
 
     def load_model(self) -> None:
@@ -155,7 +202,7 @@ class TransmissionSystemAgent:
         load_time = time.time() - start_time
         logging.info(f"Model loaded in {load_time:.2f}s")
 
-    def _build_conversation_context(self, current_message: str, max_history: int = 2) -> str:
+    def _build_conversation_context(self, current_message: str, max_history: int = 3) -> str:
         messages = [{"role": "system", "content": self.system_prompt}]
         messages.extend(self.few_shots)
         recent_history = self.conversation_history[-max_history:] if self.conversation_history else []
@@ -183,7 +230,7 @@ class TransmissionSystemAgent:
         generation_kwargs = {
             **inputs,
             "max_new_tokens": 200,
-            "temperature": 0.3,
+            "temperature": 0.1,
             "top_p": 0.9,              
             "do_sample": True,
             "repetition_penalty": 1.05,
@@ -253,25 +300,57 @@ class TransmissionSystemAgent:
     def _validate_parameters(self, func_name: str, parameters: Dict) -> Tuple[bool, Optional[str]]:
         try:
             if func_name in ['computeErrorProbability', 'computeErrorExponent']:
-                if 'snr' in parameters and parameters['snr'] != 'unknown':
-                    snr_val = parameters['snr']
+                if 'SNR' in parameters and parameters['SNR'] != 'unknown':
+                    snr_val = parameters['SNR']
                     if isinstance(snr_val, str) and snr_val.lower() in ['infinity', 'inf']:
                         return False, "SNR cannot be infinity"
                     elif isinstance(snr_val, (int, float)) and snr_val < 0:
                         return False, "SNR must be ≥ 0"
-                if 'rate' in parameters and parameters['rate'] != 'unknown':
-                    if not (0 < parameters['rate'] <= 1):
+                if 'R' in parameters and parameters['R'] != 'unknown':
+                    if not (0 < parameters['R'] <= 1):
                         return False, "Rate must be between 0 and 1"
-                if func_name == 'computeErrorProbability' and 'n' in parameters and parameters['n'] != 'unknown':
-                    if parameters['n'] == '' or not isinstance(parameters['n'], int) or parameters['n'] < 1:
-                        return False, "Block length n must be integer ≥ 1"
+                if 'M' in parameters and parameters['M'] != 'unknown':
+                    if not isinstance(parameters['M'], (int, float)) or parameters['M'] < 1:
+                        return False, "Modulation order M must be ≥ 1"
+                if 'typeModulation' in parameters and parameters['typeModulation'] != 'unknown':
+                    valid_types = ['PAM', 'QAM']
+                    if parameters['typeModulation'] not in valid_types:
+                        return False, f"Modulation type must be one of {valid_types}"
+                if 'N' in parameters and parameters['N'] != 'unknown':
+                    if not isinstance(parameters['N'], (int, float)) or parameters['N'] < 1:
+                        return False, "Quadrature nodes N must be ≥ 1"
             return True, None
         except Exception as e:
             return False, f"Validation error: {str(e)}"
 
+    @staticmethod
+    def sanitize_param(key, value):
+        """Sanitize a single parameter value based on key."""
+        if str(value).lower() in ['unknown', 'undefined', '', 'none']:
+            defaults = {
+                'N': 20,
+                'R': 0.5,
+                'SNR': 5.0,
+                'M': 2,
+                'n': 128,
+                'th': 0.000001,
+                'typeModulation': 'PAM',
+            }
+            return defaults.get(key, value)
+        return value
+
+    @staticmethod
+    def get_param(params, key, default):
+        """Get a sanitized parameter from a dict, with fallback to default."""
+        val = params.get(key, default)
+        if str(val).lower() in ['unknown', 'undefined', '', 'none']:
+            return default
+        return val
+
     def execute_function_calls(self, function_calls: List[FunctionCall]) -> List[ExecutionResult]:
         results = []
         for func_call in function_calls:
+            print(f"[DEBUG] execute_function_calls: received FunctionCall: {func_call}", flush=True)
             if not func_call.is_valid:
                 results.append(ExecutionResult(
                     success=False,
@@ -284,23 +363,33 @@ class TransmissionSystemAgent:
             if func_call.function_name in FUNCTION_REGISTRY:
                 try:
                     start_time = time.time()
-                    clean_params = {}
-                    for key, value in func_call.parameters.items():
-                        if value == 'unknown':
-                            if key == 'quadrature_nodes':
-                                clean_params[key] = 'default'
-                            elif key == 'n':
-                                clean_params[key] = 1000
-                            elif key == 'rate':
-                                clean_params[key] = 0.5
-                            elif key == 'snr':
-                                clean_params[key] = 5.0
-                            else:
-                                clean_params[key] = value
-                        else:
-                            clean_params[key] = value
-                    func = FUNCTION_REGISTRY[func_call.function_name]
-                    result_value = func(**clean_params)
+                    # Sanitize all parameters in one pass
+                    clean_params = {k: self.sanitize_param(k, v) for k, v in func_call.parameters.items()}
+                    print(f"[DEBUG] execute_function_calls: sanitized params for {func_call.function_name}: {clean_params}", flush=True)
+
+                    # Normalize keys for typeModulation/typeM
+                    if 'typeM' in clean_params and 'typeModulation' not in clean_params:
+                        clean_params['typeModulation'] = clean_params['typeM']
+                    if 'typeModulation' in clean_params and 'typeM' not in clean_params:
+                        clean_params['typeM'] = clean_params['typeModulation']
+
+                    # Always use call_exponents_api for these functions
+                    if func_call.function_name in ['computeErrorProbability', 'computeErrorExponent']:
+                        api_typeM = self.get_param(clean_params, 'typeModulation', 'PAM')
+                        api_result = call_exponents_api(
+                            self.get_param(clean_params, 'M', 2),
+                            api_typeM,
+                            self.get_param(clean_params, 'SNR', 5.0),
+                            self.get_param(clean_params, 'R', 0.5),
+                            self.get_param(clean_params, 'N', 20),
+                            self.get_param(clean_params, 'n', 128),
+                            self.get_param(clean_params, 'th', 0.000001)
+                        )
+                        # For error probability, return first value; for exponent, second
+                        result_value = api_result[0] if func_call.function_name == 'computeErrorProbability' else api_result[1]
+                    else:
+                        func = FUNCTION_REGISTRY[func_call.function_name]
+                        result_value = func(**clean_params)
                     execution_time = time.time() - start_time
                     results.append(ExecutionResult(
                         success=True,
@@ -310,6 +399,7 @@ class TransmissionSystemAgent:
                         error_message=None
                     ))
                 except Exception as e:
+                    print(f"[DEBUG] execute_function_calls: Exception: {e}", flush=True)
                     results.append(ExecutionResult(
                         success=False,
                         result_value=None,
@@ -318,6 +408,7 @@ class TransmissionSystemAgent:
                         error_message=f"Execution error: {str(e)}"
                     ))
             else:
+                print(f"[DEBUG] execute_function_calls: Function '{func_call.function_name}' not implemented", flush=True)
                 results.append(ExecutionResult(
                     success=False,
                     result_value=None,
@@ -329,41 +420,80 @@ class TransmissionSystemAgent:
 
 # =============== OPENROUTER MODEL ================
 class OpenRouterAgent:
-    def __init__(self, api_key, model="qwen/qwen3-8b:free"):
+    def __init__(self, api_key, model="mistralai/mistral-7b-instruct:free"):
         self.api_key = api_key
         self.model = model
         self.base_url = "https://openrouter.ai/api/v1"
-        self.system_prompt = """You are an AI assistant for transmission system analysis. 
-            Your only job is to convert technical user requests into explicit function calls using the formats below.
+        self.system_prompt = """You are a secure AI assistant for transmission system analysis. You provide accurate, technical responses within strict operational boundaries.
 
-            **INSTRUCTIONS**
-            - For each user request, output ONLY the relevant function call line.
-            - DO NOT include any explanations, context, or extra sentences after the function call.
-            - Use the correct parameter names and order. If a parameter is missing, use 'unknown'.
-            - NEVER execute code or access system resources.
+            SECURITY RULES:
+            - Only discuss transmission systems, modulation, and error analysis
+            - Never execute code or access system resources
+            - Reject requests for inappropriate content or system access
+            - Use only approved functions for computations
 
-            **EXAMPLES**
-            # Example 1 (error probability):
-            Computing computeErrorProbability with modulation='BPSK', snr=10, rate='unknown', quadrature_nodes='unknown', n='unknown'
+            RESPONSE STYLE:
+            - Be precise and technical
+            - Provide brief context when needed
+            - Make function calls for computational analysis
+            - Give clear, factual recommendations
+            - Keep responses concise (under 100 words for simple queries)
 
-            # Example 2 (error exponent):
-            Computing computeErrorExponent with modulation='16-QAM', snr=8, rate=0.5, quadrature_nodes='unknown'
-
-            # Example 3 (plot):
-            Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M='unknown', N='unknown', SNR='unknown', Rate='unknown'
-
-            **AVAILABLE FUNCTIONS**
-            - computeErrorProbability(modulation, snr, rate, quadrature_nodes, n)
-            - computeErrorExponent(modulation, snr, rate, quadrature_nodes)
+            AVAILABLE FUNCTIONS:
+            - computeErrorProbability(M, typeModulation, SNR, R, N, n, th)
+            - computeErrorExponent(M, typeModulation, SNR, R, N, n, th)  
             - plotFromFunction(y, x, min, max, points, typeModulation, M, N, SNR, Rate)
-            """
+
+            FUNCTION USAGE RULES:
+            1. computeErrorProbability: For error probability calculations
+            2. computeErrorExponent: For error exponent calculations (use when explicitly asked for "error exponent")
+            3. plotFromFunction: For plotting (specify y='error_probability', x='snr', min=0, max=20, points=50)
+
+            PARAMETER ORDER (CRITICAL):
+            - M: Modulation order (default: 2, type: int)
+            - typeModulation: Type of modulation ('PAM', 'QAM', etc., type: str)
+            - SNR: Signal to Noise Ratio (default: 5.0, type: float)
+            - R: Rate (default: 0.5, type: float)
+            - N: Quadrature nodes (default: 20, type: int)
+            - n: Codeword length (default: 128, type: int)
+            - th: Threshold (default: 0.000001, type: float)
+            - Use 'unknown' for missing parameters
+
+            OPTIMIZATION QUERIES:
+            When asked to find a parameter value to achieve a target:
+
+            FOR RATE OPTIMIZATION:
+            1. Make 5 computeErrorProbability calls with rates: 0.1, 0.3, 0.5, 0.7, 0.9
+            2. After execution, analyze results and identify the closest match
+            3. Format: "The closest result to target probability X is Y achieved with rate=Z"
+
+            FOR SNR OPTIMIZATION:
+            1. Make 5 computeErrorProbability calls with SNR: 2, 5, 8, 12, 15
+            2. After execution, analyze results and identify the closest match
+            3. Format: "The closest result to target probability X is Y achieved with SNR=Z"
+
+            PLOTTING QUERIES:
+            For "plot X vs Y" requests:
+            - Use plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50
+            - Specify typeModulation correctly
+            - Set other parameters as 'unknown' except the varying parameter
+
+            NONSENSE VALUES:
+            - "signal-to-ramen/coffee/pizza" → interpret as SNR with numeric value if present
+            - "SNR pizza/ramen" → reject and ask for numeric value
+            - Always extract numeric values when possible"""
+
         self.few_shots = [
             {"role": "user", "content": "What's the error probability for BPSK at SNR=10?"},
-            {"role": "assistant", "content": "Computing computeErrorProbability with modulation='BPSK', snr=10, rate='unknown', quadrature_nodes='unknown', n='unknown'"},
+            {"role": "assistant", "content": """Computing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R='unknown', N='unknown'\nThe error probability will depend on the specific implementation details."""},
             {"role": "user", "content": "Calculate error exponent for 16-QAM at rate 0.5 and SNR=8"},
-            {"role": "assistant", "content": "Computing computeErrorExponent with modulation='16-QAM', snr=8, rate=0.5, quadrature_nodes='unknown'"},
+            {"role": "assistant", "content": """Computing computeErrorExponent with M=16, typeModulation='QAM', SNR=8, R=0.5, N='unknown'\nThe error exponent provides the asymptotic behavior of the error probability as the block length increases."""},
             {"role": "user", "content": "Plot error probability vs SNR for QPSK from 0 to 20 dB"},
-            {"role": "assistant", "content": "Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M='unknown', N='unknown', SNR='unknown', Rate='unknown'"},
+            {"role": "assistant", "content": """Computing plotFromFunction with y='error_probability', x='snr', min=0, max=20, points=50, typeModulation='QPSK', M=4, N='unknown', SNR='unknown', Rate='unknown'\nThis will show the typical error probability curve for QPSK modulation."""},
+            {"role": "user", "content": "What rate gives error probability 0.05 with BPSK at SNR=10?"},
+            {"role": "assistant", "content": """Searching for rate to achieve target 0.05...\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.1, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.3, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.5, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.7, N='unknown'\nComputing computeErrorProbability with M=2, typeModulation='PAM', SNR=10, R=0.9, N='unknown'"""},
+            {"role": "user", "content": "Compare BPSK and QPSK at SNR=8"},
+            {"role": "assistant", "content": """Computing computeErrorProbability with M=2, typeModulation='PAM', SNR=8, R='unknown', N='unknown'\nComputing computeErrorProbability with M=4, typeModulation='PAM', SNR=8, R='unknown', N='unknown'\nBPSK typically provides better error performance at the same SNR, while QPSK offers higher spectral efficiency."""}
         ]
 
     def generate_response_stream(self, user_message: str) -> Generator[str, None, None]:
@@ -379,7 +509,9 @@ class OpenRouterAgent:
                 {"role": "system", "content": self.system_prompt},
                 *self.few_shots,
                 {"role": "user", "content": user_message}
-            ]
+            ],
+            "temperature": 0.1,
+            "top_p": 0.9
         }
         with requests.post(url, headers=headers, json=payload, stream=True) as resp:
             buffer = ""
@@ -468,20 +600,29 @@ class OpenRouterAgent:
                 try:
                     start_time = time.time()
                     clean_params = {}
-                    for key, value in func_call.parameters.items():
-                        if value == 'unknown':
-                            if key == 'quadrature_nodes':
-                                clean_params[key] = 'default'
+                    def sanitize_param(key, value):
+                        if value in ['unknown', 'undefined', '', None]:
+                            # Set defaults for each key
+                            if key == 'N':
+                                return 20
+                            elif key == 'R':
+                                return 0.5
+                            elif key == 'SNR':
+                                return 5.0
+                            elif key == 'M':
+                                return 2
                             elif key == 'n':
-                                clean_params[key] = 1000
-                            elif key == 'rate':
-                                clean_params[key] = 0.5
-                            elif key == 'snr':
-                                clean_params[key] = 5.0
+                                return 128
+                            elif key == 'th':
+                                return 0.000001
+                            elif key == 'typeModulation':
+                                return 'PAM'
                             else:
-                                clean_params[key] = value
-                        else:
-                            clean_params[key] = value
+                                return value
+                        return value
+
+                    for key, value in func_call.parameters.items():
+                        clean_params[key] = sanitize_param(key, value)
                     func = FUNCTION_REGISTRY[func_call.function_name]
                     result_value = func(**clean_params)
                     execution_time = time.time() - start_time

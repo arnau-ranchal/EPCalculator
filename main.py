@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException, Response
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from typing import List, Literal
@@ -10,15 +10,18 @@ import math
 
 # Importar mòdul chatbot
 import sys
-sys.path.append("chatbot")
-from chatbot.chatbot import respond
 
+sys.path.append("chatbot")
+from chatbot.chatbotV2 import OpenRouterAgent
+
+API_KEY = os.environ.get('API_KEY')  # Make sure this is set in your environment
+openrouter_agent = OpenRouterAgent(api_key=API_KEY)
+#local_agent = Transmission
 
 app = FastAPI()
 
 # Cargar la biblioteca compartida
 lib = ctypes.CDLL('./build/libfunctions.so')
-
 
 # Servir archivos estáticos (CSS, imágenes)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -34,30 +37,30 @@ async def serve_index():
     return {"error": "index.html no encontrado"}
 
 
-
 # ------------------------ EXPONENTS -------------------------------------------------------------------------
 # Definir tipus d'arguments i retorn per exponents
 lib.exponents.argtypes = (
-    ctypes.c_float, 
-    ctypes.c_char_p, 
-    ctypes.c_float, 
-    ctypes.c_float, 
+    ctypes.c_float,
+    ctypes.c_char_p,
+    ctypes.c_float,
+    ctypes.c_float,
     ctypes.c_float,
     ctypes.c_float,
     ctypes.c_float
 )
 lib.exponents.restype = ctypes.POINTER(ctypes.c_float)
 
+
 # Funció que crida a la funció exponents
 @app.get("/exponents")
 async def exponents(
-    M: float = Query(1, description="Modulation"), 
-    typeM: str = Query("PAM", description="Tipo de modulación: PAM, QAM, etc."),
-    SNR: float = Query(1.0, description="Signal to Noise Ratio"), 
-    R: float = Query(1.0, description="Rate"), 
-    N: float = Query(1, description="quadrature"),
-    n: float = Query(1, description="Code length"),
-    th: float = Query(1, description="Threshold"),
+        M: float = Query(1, description="Modulation"),
+        typeM: str = Query("PAM", description="Tipo de modulación: PAM, QAM, etc."),
+        SNR: float = Query(1.0, description="Signal to Noise Ratio"),
+        R: float = Query(1.0, description="Rate"),
+        N: float = Query(20, description="quadrature"),
+        n: float = Query(1, description="Code length"),
+        th: float = Query(1, description="Threshold"),
 ):
     """  
     Calcula l'exponent `Pe`, 'E' i `RHO`.
@@ -79,9 +82,10 @@ async def exponents(
 
     return {
         "Probabilidad de error": values[0],
-        "Exponents": values[1],
+        "error_exponent": values[1],
         "rho óptima": values[2]
     }
+
 
 # ------------------------ GRAPHICS -------------------------------------------------------------------------
 # Classe per la petició de generar una gràfica respecte una funció ja pre-programada
@@ -97,6 +101,7 @@ class FunctionPlotRequest(BaseModel):
     N: float
     n: float
     th: float
+
 
 # Endpoint per generar gràfiques a partir de funcions predefinides
 @app.post("/plot_function")
@@ -137,12 +142,11 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
                 result  # Pass the buffer
             )
             y_map = {
-                "ErrorProb": result[0],
-                "Exponents": result[1],
-                "Rho": result[2]
+                "error_probability": result[0],
+                "error_exponent": result[1],
+                "rho": result[2]
             }
             y_vals.append(y_map[plot_data.y])
-            
 
         return {
             "x": x_vals.tolist(),
@@ -150,8 +154,7 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating plot data: {str(e)}")
-    
+        raise HTTPException(status_code=500, detail=f"Error generating plot data: {repr(e)}")
 
 
 class ContourPlotRequest(BaseModel):
@@ -169,6 +172,7 @@ class ContourPlotRequest(BaseModel):
     N: float
     n: float
     th: float
+
 
 @app.post("/plot_contour")
 async def generate_contour_plot(plot_data: ContourPlotRequest):
@@ -216,9 +220,9 @@ async def generate_contour_plot(plot_data: ContourPlotRequest):
                 )
 
                 y_map = {
-                    "ErrorProb": result[0],
-                    "Exponents": result[1],
-                    "Rho": result[2]
+                    "error_probability": result[0],
+                    "error_exponent": result[1],
+                    "rho": result[2]
                 }
                 row.append(y_map[plot_data.y])
             z_matrix.append(row)
@@ -236,14 +240,42 @@ async def generate_contour_plot(plot_data: ContourPlotRequest):
 # ------------------------ CHATBOT -------------------------------------------------------------------------
 class ChatbotRequest(BaseModel):
     message: str
+    model_choice: str
 
 @app.post("/chatbot")
 async def chatbot_with_bot(request: ChatbotRequest):
-    """
-    Endpoint per interactuar amb el chatbot.
-    """
     try:
-        response = respond(request.message)
-        return {"response": response}
+
+        # Choose the agent based on the user's selection
+        # TODO CHANGE THE FIRST OPENROUTER_AGENT TO THE LOCAL_AGENT
+        agent_to_use = openrouter_agent if request.model_choice == 'local' else openrouter_agent
+
+        # Use the selected agent to process the request
+        response_text = "".join(agent_to_use.generate_response_stream(request.message))
+
+        function_calls = agent_to_use.parse_function_calls(response_text)
+
+        # 3. If function calls found, execute them and return results
+        if function_calls:
+
+            """execution_results = chatbot_agent.execute_function_calls(function_calls)
+            results_summary = []
+            for i, result in enumerate(execution_results):
+                if result.success:
+                    value_str = str(result.result_value)
+                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): {value_str}")
+                else:
+                    results_summary.append(f"Function {i+1} ({function_calls[i].function_name}): Failed - {result.error_message}")
+            # Combine LLM reply and results
+            combined = response_text + "\n\n" + "\n".join(results_summary)"""
+
+            return {
+                "response": "Parameters filled at the left",  # combined,
+                "parameters": function_calls[0].parameters if function_calls else None
+            }
+        else:
+            # If no function call, just return the LLM's text
+            return {"response": response_text}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")    
+        raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")
+
