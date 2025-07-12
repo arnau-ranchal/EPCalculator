@@ -55,7 +55,6 @@ bool createTable(const Aws::String &tableName,
     return outcome.IsSuccess();
 }
 
-// Modified putItem for your schema
 bool putItem(const Aws::String& tableName,
              const Aws::String& date,
              double e0,
@@ -68,20 +67,29 @@ bool putItem(const Aws::String& tableName,
              const Aws::Client::ClientConfiguration& clientConfig) {
     Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
     Aws::DynamoDB::Model::PutItemRequest request;
-
     request.SetTableName(tableName);
 
-    // Convert numbers to string representations
-    auto numToString = [](double num) { return std::to_string(num); };
+    // Create composite key
+    auto formatKey = [](double value) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << value;
+        return oss.str();
+    };
 
+    std::string id = std::to_string(M) + "_" + const_type + "_" +
+                     formatKey(snr) + "_" + formatKey(r) + "_" +
+                     std::to_string(n);
+
+    // Add composite key and other attributes
+    request.AddItem("id", Aws::DynamoDB::Model::AttributeValue().SetS(id));
     request.AddItem("date", Aws::DynamoDB::Model::AttributeValue().SetS(date));
-    request.AddItem("e0", Aws::DynamoDB::Model::AttributeValue().SetN(numToString(e0)));
-    request.AddItem("optimal_rho", Aws::DynamoDB::Model::AttributeValue().SetN(numToString(optimal_rho)));
+    request.AddItem("e0", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(e0)));
+    request.AddItem("optimal_rho", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(optimal_rho)));
     request.AddItem("M", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(M)));
     request.AddItem("constel", Aws::DynamoDB::Model::AttributeValue().SetS(const_type));
-    request.AddItem("snr", Aws::DynamoDB::Model::AttributeValue().SetN(numToString(snr)));
-    request.AddItem("r", Aws::DynamoDB::Model::AttributeValue().SetN(numToString(r)));
-    request.AddItem("n", Aws::DynamoDB::Model::AttributeValue().SetN(numToString(n)));
+    request.AddItem("snr", Aws::DynamoDB::Model::AttributeValue().SetN(formatKey(snr)));
+    request.AddItem("r", Aws::DynamoDB::Model::AttributeValue().SetN(formatKey(r)));
+    request.AddItem("n", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(n)));
 
     auto outcome = dynamoClient.PutItem(request);
     if (!outcome.IsSuccess()) {
@@ -105,21 +113,24 @@ ItemResult getItem(
         int n,
         const Aws::Client::ClientConfiguration &clientConfig) {
 
-    // Create DynamoDB Client
-    Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
+    // Format doubles consistently
+    auto formatKey = [](double value) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << value;
+        return oss.str();
+    };
 
-    // Build the key for GetItem request
+    // Build composite ID
+    std::string id = std::to_string(M) + "_" + const_type + "_" +
+                     formatKey(snr) + "_" + formatKey(r) + "_" +
+                     std::to_string(n);
+
+    Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
     Aws::DynamoDB::Model::GetItemRequest request;
     request.SetTableName(tableName);
 
     Aws::Map<Aws::String, Aws::DynamoDB::Model::AttributeValue> key;
-
-    // Convert numerical keys to string representation as DynamoDB stores them as numbers using SetN
-    key["M"].SetN(std::to_string(M));
-    key["const_type"].SetS(const_type);
-    key["snr"].SetN(std::to_string(snr));
-    key["r"].SetN(std::to_string(r));
-    key["n"].SetN(std::to_string(n));
+    key["id"].SetS(id);  // Use composite key
 
     request.SetKey(key);
 
@@ -168,40 +179,4 @@ ItemResult getItem(
         throw std::runtime_error("'optimal_rho' not found");
     }
     return result;
-}
-
-
-
-// Modified getItem for your schema
-bool getItem(const Aws::String& tableName,
-             const Aws::String& date,
-             const Aws::Client::ClientConfiguration& clientConfig) {
-    Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
-    Aws::DynamoDB::Model::GetItemRequest request;
-
-    request.SetTableName(tableName);
-    request.AddKey("date", Aws::DynamoDB::Model::AttributeValue().SetS(date));
-
-    auto outcome = dynamoClient.GetItem(request);
-    if (outcome.IsSuccess()) {
-        const auto& item = outcome.GetResult().GetItem();
-        if (item.empty()) {
-            std::cout << "Item not found!" << std::endl;
-            return false;
-        }
-
-        std::cout << "Item contents:" << std::endl;
-        for (const auto& attr : item) {
-            if(attr.first != "constel" && attr.first != "date"){
-                std::cout << "  " << attr.first << ": " << attr.second.GetN() << std::endl;
-            }
-            else{
-                std::cout << "  " << attr.first << ": " << attr.second.GetS() << std::endl;
-            }
-        }
-        return true;
-    }
-
-    std::cerr << "GetItem error: " << outcome.GetError().GetMessage() << std::endl;
-    return false;
 }

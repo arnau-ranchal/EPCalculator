@@ -32,7 +32,9 @@ int my_main(std::string tname) {
         double r = 0;
         int n = 2;
 
+        putItem(tableName, "testdate", 2, 3, M, const_type, snr, r, n, config);
         ItemResult res = getItem(tableName, M, const_type, snr, r, n, config);
+        std::cout << "item retrieved correctly" << "\n";
         std::cout << "e0: " << res.e0 << "\n";
         std::cout << "optimal_rho: " << res.optimal_rho << "\n";
     } catch (const std::exception &ex) {

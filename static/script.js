@@ -67,9 +67,17 @@ function calculateExponents(event) {
 
 /* Plot Using the ENDPOINT */
 function plotFromFunction() {
+    var renamer = {
+      "m": "M",
+      "snr": "SNR",
+      "rate": "Rate",
+      "N": "N",
+      "n": "n",
+      "th": "th",
+    };
 
     const y = document.getElementById('yVar').value;
-    const x = document.getElementById('xVar').value;
+    const x = renamer[document.getElementById('xVar').value];
     const x2 = document.getElementById('xVar2').value; /* Pel contour plot */
     const [min, max] = document.getElementById('xRange').value.split(',').map(Number);
     const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number); /* Pel contour plot */
@@ -87,7 +95,7 @@ function plotFromFunction() {
 
     const inputs = { M, SNR, Rate, N, n, th };
 
-    
+
     let selectedPlotType = document.getElementById('plotType').value;
     let plotType = (selectedPlotType === 'lineLog') ? currentScaleType : 'contour';
 
@@ -130,13 +138,13 @@ function plotFromFunction() {
         resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">⚠️ Please enter a valid range (min < max) for X axis.</p>`;
         resultDiv.classList.add('show');
         return;
-    } 
+    }
 
     const lineType = document.getElementById('lineType').value || '-';
     let color = document.getElementById('lineColor').value;
     // Si no s'ha modificat, deixem el color per defecte
     if (!document.getElementById('lineColor').dataset.userModified) {
-      color = ""; 
+      color = "";
     }
 
 
@@ -148,7 +156,7 @@ function plotFromFunction() {
             resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">⚠️ Please enter a valid range (min < max) for X2 axis.</p>`;
             resultDiv.classList.add('show');
             return;
-        } 
+        }
 
         for (const [key, value] of Object.entries(inputs)) {
           if ((key !== x && key !== x2) && (value === '' || isNaN(parseFloat(value)))) {
@@ -160,7 +168,7 @@ function plotFromFunction() {
 
         const payload = {
         y,
-        x1: x,       
+        x1: x,
         x2,
         rang_x1: [min, max],
         rang_x2: [min2, max2],
@@ -174,7 +182,7 @@ function plotFromFunction() {
         n: parseFloat(n) || 0,
         th: parseFloat(th) || 0
         };
-      
+
         fetch("/plot_contour", {
           method: "POST",
           headers: {
@@ -213,10 +221,10 @@ function plotFromFunction() {
           lineType,
           plotType
       };
-  
+
       document.getElementById('plot-result').innerHTML = "";
       document.getElementById('plot-result').classList.remove('show');
-    
+
       fetch('/plot_function', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -227,7 +235,7 @@ function plotFromFunction() {
           return response.json();
       })
       .then(data => {
-          console.log("Datos recibidos del backend:", data); 
+          console.log("Datos recibidos del backend:", data);
           // Info que passarem per a poder visualitzar les dades
           const metadata = {
             M, SNR, Rate, N, n, th,
@@ -247,9 +255,9 @@ function plotFromFunction() {
           const resultDiv = document.getElementById('plot-result');
           resultDiv.innerHTML = `<p style="color: red; font-weight: bold;">⚠️ Unable to process the data. Please verify your inputs.</p>`;
           resultDiv.classList.add('show');
-      }); 
+      });
     }
-       
+
 }
 
 
@@ -1657,7 +1665,7 @@ function adjustPlotWidthBasedOnSidebar() {
     if (window.__gX) {
       window.__gX
         .attr("transform", `translate(0,${window.__innerHeight})`)
-        .call(d3.axisBottom(window.__xScale)); 
+        .call(d3.axisBottom(window.__xScale));
     }
     renderAll();
     resetZoom();

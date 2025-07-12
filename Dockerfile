@@ -26,7 +26,7 @@ COPY . .
 RUN make clean && make
 
 # Exponer el puerto correcto
-EXPOSE 8000
+EXPOSE 80
 
 # Comando para iniciar FastAPI
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
