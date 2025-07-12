@@ -1370,6 +1370,7 @@ void setX(int npoints, string xmode) {
         for (int n = 0; n < npoints; n++) X[n] = (double(rand()) + I * double(rand()));
         //X = {-1/sqrt(2)-I*double(1/sqrt(2)), -1/sqrt(2)+I*double(1/sqrt(2)), +1/sqrt(2)-I*double(1/sqrt(2)), 1/sqrt(2)+I*double(1/sqrt(2))};
     } else {
+        setX(npoints, "PAM");
         cout << "ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     }
 
@@ -2536,8 +2537,8 @@ std::vector<double> eigenToRowMajor(const Eigen::MatrixXd &mat) {
 }
 
 double GD_co(double &r, double &rho, double &rho_interpolated, int num_iterations, int n, bool updateR) {
-    // Gradient Descent of E0
 
+    // Gradient Descent of E0
     auto start_XX = std::chrono::high_resolution_clock::now();
 
     //if (DEBUG) cout  << "i rho e0 e0-rho*R grad_rho " << endl;

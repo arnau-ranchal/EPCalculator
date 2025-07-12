@@ -12,10 +12,10 @@ import math
 import sys
 
 sys.path.append("chatbot")
-from chatbot.chatbotV2 import OpenRouterAgent
+# from chatbot.chatbotV2 import OpenRouterAgent
 
-API_KEY = os.environ.get('API_KEY')  # Make sure this is set in your environment
-openrouter_agent = OpenRouterAgent(api_key=API_KEY)
+# API_KEY = os.environ.get('API_KEY')  # Make sure this is set in your environment
+# openrouter_agent = OpenRouterAgent(api_key=API_KEY)
 #local_agent = Transmission
 
 app = FastAPI()
@@ -127,6 +127,7 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
                 "n": plot_data.n,
                 "th": plot_data.th
             }
+            print(plot_data.x)
             args[plot_data.x] = x_point
 
             # Allocate a new buffer for each call
@@ -248,6 +249,7 @@ async def chatbot_with_bot(request: ChatbotRequest):
 
         # Choose the agent based on the user's selection
         # TODO CHANGE THE FIRST OPENROUTER_AGENT TO THE LOCAL_AGENT
+
         agent_to_use = openrouter_agent if request.model_choice == 'local' else openrouter_agent
 
         # Use the selected agent to process the request
@@ -257,7 +259,7 @@ async def chatbot_with_bot(request: ChatbotRequest):
 
         # 3. If function calls found, execute them and return results
         if function_calls:
-
+            '''
             """execution_results = chatbot_agent.execute_function_calls(function_calls)
             results_summary = []
             for i, result in enumerate(execution_results):
@@ -273,9 +275,15 @@ async def chatbot_with_bot(request: ChatbotRequest):
                 "response": "Parameters filled at the left",  # combined,
                 "parameters": function_calls[0].parameters if function_calls else None
             }
+            '''
+            return {
+                "response": "i am a chatbot",  # combined,
+                "parameters": None
+            }
         else:
             # If no function call, just return the LLM's text
-            return {"response": response_text}
+            return {"response": "i am a chatbot"}
+            # return {"response": response_text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error in chatbot: {str(e)}")
 

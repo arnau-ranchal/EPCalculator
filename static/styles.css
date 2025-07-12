@@ -1166,9 +1166,31 @@ button.clicked,
   pointer-events: none;
 }
 
+/* ======== FIX FOR MOBILE & NARROW SCREENS ======== */
+@media (max-width: 1024px) {
+  /* Ensure the body can grow and scroll */
+  body {
+    height: auto;
+    min-height: 100vh;
+  }
 
+  /* Allow the main layout to stack vertically */
+  .main-layout {
+    flex-direction: column;
+    height: auto;
+  }
 
+  /* Ensure the header stays on top of other content */
+  #header {
+    position: relative;
+    z-index: 10;
+  }
 
-
-
-
+  /* Make sure the sidebars take up only the space they need */
+  .parameters-area, .chatbot-sidebar {
+    width: 100%;
+    max-width: 100%;
+    height: auto; /* Allow height to be determined by content */
+    overflow-y: visible; /* Prevent internal scrollbars */
+  }
+}

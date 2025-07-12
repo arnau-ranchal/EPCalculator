@@ -11,3 +11,5 @@ dist/
 *.log
 *.tmp
 node_modules/
+chatbot/chatbot.py
+chatbot/chatbotV2.py
