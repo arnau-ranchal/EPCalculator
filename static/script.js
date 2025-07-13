@@ -4,8 +4,10 @@ window.addEventListener('DOMContentLoaded', () => {
     onLineTypeChange();
     drawDefaultGrid();
     plotInitialGraph();  // init primer graph
-});
 
+    // Bind unified event handlers
+    bindUnifiedEventHandlers();
+});
 
 /* Global parameters pels eixos*/
 const axisLabelsMap = {
@@ -25,18 +27,604 @@ let lastPlotType = null;
 let skipPlotWarning = false;
 let currentScaleType = 'linear';  // Scale por defecto
 
+// ==================== UNIFIED ARCHITECTURE ====================
+
+function validateInputs() {
+    // Validate modulation
+    const M = document.getElementById('M');
+    if (M.value) {
+        const MVal = parseInt(M.value);
+        if (MVal < 2 || MVal > 128) {
+            alert('Modulation must be between 2 and 128');
+            return false;
+        }
+    }
+
+    // Validate SNR
+    const snr = document.getElementById('SNR');
+    if (snr.value) {
+        const snrVal = parseFloat(snr.value);
+        if (snrVal < 2 || snrVal > 10) {
+            alert('SNR must be between 2 and 10');
+            return false;
+        }
+    }
+
+    // Validate Rate
+    const rate = document.getElementById('R');
+    if (rate.value) {
+        const rateVal = parseFloat(rate.value);
+        if (rateVal < 0.1 || rateVal > 10) {
+            alert('Rate must be between 0.1 and 10');
+            return false;
+        }
+    }
+
+    // Validate Code Length
+    const n = document.getElementById('n');
+    if (n.value) {
+        const nVal = parseInt(n.value);
+        if (nVal < 1 || nVal > 200) {
+            alert('Code length must be between 1 and 200');
+            return false;
+        }
+    }
+
+    // Validate Quadrature
+    const N = document.getElementById('N');
+    if (N.value) {
+        const NVal = parseInt(N.value);
+        if (NVal < 5 || NVal > 40) {
+            alert('Quadrature must be between 5 and 40');
+            return false;
+        }
+    }
+
+    // Validate Threshold
+    const th = document.getElementById('th');
+    if (th.value) {
+        const thVal = parseFloat(th.value);
+        if (thVal < 1e-15 || thVal > 0.1) {
+            alert('Threshold must be between 1e-15 and 0.1');
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Unified function to gather computation parameters from form
+ */
+function gatherComputationParameters() {
+    const M_val = document.getElementById('M').value;
+    const typeM_val = document.getElementById('TypeModulation').value;
+    const SNR_val = document.getElementById('SNR').value;
+    const R_val = document.getElementById('R').value;
+    const N_val = document.getElementById('N').value;
+    const n_val = document.getElementById('n').value;
+    const th_val = document.getElementById('th').value;
+
+    const sanitize = (value, defaultValue) => {
+        if (value === '' || value === null || value === undefined || String(value).toLowerCase() === 'undefined' || String(value).toLowerCase() === 'unknown' || String(value).toLowerCase() === 'none') {
+            return defaultValue;
+        }
+        return value;
+    };
+
+    return {
+        M: sanitize(M_val, 2),
+        typeModulation: sanitize(typeM_val, 'PAM'),
+        SNR: sanitize(SNR_val, 5.0),
+        R: sanitize(R_val, 0.5),
+        N: sanitize(N_val, 20),
+        n: sanitize(n_val, 128),
+        th: sanitize(th_val, 1e-6)
+    };
+}
+
+/**
+ * Unified function to gather plot parameters from form
+ */
+function gatherPlotParameters() {
+    const y = document.getElementById('yVar').value;
+    const x = document.getElementById('xVar').value;
+    const x2 = document.getElementById('xVar2').value;
+    const [min, max] = document.getElementById('xRange').value.split(',').map(Number);
+    const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number);
+    const points = Number(document.getElementById('points').value);
+    const points2 = Number(document.getElementById('points2').value);
+
+    // Get fixed values
+    const M = document.getElementById('M').value;
+    const typeModulation = document.getElementById('TypeModulation').value;
+    const SNR = document.getElementById('SNR').value;
+    const Rate = document.getElementById('R').value;
+    const N = document.getElementById('N').value || 20;
+    const n = document.getElementById('n').value;
+    const th = document.getElementById('th').value || 1e-6;
+
+    let selectedPlotType = document.getElementById('plotType').value;
+    let plotType = (selectedPlotType === 'lineLog') ? currentScaleType : 'contour';
+
+    return {
+        y, x, x2, min, max, min2, max2, points, points2,
+        M, typeModulation, SNR, Rate, N, n, th,
+        plotType, selectedPlotType
+    };
+}
+
+/**
+ * Unified computation function - used by both manual and LLM requests
+ */
+function runComputation(functionName, parameters) {
+    const chatBox = document.getElementById('chat-messages');
+
+    // Show a loading message
+    const loadingMsg = document.createElement('div');
+    loadingMsg.className = 'chat-bubble bot';
+    loadingMsg.textContent = 'Computing...';
+    chatBox.appendChild(loadingMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    fetch('/compute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ function_name: functionName, parameters })
+    })
+    .then(res => res.json())
+    .then(data => {
+        loadingMsg.remove();
+        const botMsg = document.createElement('div');
+        botMsg.className = 'chat-bubble bot';
+        botMsg.textContent = data.result || 'No result.';
+        chatBox.appendChild(botMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    })
+    .catch(err => {
+        loadingMsg.remove();
+        const errMsg = document.createElement('div');
+        errMsg.className = 'chat-bubble error';
+        errMsg.textContent = '⚠️ Error: ' + err.message;
+        chatBox.appendChild(errMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+/**
+ * Unified plot function - used by both manual and LLM requests
+ */
+function runPlot(parameters, isContour = false) {
+    // Handle plot warnings
+    const plotChanged = (
+        lastYVar !== null &&
+        (parameters.y !== lastYVar || parameters.x !== lastXVar || parameters.selectedPlotType !== lastPlotType)
+    );
+
+    const hasPlots = activePlots.length > 0;
+
+    if (plotChanged && hasPlots) {
+        if (skipPlotWarning) {
+            clearAllPlots();
+        } else {
+            showPlotWarningModal(() => {
+                clearAllPlots();
+                lastYVar = parameters.y;
+                lastXVar = parameters.x;
+                runPlot(parameters, isContour); // Retry
+            });
+            return;
+        }
+    }
+
+    lastYVar = parameters.y;
+    lastXVar = parameters.x;
+    lastPlotType = parameters.selectedPlotType;
+
+    // Validate inputs
+    if (isNaN(parameters.min) || isNaN(parameters.max) || parameters.min >= parameters.max) {
+        console.error('Invalid range for X axis');
+        return;
+    }
+
+    if (isContour) {
+        console.log('Processing contour plot with parameters:', parameters);
+
+        if (isNaN(parameters.min2) || isNaN(parameters.max2) || parameters.min2 >= parameters.max2) {
+            console.error('Invalid range for X2 axis');
+            return;
+        }
+
+        const payload = {
+            y: parameters.y,
+            x1: parameters.x,
+            x2: parameters.x2,
+            rang_x1: [parameters.min, parameters.max],
+            rang_x2: [parameters.min2, parameters.max2],
+            points1: parameters.points,
+            points2: parameters.points2,
+            typeModulation: parameters.typeModulation,
+            M: parseFloat(parameters.M) || 0,
+            SNR: parseFloat(parameters.SNR) || 0,
+            Rate: parseFloat(parameters.Rate) || 0,
+            N: parseFloat(parameters.N) || 0,
+            n: parseFloat(parameters.n) || 0,
+            th: parseFloat(parameters.th) || 0
+        };
+
+        console.log('Sending contour plot payload:', payload);
+
+        fetch("/plot_contour", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            console.log('Contour plot response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Contour plot response data:', data);
+            drawContourPlot(data.x1, data.x2, data.z);
+        })
+        .catch(error => {
+            console.error("Error in contour plot:", error);
+        });
+    } else {
+        const lineType = document.getElementById('lineType').value || '-';
+        let color = document.getElementById('lineColor').value;
+        if (!document.getElementById('lineColor').dataset.userModified) {
+            color = "";
+        }
+
+        const payload = {
+            y: parameters.y,
+            x: parameters.x,
+            rang_x: [parameters.min, parameters.max],
+            points: parameters.points,
+            typeModulation: parameters.typeModulation,
+            M: parseFloat(parameters.M) || 0,
+            SNR: parseFloat(parameters.SNR) || 0,
+            Rate: parseFloat(parameters.Rate) || 0,
+            N: parseFloat(parameters.N) || 0,
+            n: parseFloat(parameters.n) || 0,
+            th: parseFloat(parameters.th) || 0,
+            color,
+            lineType
+        };
+
+        fetch("/plot_function", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Info que passarem per a poder visualitzar les dades
+            const metadata = {
+                M: parameters.M,
+                SNR: parameters.SNR,
+                Rate: parameters.Rate,
+                N: parameters.N,
+                n: parameters.n,
+                th: parameters.th,
+                typeModulation: parameters.typeModulation,
+                xVar: parameters.x
+            };
+            drawInteractivePlot(data.x, data.y, {
+                color: color,
+                lineType: lineType,
+                plotType: parameters.plotType || 'linear',
+                metadata
+            });
+        })
+        .catch(error => console.error("Error:", error));
+    }
+}
+
+/**
+ * Unified manual computation handler
+ */
+function handleManualComputation(event) {
+    event.preventDefault();
+
+    // Get parameters from the form
+    const M_val = document.getElementById('M').value;
+    const typeM_val = document.getElementById('TypeModulation').value;
+    const SNR_val = document.getElementById('SNR').value;
+    const R_val = document.getElementById('R').value;
+    const N_val = document.getElementById('N').value;
+    const n_val = document.getElementById('n').value;
+    const th_val = document.getElementById('th').value;
+    const resultDiv = document.getElementById('result');
+
+    const sanitize = (value, defaultValue) => {
+        if (value === '' || value === null || value === undefined || String(value).toLowerCase() === 'undefined' || String(value).toLowerCase() === 'unknown' || String(value).toLowerCase() === 'none') {
+            return defaultValue;
+        }
+        return value;
+    };
+
+    const M = sanitize(M_val, 2);
+    const typeM = sanitize(typeM_val, 'PAM');
+    const SNR = sanitize(SNR_val, 5.0);
+    const R = sanitize(R_val, 0.5);
+    const N = sanitize(N_val, 20);
+    const n = sanitize(n_val, 128);
+    const th = sanitize(th_val, 1e-6);
+
+    // Clear previous results
+    resultDiv.innerHTML = "";
+    resultDiv.classList.remove('show');
+
+    // Call /exponents directly (same as calculateExponents function)
+    fetch(`/exponents?M=${M}&typeM=${typeM}&SNR=${SNR}&R=${R}&N=${N}&n=${n}&th=${th}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Server response not OK");
+            }
+            return response.json();
+        })
+        .then(data => {
+            resultDiv.innerHTML = `
+                <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
+                <p><strong>Exponents:</strong> ${data["error_exponent"].toFixed(4)}</p>
+                <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
+            `;
+            resultDiv.classList.add('show');
+        })
+        .catch(error => {
+            console.error("Error fetching exponents:", error);
+            resultDiv.innerHTML = `<p style="color: #000; font-weight: bold;">Unable to process the data. Please verify your inputs.</p>`;
+            resultDiv.classList.add('show');
+        });
+}
+
+/**
+ * Unified manual plot handler
+ */
+function handleManualPlot(event) {
+    event.preventDefault();
+    const parameters = gatherPlotParameters();
+    const isContour = parameters.plotType === 'contour';
+    runPlot(parameters, isContour);
+}
+
+/**
+ * Bind unified event handlers to buttons
+ */
+function bindUnifiedEventHandlers() {
+    // Bind compute button
+    const computeBtn = document.querySelector('button.compute-error');
+    if (computeBtn) {
+        computeBtn.onclick = handleManualComputation;
+    }
+
+    // Bind plot button
+    const plotBtn = document.querySelector('button[type="button"][onclick*="plotFromFunction"]');
+    if (plotBtn) {
+        plotBtn.onclick = handleManualPlot;
+    }
+
+    // Bind Enter key for chat input - with retry mechanism
+    function attachChatInputHandler() {
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            // Remove any existing event listeners to avoid duplicates
+            chatInput.removeEventListener('keydown', handleChatInputKeydown);
+            chatInput.addEventListener('keydown', handleChatInputKeydown);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Define the keydown handler function
+    function handleChatInputKeydown(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Prevent default form submission
+            sendMessage();
+        }
+    }
+
+    // Try to attach the handler immediately
+    if (!attachChatInputHandler()) {
+        // If not found, try again after a short delay
+        setTimeout(() => {
+            if (!attachChatInputHandler()) {
+                console.error('Failed to attach chat input handler after retry');
+            }
+        }, 100);
+    }
+}
+
+// --- Add session management ---
+let currentSessionId = null;
+
+function getSessionId() {
+    if (!currentSessionId) {
+        // Generate a simple session ID based on timestamp
+        currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    return currentSessionId;
+}
+
+/**
+ * Unified chat message handler
+ */
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const chatBox = document.getElementById('chat-messages');
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-bubble user';
+    userMsg.textContent = msg;
+    chatBox.appendChild(userMsg);
+
+    input.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    fetch('/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            message: msg,
+            model_choice: document.getElementById('model-selector').value,
+            session_id: getSessionId()
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const botMsg = document.createElement('div');
+        botMsg.className = 'chat-bubble bot';
+        botMsg.textContent = data.response;
+        chatBox.appendChild(botMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Handle task if present
+        if (data.task && data.task.parameters) {
+            const safelySetValue = (id, value, defaultvalue) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (value === undefined || value === null || value === '' || value === 'unknown' || value === 'undefined') {
+                        element.value = defaultvalue;
+                    } else {
+                        element.value = value;
+                    }
+                } else {
+                    console.warn(`Warning: HTML element with id="${id}" was not found.`);
+                }
+            };
+
+            if (!data.task.is_plot_request) {
+                // Computation task
+                safelySetValue('M', data.task.parameters.M, 2);
+                safelySetValue('TypeModulation', data.task.parameters.typeModulation, "PAM");
+                safelySetValue('SNR', data.task.parameters.SNR, 1);
+                safelySetValue('R', data.task.parameters.R, 0.5);
+                safelySetValue('N', data.task.parameters.N, 20);
+                safelySetValue('n', data.task.parameters.n, 128);
+                safelySetValue('th', data.task.parameters.th, 0.000001);
+
+                runComputation(data.task.function_name, data.task.parameters);
+            } else {
+                // Plot task
+                safelySetValue('M', data.task.parameters.M, 2);
+                safelySetValue('SNR', data.task.parameters.SNR, 1);
+                safelySetValue('R', data.task.parameters.Rate, 0.5);
+                safelySetValue('N', data.task.parameters.N, 20);
+                safelySetValue('yVar', data.task.parameters.y && data.task.parameters.y.toLowerCase(), "error_probability");
+
+                // Check if this is a contour plot
+                const isContourPlot = data.task.is_contour_plot || false;
+
+                if (isContourPlot) {
+                    // Contour plot - set up both x1 and x2 variables
+                    safelySetValue('plotType', 'contour', 'lineLog');
+                    safelySetValue('xVar', data.task.parameters.x1 && data.task.parameters.x1.toLowerCase(), 'snr');
+                    safelySetValue('xVar2', data.task.parameters.x2 && data.task.parameters.x2.toUpperCase(), 'Rate');
+                    safelySetValue('points', data.task.parameters.points1, 20);
+                    safelySetValue('points2', data.task.parameters.points2, 20);
+                    safelySetValue('xRange', `${data.task.parameters.rang_x1[0]},${data.task.parameters.rang_x1[1]}`, `${0},${20}`);
+                    safelySetValue('xRange2', `${data.task.parameters.rang_x2[0]},${data.task.parameters.rang_x2[1]}`, `${0.1},${0.9}`);
+
+                    // Trigger form update to show contour plot fields
+                    setTimeout(() => onLineTypeChange(), 10);
+
+                    // Convert to our unified format for contour plots
+                    const plotParams = {
+                        ...data.task.parameters,
+                        x: data.task.parameters.x1,
+                        x2: data.task.parameters.x2,
+                        min: data.task.parameters.rang_x1[0],
+                        max: data.task.parameters.rang_x1[1],
+                        min2: data.task.parameters.rang_x2[0],
+                        max2: data.task.parameters.rang_x2[1],
+                        points: data.task.parameters.points1,
+                        points2: data.task.parameters.points2,
+                        plotType: 'contour',
+                        selectedPlotType: 'contour'
+                    };
+                    runPlot(plotParams, true);
+                } else {
+                    // Regular plot
+                    if (data.task.parameters.x && data.task.parameters.x.toLowerCase() !== 'n') {
+                        safelySetValue('xVar', data.task.parameters.x.toLowerCase(), 'm');
+                    } else {
+                        safelySetValue('xVar', data.task.parameters.x, 'n');
+                    }
+                    safelySetValue('points', data.task.parameters.points, 50);
+                    safelySetValue('xRange', `${data.task.parameters.rang_x[0]},${data.task.parameters.rang_x[1]}`, `${1},${100}`);
+
+                    // Convert to our unified format
+                    const plotParams = {
+                        ...data.task.parameters,
+                        min: data.task.parameters.rang_x[0],
+                        max: data.task.parameters.rang_x[1],
+                        plotType: 'linear', // Default for LLM requests
+                        selectedPlotType: 'line'
+                    };
+                    runPlot(plotParams, false);
+                }
+            }
+        }
+    })
+    .catch(err => {
+        const errMsg = document.createElement('div');
+        errMsg.className = 'chat-bubble error';
+        errMsg.textContent = '⚠️ Error: ' + err.message;
+        chatBox.appendChild(errMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+function clearChat() {
+    const chatBox = document.getElementById('chat-messages');
+    chatBox.innerHTML = '';
+
+    // Clear conversation session on backend
+    if (currentSessionId) {
+        fetch(`/assistant/session/${currentSessionId}`, {
+            method: 'DELETE'
+        }).catch(error => {
+            console.warn('Failed to clear conversation session:', error);
+        });
+    }
+
+    // Reset session to start fresh conversation
+    currentSessionId = null;
+}
 
 function calculateExponents(event) {
     event.preventDefault();
+    if (!validateInputs()) return;
 
-    const M = document.getElementById('M').value;
-    const typeM = document.getElementById('TypeModulation').value;
-    const SNR = document.getElementById('SNR').value;
-    const R = document.getElementById('R').value;
-    const N = document.getElementById('N').value || 20; // Valor per defecte
-    const n = document.getElementById('n').value;
-    const th = document.getElementById('th').value || 1e-6; // Valor per defecte
+    const M_val = document.getElementById('M').value;
+    const typeM_val = document.getElementById('TypeModulation').value;
+    const SNR_val = document.getElementById('SNR').value;
+    const R_val = document.getElementById('R').value;
+    const N_val = document.getElementById('N').value;
+    const n_val = document.getElementById('n').value;
+    const th_val = document.getElementById('th').value;
     const resultDiv = document.getElementById('result');
+
+    const sanitize = (value, defaultValue) => {
+        if (value === '' || value === null || value === undefined || String(value).toLowerCase() === 'undefined' || String(value).toLowerCase() === 'unknown' || String(value).toLowerCase() === 'none') {
+            return defaultValue;
+        }
+        return value;
+    };
+
+    const M = sanitize(M_val, 2);
+    const typeM = sanitize(typeM_val, 'PAM');
+    const SNR = sanitize(SNR_val, 5.0);
+    const R = sanitize(R_val, 0.5);
+    const N = sanitize(N_val, 20);
+    const n = sanitize(n_val, 128);
+    const th = sanitize(th_val, 1e-6);
 
     // Neteja resultats anteriors
     resultDiv.innerHTML = "";
@@ -64,20 +652,11 @@ function calculateExponents(event) {
         });
 }
 
-
 /* Plot Using the ENDPOINT */
 function plotFromFunction() {
-    var renamer = {
-      "m": "M",
-      "snr": "SNR",
-      "rate": "Rate",
-      "N": "N",
-      "n": "n",
-      "th": "th",
-    };
-
+    if (!validateInputs()) return;
     const y = document.getElementById('yVar').value;
-    const x = renamer[document.getElementById('xVar').value];
+    const x = document.getElementById('xVar').value;
     const x2 = document.getElementById('xVar2').value; /* Pel contour plot */
     const [min, max] = document.getElementById('xRange').value.split(',').map(Number);
     const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number); /* Pel contour plot */
@@ -326,15 +905,19 @@ function plotManually() {
 
 
 function drawContourPlot(x1, x2, zMatrix) {
+    console.log('drawContourPlot called with:', { x1, x2, zMatrix });
+
     // 1) Generar nou plotId
     const plotId = `plot-${plotIdCounter++}`;
-  
+
     // 2) Calcular etiqueta por defecto
     const yText = document.getElementById('yVar').selectedOptions[0].text;
     const x1Text = document.getElementById('xVar').selectedOptions[0].text;
     const x2Text = document.getElementById('xVar2').selectedOptions[0].text;
     const label = `${yText} / ${x1Text} & ${x2Text}`;
-  
+
+    console.log('Contour plot label:', label);
+
     // 3) Color
     const gradient = 'linear-gradient(90deg, #ffffcc, #a1dab4, #41b6c4, #2c7fb8, #253494)';
     activePlots.push({
@@ -344,12 +927,14 @@ function drawContourPlot(x1, x2, zMatrix) {
       label,
       color: gradient
     });
-  
+
+    console.log('Added contour plot to activePlots:', activePlots[activePlots.length - 1]);
+
     // 5) Re-renderitzar tot
     renderAll();
     updatePlotListUI();
   }
-  
+
 
 
 // Interactive multi-plot with zoom, grid, tooltip, overlay & removal
@@ -372,7 +957,7 @@ function initializeChart() {
     .style('flex-direction', 'column')
     .style('align-items', 'center')
     .style('width', '100%')
-    .style('height', '100%'); 
+    .style('height', '100%');
 
   const outer = plotWrapper
     .append('div')
@@ -390,7 +975,7 @@ function initializeChart() {
     .style('flex', '1 1 100%')
     .style('min-width', '400px')
     .style('position', 'relative')
-    .style('width', '100%')         
+    .style('width', '100%')
     .style('height', '100%');
 
   // Contenedor de la metadata
@@ -413,7 +998,7 @@ function initializeChart() {
     .style('display', 'none');
 
 
-    
+
   // Contenedor de la lista de plots
   container.append('div')
     .attr('id', 'plot-list');
@@ -443,7 +1028,7 @@ function initializeChart() {
   .attr('y1', height - margin.bottom).attr('y2', height - margin.bottom)
   .attr('stroke', 'black');
 
-    
+
 
   window.__svg = svg;
   window.__g = svg.append('g')
@@ -596,7 +1181,7 @@ function initializeChart() {
 
 function resetZoom() {
     if (!activePlots.length) return;
-  
+
     // Reunir todo x,y
     let xAll = [], yAll = [];
     activePlots.forEach(p => {
@@ -608,18 +1193,18 @@ function resetZoom() {
         yAll = yAll.concat(p.y);
       }
     });
-  
+
     const xExt = d3.extent(xAll);
     const yExt = d3.extent(yAll);
-  
+
     window.__xScale.domain(xExt);
     window.__yScale.domain(yExt);
-  
+
     window.__svg.transition().duration(750)
         .call(window.__zoom.transform, d3.zoomIdentity);
     setTimeout(() => zoomed({ transform: d3.zoomIdentity }), 750);
 }
-  
+
 
 
 
@@ -631,7 +1216,7 @@ function zoomed(event) {
     const newX = t.rescaleX(window.__xScale);
     const newY = t.rescaleY(window.__yScale);
 
-    // 2) Eixos amb la notació correspondent 
+    // 2) Eixos amb la notació correspondent
     const active = activePlots[activePlots.length - 1] || { plotType: 'linear' };
     //10^exponent
     const logFormat = d => {
@@ -729,7 +1314,7 @@ function zoomed(event) {
 
 function renderAll() {
     if (!window.__svg /*|| !window.__content*/) return;
-  
+
     // 1) Si no hay plots, limpiar y dibujar grid
     if (activePlots.length === 0) {
       window.__lineLayer.selectAll('*').remove();
@@ -741,12 +1326,12 @@ function renderAll() {
       return;
     }
 
-  
+
     // 2) Mostrar contenedores
     d3.select('#plot-container').style('display', 'block');
     d3.select('#plot-controls-wrapper').style('display', 'flex');
-  
-    
+
+
     // ─── Escalas LINEALES o LOG ────────────────────────────
     let xVals = [], yVals = [];
     activePlots.forEach(p => {
@@ -789,11 +1374,11 @@ function renderAll() {
       .domain(yDomain)
       .range([ window.__innerHeight, 0 ]);
 
-  
+
     // 4) Reset zoom y redraw ejes/grids
     window.__svg.call(window.__zoom.transform, d3.zoomIdentity);
     setTimeout(() => zoomed({ transform: d3.zoomIdentity }), 0);
-  
+
     // 5) Dibujar los line plots
     const linePlots = activePlots.filter(p => p.type !== 'contour');
     const lineGroups = window.__lineLayer.selectAll('.plot-group')
@@ -803,14 +1388,14 @@ function renderAll() {
       .append('g').attr('class', d => `plot-group ${d.plotId}`);
     lineEnter.append('path').attr('class', 'line');
     lineEnter.append('g').attr('class', 'points');
-  
+
     lineGroups.merge(lineEnter).each(function(d) {
       const g = d3.select(this);
       const lineGen = d3.line()
         .curve(d3.curveLinear)
         .x((_, i) => window.__xScale(d.x[i]))
         .y((_, i) => window.__yScale(d.y[i]));
-  
+
       const dashMap = {
         solid:   '',
         dashed:  '6,4',
@@ -858,31 +1443,31 @@ function renderAll() {
         })
 
         .on('mouseout', () => window.__tooltip.style('opacity', 0));
-  
+
       pts.exit().remove();
     });
     lineGroups.exit().remove();
-  
+
     // 6) Dibujar los contour plots
     const contours = activePlots.filter(p => p.type === 'contour');
     const contourGroups = window.__content.selectAll('.contour-group')
       .data(contours, d => d.plotId);
     const contourEnter = contourGroups.enter()
       .append('g').attr('class', d => `contour-group ${d.plotId}`);
-  
+
     contourGroups.merge(contourEnter).each(function(p) {
       const g = d3.select(this);
       g.selectAll('rect').remove();
-  
+
       const colorScale = d3.scaleSequential()
         .interpolator(d3.interpolateTurbo)
         .domain([d3.min(p.z.flat()), d3.max(p.z.flat())]);
-  
+
       const xs = window.__xScale.copy();
       const ys = window.__yScale.copy();
       const dx = xs(p.x1[1]) - xs(p.x1[0]);
       const dy = ys(p.x2[0]) - ys(p.x2[1]);
-  
+
       for (let i = 0; i < p.x1.length; i++) {
         for (let j = 0; j < p.x2.length; j++) {
           g.append('rect')
@@ -896,7 +1481,7 @@ function renderAll() {
       }
     });
     contourGroups.exit().remove();
-  
+
     // 7) Colorbar (leyenda) para *todos* los contours
     if (contours.length) {
       d3.select('#contour-legend').remove();
@@ -905,7 +1490,7 @@ function renderAll() {
       const legendW = 20, legendH = 200;
       const offsetX = window.__innerWidth + 20;  // 20px de separación al plot
       const offsetY = 10;
-  
+
       // Actualizar gradiente
       const stops = [
         { offset: '0%',   value: zExt[0] },
@@ -919,17 +1504,17 @@ function renderAll() {
         .data(stops)
         .attr('offset', d => d.offset)
         .attr('stop-color', d => d3.interpolateTurbo((d.value - zExt[0]) / (zExt[1] - zExt[0])));
-  
+
       // Grupo leyenda
       const legendG = window.__svg.append('g')
         .attr('id', 'contour-legend')
         .attr('transform', `translate(${offsetX},${offsetY})`);
-  
+
       legendG.append('rect')
         .attr('width', legendW)
         .attr('height', legendH)
         .style('fill', 'url(#contour-gradient)');
-  
+
       const zScale = d3.scaleLinear().domain(zExt).range([legendH, 0]);
       legendG.append('g')
         .attr('transform', `translate(${legendW},0)`)
@@ -958,7 +1543,7 @@ function renderAll() {
 
     // ────────────────────────────────────────────────────────
 
-  
+
     // 8) Actualizar leyenda de plots y controles
     updatePlotListUI();
     d3.select('#plot-controls-wrapper').style('display', 'flex');
@@ -969,9 +1554,9 @@ function renderAll() {
         .remove();
 
 }
-  
-  
-  
+
+
+
 function drawInteractivePlot(x, y, opts) {
     opts = opts || {};
     const plotId = `plot-${plotIdCounter++}`;
@@ -1308,127 +1893,9 @@ function drawDefaultGrid(forceLog = false) {
     window.__yScale.domain([defaultMin, defaultMax]);
 
     document.getElementById('toggleGrid')?.setAttribute('checked', 'true');
-    zoomed({ transform: d3.zoomIdentity });
+    zoomed({ transform: d3.zoomTransform(window.__svg.node()) });
 }
 
-
-// ------------------------ CHATBOT SCRIPT -----------------------------------
-function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if (!msg) return;
-
-    const chatBox = document.getElementById('chat-messages');
-
-    const userMsg = document.createElement('div');
-    userMsg.className = 'chat-bubble user';
-    userMsg.textContent = msg;
-    chatBox.appendChild(userMsg);
-
-    input.value = '';
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    fetch('/chatbot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        message: msg,
-        model_choice: document.getElementById('model-selector').value
-})
-    })
-    .then(res => res.json())
-    .then(data => {
-        const botMsg = document.createElement('div');
-        botMsg.className = 'chat-bubble bot';
-        botMsg.textContent = data.response;
-        chatBox.appendChild(botMsg);
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-        // --- NEW: Fill input fields if parameters are present ---
-        if (data.parameters) {
-            const safelySetValue = (id, value, defaultvalue) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    if(!(value === "unknown")){ // if we dont find unknown then update normally
-                        element.value = value;
-                    }
-                    else{
-                        element.value = defaultvalue; // else, we fill with default parameters
-                    }
-                } else {
-                // This message will appear in the F12 Developer Console if an ID is wrong.
-                console.warn(`Warning: HTML element with id="${id}" was not found.`);
-            }
-            };
-
-            if (!('x' in data.parameters)){ // not plot mode
-                safelySetValue('M', data.parameters.M, 2);
-                safelySetValue('TypeModulation', data.parameters.typeModulation, "PAM");
-                safelySetValue('SNR',data.parameters.SNR, 1);
-                safelySetValue('R',data.parameters.R, 0.5);
-                safelySetValue('N',data.parameters.N, 20);
-                safelySetValue('n',data.parameters.n, 128);
-                safelySetValue('th',data.parameters.th, 0.000001);
-
-                document.querySelector('button.compute-error').click();
-            }
-            /*
-            if (data.parameters.snr !== undefined) document.getElementById('SNR').value = data.parameters.snr;
-            if (data.parameters.rate !== undefined) document.getElementById('R').value = data.parameters.rate;
-            if (data.parameters.quadrature_nodes !== undefined) document.getElementById('N').value = data.parameters.quadrature_nodes;
-            if (data.parameters.n !== undefined) document.getElementById('n').value = data.parameters.n;
-            if (data.parameters.th !== undefined) document.getElementById('th').value = data.parameters.th;
-            */
-            else{ // plot mode
-                // Update the plot variables
-                safelySetValue('M',data.parameters.M, 2);
-                safelySetValue('SNR',data.parameters.SNR, 1);
-                safelySetValue('R',data.parameters.Rate, 0.5);
-
-                safelySetValue('N',data.parameters.N, 20);
-                //safelySetValue('N',data.parameters.N);
-
-                safelySetValue('yVar', data.parameters.y.toLowerCase(), "error_probability");
-                if (data.parameters.x.toLowerCase() ==! 'n'){
-                    safelySetValue('xVar', data.parameters.x.toLowerCase(), 'm');
-                }
-                else{
-                    safelySetValue('xVar', data.parameters.x, 'n');
-                }
-                safelySetValue('points', data.parameters.points, 50);
-
-                // Update the range fields using their unique IDs
-                safelySetValue('xRange', `${data.parameters.min},${data.parameters.max}`, `${1},${100}`);
-
-                document.querySelector('button[type="button"][onclick*="plotFromFunction"]').click();
-            }
-
-
-        }
-    })
-    .catch(err => {
-        const errMsg = document.createElement('div');
-        errMsg.className = 'chat-bubble error';
-        errMsg.textContent = "⚠️ Error: " + err.message;
-        chatBox.appendChild(errMsg);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
-}
-
-function clearChat() {
-    const chatBox = document.getElementById('chat-messages');
-    chatBox.innerHTML = ''; // Borra todo el historial de mensajes
-}
-
-// ------------------------ Funcions auxiliars pel html -----------------------------------
-/* Hide and Show Manual Inputs ---> Unused*/
-function toggleManualInputs() {
-    const manual = document.getElementById('manual-section');
-    const btn = document.getElementById('toggleManualBtn');
-    const visible = manual.style.display === 'block';
-    manual.style.display = visible ? 'none' : 'block';
-    btn.textContent = visible ? 'Add manually' : 'Hide manual inputs';
-}
 
 // Contour plot case
 function onLineTypeChange() {
@@ -1484,7 +1951,7 @@ function toggleLeftSidebar() {
     });
   }
 
-  setTimeout(adjustPlotWidthBasedOnSidebar, 100); 
+  setTimeout(adjustPlotWidthBasedOnSidebar, 100);
 }
 
 
@@ -1497,7 +1964,7 @@ function toggleRightSidebar() {
 
   if (rightCollapsed) {
     toggle.textContent = '◀';
-    setTimeout(() => createExternalToggle('right'), 300); 
+    setTimeout(() => createExternalToggle('right'), 300);
   } else {
     toggle.textContent = '▶';
     removeExternalToggle('right');
@@ -1697,9 +2164,7 @@ function plotInitialGraph() {
   fetch('/plot_function', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        message: message
-    }),
+    body: JSON.stringify(payload),
   })
     .then(res => {
       if (!res.ok) throw new Error("Error al cargar el gráfico inicial");
@@ -1764,6 +2229,6 @@ function changePlotScale(button) {
     }
   });
 
-  renderAll(); 
+  renderAll();
 }
 

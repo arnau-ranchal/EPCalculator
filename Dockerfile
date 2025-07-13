@@ -12,18 +12,20 @@ RUN apt-get update && apt-get install -y \
 # Crear directorio de trabajo
 WORKDIR /app
 
+# 1. Copy only files needed for C++ compilation
 COPY eigen-3.4.0 ./eigen-3.4.0
-# Explicitly copy Eigen
+COPY Makefile ./
+COPY exponents ./exponents
 
-# Dependències de c++, Python (requriements.txt)
-COPY Makefile requirements.txt ./
+# 2. Compile C++ library (cacheable separately)
+RUN make clean && make
+
+# 3. Install Python dependencies
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar archivos al contenedor
+# 4. Copy everything else (including frontend)
 COPY . .
-
-# Compilar la biblioteca C++ usando Makefile
-RUN make clean && make
 
 # Exponer el puerto correcto
 EXPOSE 80
