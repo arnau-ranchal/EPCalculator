@@ -3,7 +3,7 @@ from openai import OpenAI
 import re
 import parser
 
-from EPCalculator.chatbot.parser import parse
+from EPCalculator.assistant.parser import parse
 
 SYSTEM_PROMPT = (
     "You are a specialized assistant for transmission-system calculations. "
@@ -89,7 +89,7 @@ def respond(text: str) -> str: # parser
     return parse(str)
 
 
-def respond(text: str, api_key: str) -> str: # chatbot
+def respond(text: str, api_key: str) -> str: # assistant
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": text}

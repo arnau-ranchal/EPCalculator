@@ -11,5 +11,7 @@ dist/
 *.log
 *.tmp
 node_modules/
-chatbot/chatbot.py
-chatbot/chatbotV2.py
+assistant/chatbot.py
+assistant/chatbotV2.py
+**/__pycache__
+.gitignore
