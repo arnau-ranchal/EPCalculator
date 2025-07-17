@@ -380,7 +380,7 @@ class FunctionPlotRequest(BaseModel):
     th: float
 
 
-@app.post("/plot_function")
+@app.post("/plot_function2")
 async def generate_plot_from_function(plot_data: FunctionPlotRequest):
     try:
         # Generate x values, ensuring integers for specific parameters
@@ -397,7 +397,12 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
         for x_point in x_vals:
             # Update the parameter for the current iteration
             current_params = base_params.copy()
+            if plot_data.x.lower() != 'n':
+                plot_data.x = plot_data.x.capitalize()
+
             current_params[plot_data.x] = x_point
+            print("plot data:", plot_data)
+            print("received:", plot_data.x)
 
             # Call the C++ library and get results
             results = call_cpp_exponents(current_params)

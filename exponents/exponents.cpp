@@ -9,7 +9,6 @@ extern "C" {
     float* exponents(float M, const char* typeM, float SNR, float R, float N, float n, float threshold, float* results) {
 
         int it = 20;
-
         setMod(M, typeM);
         setQ(); // matrix Q
         setR(R);
@@ -22,7 +21,7 @@ extern "C" {
 
         double rho_gd, rho_interpolated;
         double r;
-        double e0 = GD_iid(r, rho_gd, rho_interpolated, it, N);
+        double e0 = GD_iid(r, rho_gd, rho_interpolated, it, N, threshold);
 
         // Desomentar per fer debug per la terminal
         //std::cout << "e0: " << e0 << endl;

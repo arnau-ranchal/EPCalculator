@@ -17,6 +17,7 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <unordered_map>
 #include <limits>
+#include "database.h"
 
 using namespace std;
 using namespace Eigen;
@@ -31,6 +32,41 @@ using namespace Eigen;
 #define eu std::exp(1.0)
 const complex<double> I(0.0, 1.0);
 #define vms vector<chrono::microseconds>
+
+bool is_db_connected = false;
+MYSQL* conn; // database reference
+
+bool get_db_connect_status(){
+    return is_db_connected;
+}
+
+const std::string tableName = "SimulationResults";
+
+bool connect_to_db(){ // connect to mysql and create table if not present
+    try{
+        conn = connectToDatabase();
+        is_db_connected = true;
+        createTable(conn, tableName);
+        return true;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Database error: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool disconnect_from_db(){
+    try{
+        mysql_close(conn);
+        is_db_connected = false;
+        free(conn);
+        return true;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Database error: " << e.what() << std::endl;
+        return false;
+    }
+}
 
 double SNR = 1; // positive
 // vector<complex<double>> X = {1,1,1,1};
@@ -2536,15 +2572,56 @@ std::vector<double> eigenToRowMajor(const Eigen::MatrixXd &mat) {
     return vec;
 }
 
-double GD_co(double &r, double &rho, double &rho_interpolated, int num_iterations, int n, bool updateR) {
+double GD_co(double &r, double &rho, double &rho_interpolated, int num_iterations, int n, bool updateR, double error) {
 
     // Gradient Descent of E0
     auto start_XX = std::chrono::high_resolution_clock::now();
 
+    if(is_db_connected){
+        try {
+            std::cout << "Connected to MySQL database" << std::endl;
+
+            // Insert data
+            putItem(
+                conn, tableName,
+                "1999-10-10",   // date
+                0.256,          // e0
+                0.892,          // optimal_rho
+                16,             // M
+                "QAM",          // const_type
+                25.5,           // snr
+                0.75,           // r
+                1000            // n
+            );
+            std::cout << "Data inserted successfully" << std::endl;
+
+                // Retrieve data
+                try {
+                    ItemResult res = getItem(
+                        conn, tableName,
+                        16,         // M
+                        "QAM",      // const_type
+                        25.5,       // snr
+                        0.75,       // r
+                        1000        // n
+                    );
+                    std::cout << "Retrieved values: e0 = " << res.e0
+                              << ", optimal_rho = " << res.optimal_rho << std::endl;
+                }
+            catch (const std::exception& e) {
+                std::cerr << "Retrieval error: " << e.what() << std::endl;
+            }
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Database error: " << e.what() << std::endl;
+            return 1;
+        }
+    }
+
     //if (DEBUG) cout  << "i rho e0 e0-rho*R grad_rho " << endl;
 
     //float error = 0.00000000001;
-    float error = 10E-10;
+    //double error = threshold;
 
     int my_n;
 
@@ -2914,10 +2991,10 @@ double NM_co(double &r, double &rho, int num_iterations, int n, bool updateR) {
 }
 
 
-double GD_iid(double &r, double &rho, double &rho_interploated, int num_iterations, int n) {
+double GD_iid(double &r, double &rho, double &rho_interploated, int num_iterations, int n, double error) {
     auto start_NAG_iid = std::chrono::high_resolution_clock::now();
     //cout << endl << "cooking" << endl;
-    double out = GD_co(r, rho, rho_interploated, num_iterations, n, false);
+    double out = GD_co(r, rho, rho_interploated, num_iterations, n, false, error);
 
     auto stop_NAG_iid = std::chrono::high_resolution_clock::now();
     auto duration_NAG_iid = std::chrono::duration_cast<std::chrono::microseconds>(stop_NAG_iid - start_NAG_iid);

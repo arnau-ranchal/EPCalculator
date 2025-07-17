@@ -1,4 +1,5 @@
 // compute_plots.cpp
+// UNUSED
 #include <cmath>
 #include <cstring>
 #include "functions.h"
@@ -40,7 +41,8 @@ extern "C" {
                         // Calculate exponents
                         double rho_gd, rho_interpolated;
                         double r;
-                        double e0 = GD_iid(r, rho_gd, rho_interpolated, it, N);
+                        double threshold = 10E-6; // todo change
+                        double e0 = GD_iid(r, rho_gd, rho_interpolated, it, N, threshold);
 
                         results[result_index++] = pow(2, -n_ * e0);  // Error probability
                         results[result_index++] = e0;                 // Exponent

@@ -649,7 +649,7 @@ Use plain text only (no LaTeX or special formatting). Focus on practical enginee
 # If you want to use OpenRouter, you need to manually add the API key to the code. Be careful not to commit it to the repository.
 class OpenRouterAgent:
     def __init__(self, api_key, model="mistralai/mistral-7b-instruct"):
-        self.api_key = "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"
+        self.api_key = ""
         #print("hello!")
         #print(os.getenv("API_KEY"))
         self.model = model

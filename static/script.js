@@ -293,7 +293,7 @@ function runPlot(parameters, isContour = false) {
             lineType
         };
 
-        fetch("/plot_function", {
+        fetch("/plot_function2", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -655,6 +655,15 @@ function calculateExponents(event) {
 /* Plot Using the ENDPOINT */
 function plotFromFunction() {
     if (!validateInputs()) return;
+    var renamer = {
+      "m": "M",
+      "snr": "SNR",
+      "rate": "Rate",
+      "N": "N",
+      "n": "n",
+      "th": "th",
+    };
+
     const y = document.getElementById('yVar').value;
     const x = document.getElementById('xVar').value;
     const x2 = document.getElementById('xVar2').value; /* Pel contour plot */
@@ -662,6 +671,7 @@ function plotFromFunction() {
     const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number); /* Pel contour plot */
     const points = Number(document.getElementById('points').value);
     const points2 = Number(document.getElementById('points2').value); /* Pel contour plot */
+
 
     // Recull els valors fixos
     const M = document.getElementById('M').value;
@@ -786,7 +796,7 @@ function plotFromFunction() {
       }
 
       const payload = {
-          y, x,
+          y: 'amongus', x: 'sus',
           rang_x: [min, max],
           points,
           typeModulation,
@@ -804,7 +814,7 @@ function plotFromFunction() {
       document.getElementById('plot-result').innerHTML = "";
       document.getElementById('plot-result').classList.remove('show');
 
-      fetch('/plot_function', {
+      fetch('/plot_function3', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -2161,7 +2171,7 @@ function plotInitialGraph() {
     // NOTA: n NO debe enviarse porque es la variable x
   };
 
-  fetch('/plot_function', {
+  fetch('/plot_function2', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
