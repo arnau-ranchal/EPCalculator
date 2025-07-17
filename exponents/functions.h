@@ -73,9 +73,9 @@ void compute_hweights(int n, int num_iterations);
 
 double GD_ccomp(vector<double>& alphas, double& rho, double learning_rate, int num_iterations, int n);
 
-double GD_co(double& r, double& rho, double learning_rate, int num_iterations, int n, bool updateR);
+double GD_co(double &r, double &rho, double &rho_interpolated, int num_iterations, int n, bool updateR, double error);
 
-double GD_iid(double& r, double& rho, double& rho_interpolated, int num_iterations, int n);
+double GD_iid(double& r, double& rho, double& rho_interpolated, int num_iterations, int n, double error);
 
 double GD_cc(double& r, double& rho, double learning_rate, int num_iterations, int n);
 

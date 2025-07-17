@@ -4,6 +4,7 @@
 CXX := g++
 CXXFLAGS := -c -fPIC -Ieigen-3.4.0  # Add Eigen include path
 LDFLAGS := -shared
+LDFLAGS += -lmysqlclient
 
 # Directorios
 BUILD_DIR := build

@@ -1,182 +1,280 @@
-#include <aws/core/Aws.h>
-#include <aws/dynamodb/DynamoDBClient.h>
-#include <aws/dynamodb/model/AttributeValue.h>
-#include <aws/dynamodb/model/CreateTableRequest.h>
-#include <aws/dynamodb/model/GetItemRequest.h>
-#include <aws/dynamodb/model/PutItemRequest.h>
+#include "database.h"
+#include <cstdlib>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
-//! Create an Amazon DynamoDB table.
-/*!
-  \sa createTable()
-  \param tableName: Name for the DynamoDB table.
-  \param primaryKey: Primary key for the DynamoDB table.
-  \param clientConfiguration: AWS client configuration.
-  \return bool: Function succeeded.
- */
-bool createTable(const Aws::String &tableName,
-                 const Aws::String &primaryKey,
-                 const Aws::Client::ClientConfiguration &clientConfiguration) {
-    Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfiguration);
 
-    std::cout << "Creating table " << tableName <<
-              " with a simple primary key: \"" << primaryKey << "\"." << std::endl;
+MYSQL* connectToDatabase() {
+    // Get environment variables from Docker MySQL image
+    const char* db_host = std::getenv("MYSQL_HOST");
+    const char* db_user = std::getenv("MYSQL_USER");
+    const char* db_pass = std::getenv("MYSQL_PASSWORD");
+    const char* db_name = std::getenv("MYSQL_DATABASE");
 
-    Aws::DynamoDB::Model::CreateTableRequest request;
+    // Fallback to root if no user specified
+    if (!db_user) db_user = "root";
+    if (!db_pass) db_pass = std::getenv("MYSQL_ROOT_PASSWORD");
 
-    Aws::DynamoDB::Model::AttributeDefinition hashKey;
-    hashKey.SetAttributeName(primaryKey);
-    hashKey.SetAttributeType(Aws::DynamoDB::Model::ScalarAttributeType::S);
-    request.AddAttributeDefinitions(hashKey);
+    // Default to service name "mysql" if no host specified
+    if (!db_host) db_host = "mysql";
+    if (!db_name) db_name = "simulations";
 
-    Aws::DynamoDB::Model::KeySchemaElement keySchemaElement;
-    keySchemaElement.WithAttributeName(primaryKey).WithKeyType(
-            Aws::DynamoDB::Model::KeyType::HASH);
-    request.AddKeySchema(keySchemaElement);
-
-    Aws::DynamoDB::Model::ProvisionedThroughput throughput;
-    throughput.WithReadCapacityUnits(5).WithWriteCapacityUnits(5);
-    request.SetProvisionedThroughput(throughput);
-    request.SetTableName(tableName);
-
-    const Aws::DynamoDB::Model::CreateTableOutcome &outcome = dynamoClient.CreateTable(
-            request);
-    if (outcome.IsSuccess()) {
-        std::cout << "Table \""
-                  << outcome.GetResult().GetTableDescription().GetTableName() <<
-                  " created!" << std::endl;
-    }
-    else {
-        std::cerr << "Failed to create table: " << outcome.GetError().GetMessage()
-                  << std::endl;
-        return false;
+    if (!db_pass) {
+        throw std::runtime_error("Missing MySQL password in environment variables");
     }
 
-    return outcome.IsSuccess();
+    MYSQL* connection = mysql_init(nullptr);
+    if (!connection) {
+        throw std::runtime_error("MySQL initialization failed");
+    }
+
+    // Set connection timeout to 5 seconds
+    unsigned int timeout = 5;
+    mysql_options(connection, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+
+    if (!mysql_real_connect(
+        connection,
+        db_host,
+        db_user,
+        db_pass,
+        db_name,
+        0,  // port (default 3306)
+        nullptr,  // unix_socket
+        CLIENT_FOUND_ROWS  // client_flag
+    )) {
+        std::string error = "MySQL connection failed: ";
+        error += mysql_error(connection);
+        mysql_close(connection);
+        throw std::runtime_error(error);
+    }
+
+    // Verify connection
+    if (mysql_ping(connection) {
+        std::string error = "Connection test failed: ";
+        error += mysql_error(connection);
+        mysql_close(connection);
+        throw std::runtime_error(error);
+    }
+
+    return connection;
 }
 
-bool putItem(const Aws::String& tableName,
-             const Aws::String& date,
-             double e0,
-             double optimal_rho,
-             int M,
-             const Aws::String& const_type,
-             double snr,
-             double r,
-             int n,
-             const Aws::Client::ClientConfiguration& clientConfig) {
-    Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
-    Aws::DynamoDB::Model::PutItemRequest request;
-    request.SetTableName(tableName);
+bool createTable(MYSQL* connection, const std::string& tableName) {
+    std::string sql =
+        "CREATE TABLE IF NOT EXISTS " + tableName + " ("
+        "  id VARCHAR(255) NOT NULL PRIMARY KEY,"
+        "  date DATE NOT NULL,"
+        "  e0 DOUBLE NOT NULL,"
+        "  optimal_rho DOUBLE NOT NULL,"
+        "  M INT NOT NULL,"
+        "  constel VARCHAR(50) NOT NULL,"
+        "  snr DOUBLE NOT NULL,"
+        "  r DOUBLE NOT NULL,"
+        "  n INT NOT NULL,"
+        "  INDEX idx_composite (M, constel, snr, r, n)"
+        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 
-    // Create composite key
-    auto formatKey = [](double value) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(2) << value;
-        return oss.str();
-    };
-
-    std::string id = std::to_string(M) + "_" + const_type + "_" +
-                     formatKey(snr) + "_" + formatKey(r) + "_" +
-                     std::to_string(n);
-
-    // Add composite key and other attributes
-    request.AddItem("id", Aws::DynamoDB::Model::AttributeValue().SetS(id));
-    request.AddItem("date", Aws::DynamoDB::Model::AttributeValue().SetS(date));
-    request.AddItem("e0", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(e0)));
-    request.AddItem("optimal_rho", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(optimal_rho)));
-    request.AddItem("M", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(M)));
-    request.AddItem("constel", Aws::DynamoDB::Model::AttributeValue().SetS(const_type));
-    request.AddItem("snr", Aws::DynamoDB::Model::AttributeValue().SetN(formatKey(snr)));
-    request.AddItem("r", Aws::DynamoDB::Model::AttributeValue().SetN(formatKey(r)));
-    request.AddItem("n", Aws::DynamoDB::Model::AttributeValue().SetN(std::to_string(n)));
-
-    auto outcome = dynamoClient.PutItem(request);
-    if (!outcome.IsSuccess()) {
-        std::cerr << "PutItem error: " << outcome.GetError().GetMessage() << std::endl;
-        return false;
+    if (mysql_query(connection, sql.c_str())) {
+        std::string error = "Create table failed: ";
+        error += mysql_error(connection);
+        throw std::runtime_error(error);
     }
+
+    std::cout << "Table '" << tableName << "' created or exists" << std::endl;
     return true;
 }
 
-struct ItemResult {
-    double e0;
-    double optimal_rho;
-};
+bool putItem(MYSQL* connection,
+             const std::string& tableName,
+             const std::string& date,
+             double e0,
+             double optimal_rho,
+             int M,
+             const std::string& const_type,
+             double snr,
+             double r,
+             int n) {
 
-ItemResult getItem(
-        const Aws::String &tableName,
-        int M,
-        const Aws::String &const_type,
-        double snr,
-        double r,
-        int n,
-        const Aws::Client::ClientConfiguration &clientConfig) {
-
-    // Format doubles consistently
     auto formatKey = [](double value) {
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << value;
         return oss.str();
     };
 
-    // Build composite ID
-    std::string id = std::to_string(M) + "_" + const_type + "_" +
-                     formatKey(snr) + "_" + formatKey(r) + "_" +
-                     std::to_string(n);
+    std::string id = std::to_string(M) + "_" + const_type + "_"
+                   + formatKey(snr) + "_" + formatKey(r) + "_"
+                   + std::to_string(n);
 
-    Aws::DynamoDB::DynamoDBClient dynamoClient(clientConfig);
-    Aws::DynamoDB::Model::GetItemRequest request;
-    request.SetTableName(tableName);
+    std::string sql =
+        "INSERT INTO " + tableName + " "
+        "(id, date, e0, optimal_rho, M, constel, snr, r, n) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        "ON DUPLICATE KEY UPDATE "
+        "date = VALUES(date), "
+        "e0 = VALUES(e0), "
+        "optimal_rho = VALUES(optimal_rho)";
 
-    Aws::Map<Aws::String, Aws::DynamoDB::Model::AttributeValue> key;
-    key["id"].SetS(id);  // Use composite key
-
-    request.SetKey(key);
-
-    // Optionally, specify that you only want to retrieve e0 and optimal_rho to reduce data transfer
-    Aws::Vector<Aws::String> attributesToGet{"e0", "optimal_rho"};
-    request.SetAttributesToGet(attributesToGet);
-
-    // Perform the GetItem operation
-    auto outcome = dynamoClient.GetItem(request);
-
-    if (!outcome.IsSuccess())
-    {
-        std::cerr << "Error getting item: "
-                  << outcome.GetError().GetMessage() << std::endl;
-        throw std::runtime_error("GetItem failed");
+    MYSQL_STMT* stmt = mysql_stmt_init(connection);
+    if (!stmt) {
+        throw std::runtime_error("Statement initialization failed");
     }
 
-    const auto& item = outcome.GetResult().GetItem();
+    if (mysql_stmt_prepare(stmt, sql.c_str(), sql.length())) {
+        std::string error = "Prepare failed: ";
+        error += mysql_stmt_error(stmt);
+        mysql_stmt_close(stmt);
+        throw std::runtime_error(error);
+    }
 
-    // Ensure the item was found
-    if (item.empty())
-    {
-        std::cerr << "Item not found." << std::endl;
+    // Bind parameters
+    MYSQL_BIND bind[9];
+    memset(bind, 0, sizeof(bind));
+
+    std::string id_str = id;
+    std::string date_str = date;
+    std::string const_str = const_type;
+    std::string snr_str = formatKey(snr);
+    std::string r_str = formatKey(r);
+
+    // id (string)
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].buffer = (void*)id_str.c_str();
+    bind[0].buffer_length = id_str.length();
+
+    // date (string)
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].buffer = (void*)date_str.c_str();
+    bind[1].buffer_length = date_str.length();
+
+    // e0 (double)
+    bind[2].buffer_type = MYSQL_TYPE_DOUBLE;
+    bind[2].buffer = (void*)&e0;
+
+    // optimal_rho (double)
+    bind[3].buffer_type = MYSQL_TYPE_DOUBLE;
+    bind[3].buffer = (void*)&optimal_rho;
+
+    // M (int)
+    bind[4].buffer_type = MYSQL_TYPE_LONG;
+    bind[4].buffer = (void*)&M;
+
+    // constel (string)
+    bind[5].buffer_type = MYSQL_TYPE_STRING;
+    bind[5].buffer = (void*)const_str.c_str();
+    bind[5].buffer_length = const_str.length();
+
+    // snr (double as string)
+    bind[6].buffer_type = MYSQL_TYPE_STRING;
+    bind[6].buffer = (void*)snr_str.c_str();
+    bind[6].buffer_length = snr_str.length();
+
+    // r (double as string)
+    bind[7].buffer_type = MYSQL_TYPE_STRING;
+    bind[7].buffer = (void*)r_str.c_str();
+    bind[7].buffer_length = r_str.length();
+
+    // n (int)
+    bind[8].buffer_type = MYSQL_TYPE_LONG;
+    bind[8].buffer = (void*)&n;
+
+    if (mysql_stmt_bind_param(stmt, bind)) {
+        std::string error = "Bind failed: ";
+        error += mysql_stmt_error(stmt);
+        mysql_stmt_close(stmt);
+        throw std::runtime_error(error);
+    }
+
+    if (mysql_stmt_execute(stmt)) {
+        std::string error = "Execute failed: ";
+        error += mysql_stmt_error(stmt);
+        mysql_stmt_close(stmt);
+        throw std::runtime_error(error);
+    }
+
+    mysql_stmt_close(stmt);
+    return true;
+}
+
+ItemResult getItem(MYSQL* connection,
+                   const std::string& tableName,
+                   int M,
+                   const std::string& const_type,
+                   double snr,
+                   double r,
+                   int n) {
+
+    auto formatKey = [](double value) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << value;
+        return oss.str();
+    };
+
+    std::string id = std::to_string(M) + "_" + const_type + "_"
+                   + formatKey(snr) + "_" + formatKey(r) + "_"
+                   + std::to_string(n);
+
+    std::string sql =
+        "SELECT e0, optimal_rho FROM " + tableName + " "
+        "WHERE id = ?";
+
+    MYSQL_STMT* stmt = mysql_stmt_init(connection);
+    if (!stmt) {
+        throw std::runtime_error("Statement initialization failed");
+    }
+
+    if (mysql_stmt_prepare(stmt, sql.c_str(), sql.length())) {
+        std::string error = "Prepare failed: ";
+        error += mysql_stmt_error(stmt);
+        mysql_stmt_close(stmt);
+        throw std::runtime_error(error);
+    }
+
+    // Bind parameter
+    MYSQL_BIND param_bind;
+    memset(&param_bind, 0, sizeof(param_bind));
+
+    param_bind.buffer_type = MYSQL_TYPE_STRING;
+    param_bind.buffer = (void*)id.c_str();
+    param_bind.buffer_length = id.length();
+
+    if (mysql_stmt_bind_param(stmt, &param_bind)) {
+        std::string error = "Bind param failed: ";
+        error += mysql_stmt_error(stmt);
+        mysql_stmt_close(stmt);
+        throw std::runtime_error(error);
+    }
+
+    // Bind results
+    ItemResult result{-1.0, -1.0};
+    MYSQL_BIND result_bind[2];
+    memset(result_bind, 0, sizeof(result_bind));
+
+    result_bind[0].buffer_type = MYSQL_TYPE_DOUBLE;
+    result_bind[0].buffer = &result.e0;
+
+    result_bind[1].buffer_type = MYSQL_TYPE_DOUBLE;
+    result_bind[1].buffer = &result.optimal_rho;
+
+    if (mysql_stmt_bind_result(stmt, result_bind)) {
+        std::string error = "Bind result failed: ";
+        error += mysql_stmt_error(stmt);
+        mysql_stmt_close(stmt);
+        throw std::runtime_error(error);
+    }
+
+    if (mysql_stmt_execute(stmt)) {
+        std::string error = "Execute failed: ";
+        error += mysql_stmt_error(stmt);
+        mysql_stmt_close(stmt);
+        throw std::runtime_error(error);
+    }
+
+    if (mysql_stmt_fetch(stmt) != 0) {
+        mysql_stmt_close(stmt);
         throw std::runtime_error("Item not found");
     }
 
-    ItemResult result;
-    // Convert attributes from string to double
-    if (item.find("e0") != item.end())
-    {
-        result.e0 = std::stod(item.at("e0").GetN());
-    }
-    else
-    {
-        std::cerr << "Attribute 'e0' not found." << std::endl;
-        throw std::runtime_error("'e0' not found");
-    }
-
-    if (item.find("optimal_rho") != item.end())
-    {
-        result.optimal_rho = std::stod(item.at("optimal_rho").GetN());
-    }
-    else
-    {
-        std::cerr << "Attribute 'optimal_rho' not found." << std::endl;
-        throw std::runtime_error("'optimal_rho' not found");
-    }
+    mysql_stmt_close(stmt);
     return result;
 }
