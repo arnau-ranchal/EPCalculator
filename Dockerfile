@@ -7,8 +7,7 @@ RUN apt-get update && apt-get install -y \
     make \
     nodejs \
     npm \
-    libmariadb-dev \
-    libmariadb-dev-compat \
+    default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear directorio de trabajo
@@ -20,7 +19,7 @@ COPY Makefile ./
 COPY exponents ./exponents
 
 # 2. Compile C++ library with MariaDB/MySQL compatibility
-RUN make clean && make LDFLAGS="-lmariadb"
+RUN make clean && make
 
 # 3. Install Python dependencies
 COPY requirements.txt ./

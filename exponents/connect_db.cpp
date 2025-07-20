@@ -1,8 +1,8 @@
 // connect_db.cpp
 #include <cmath>
-#include <cstring> 
-#include "functions.h"
+#include <cstring>
 #include <iostream>
+#include "functions.h"
 
 extern "C" {
     bool connect_db() {

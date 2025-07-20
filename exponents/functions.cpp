@@ -41,7 +41,7 @@ bool get_db_connect_status(){
 }
 
 const std::string tableName = "SimulationResults";
-
+/*
 bool connect_to_db(){ // connect to mysql and create table if not present
     try{
         conn = connectToDatabase();
@@ -57,7 +57,7 @@ bool connect_to_db(){ // connect to mysql and create table if not present
 
 bool disconnect_from_db(){
     try{
-        mysql_close(conn);
+        // mysql_close(conn); // todo db
         is_db_connected = false;
         free(conn);
         return true;
@@ -67,7 +67,7 @@ bool disconnect_from_db(){
         return false;
     }
 }
-
+*/
 double SNR = 1; // positive
 // vector<complex<double>> X = {1,1,1,1};
 // vector<complex<double>> X = {1,2};
@@ -2576,7 +2576,7 @@ double GD_co(double &r, double &rho, double &rho_interpolated, int num_iteration
 
     // Gradient Descent of E0
     auto start_XX = std::chrono::high_resolution_clock::now();
-
+    is_db_connected = false;
     if(is_db_connected){
         try {
             std::cout << "Connected to MySQL database" << std::endl;

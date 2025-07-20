@@ -121,4 +121,8 @@ void setA(vector<int> mods);
 
 double initial_guess(double r, double E0_0, double E0_1, double E0_0_der, double E0_1_der, double& max_g);
 
+bool connect_to_db();
+
+bool disconnect_from_db();
+
 #endif //TFG_FUNCTIONS_H

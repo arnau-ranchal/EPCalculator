@@ -1,8 +1,8 @@
 // disconnect_db.cpp
 #include <cmath>
 #include <cstring> 
-#include "functions.h"
 #include <iostream>
+#include "database.h"
 
 extern "C" {
     bool disconnect_db() {
