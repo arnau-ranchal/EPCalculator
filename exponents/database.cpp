@@ -3,9 +3,11 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <cstring>
 
 
 MYSQL* connectToDatabase() {
+/*
     // Get environment variables from Docker MySQL image
     const char* db_host = std::getenv("MYSQL_HOST");
     const char* db_user = std::getenv("MYSQL_USER");
@@ -45,22 +47,24 @@ MYSQL* connectToDatabase() {
     )) {
         std::string error = "MySQL connection failed: ";
         error += mysql_error(connection);
-        mysql_close(connection);
+        //mysql_close(connection); // todo db
         throw std::runtime_error(error);
     }
 
     // Verify connection
-    if (mysql_ping(connection) {
+    if (mysql_ping(connection)) {
         std::string error = "Connection test failed: ";
         error += mysql_error(connection);
-        mysql_close(connection);
+        //mysql_close(connection); // todo db
         throw std::runtime_error(error);
     }
 
     return connection;
+    */
 }
 
 bool createTable(MYSQL* connection, const std::string& tableName) {
+/*
     std::string sql =
         "CREATE TABLE IF NOT EXISTS " + tableName + " ("
         "  id VARCHAR(255) NOT NULL PRIMARY KEY,"
@@ -83,6 +87,7 @@ bool createTable(MYSQL* connection, const std::string& tableName) {
 
     std::cout << "Table '" << tableName << "' created or exists" << std::endl;
     return true;
+    */
 }
 
 bool putItem(MYSQL* connection,
@@ -95,7 +100,7 @@ bool putItem(MYSQL* connection,
              double snr,
              double r,
              int n) {
-
+    /*
     auto formatKey = [](double value) {
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << value;
@@ -194,6 +199,7 @@ bool putItem(MYSQL* connection,
 
     mysql_stmt_close(stmt);
     return true;
+    */
 }
 
 ItemResult getItem(MYSQL* connection,
@@ -203,7 +209,7 @@ ItemResult getItem(MYSQL* connection,
                    double snr,
                    double r,
                    int n) {
-
+    /*
     auto formatKey = [](double value) {
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << value;
@@ -277,4 +283,5 @@ ItemResult getItem(MYSQL* connection,
 
     mysql_stmt_close(stmt);
     return result;
+    */
 }
