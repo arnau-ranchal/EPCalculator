@@ -23,12 +23,6 @@ extern "C" {
         double r;
         double e0 = GD_iid(r, rho_gd, rho_interpolated, it, N, threshold);
 
-        // Desomentar per fer debug per la terminal
-        //std::cout << "e0: " << e0 << endl;
-        //std::cout << "rho_gd: " << rho_gd << endl;
-
-        // int n_ = 100;
-
         results[0] = pow(2,-n*e0); // Pe
         results[1] = e0; // exp
         results[2] = rho_gd;

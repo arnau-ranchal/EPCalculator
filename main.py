@@ -342,18 +342,44 @@ def err_msg(label,param, min, max):
 
 @app.get("/exponents")
 async def exponents(
-        M: str = Query("2", description="Modulation"),
-        typeM: str = Query("PAM", description="Tipo de modulación: PAM, QAM, etc."),
-        SNR: str = Query("1.0", description="Signal to Noise Ratio"),
-        R: str = Query("0.5", description="Rate"),
-        N: str = Query("20", description="quadrature"),
-        n: str = Query("128", description="Code length"),
-        th: str = Query("1e-6", description="Threshold"),
+        M: str = Query("2", description="Modulation"), #done
+        typeM: str = Query("PAM", description="Tipo de modulación: PAM, QAM, etc."), #done
+        SNR: str = Query("1.0", description="Signal to Noise Ratio"), #done
+        R: str = Query("0.5", description="Rate"),        #done
+        N: str = Query("20", description="quadrature"),   #done
+        n: str = Query("128", description="Code length"), #done
+        th: str = Query("1e-6", description="Threshold"), #done
 ):
+    # here we remove the "+" from powers of 10 notation
+    params = [M, typeM, SNR, R, N, n, th]
+    for i in range(len(params)):
+        print("old:", params[i])
+        params[i] = params[i].replace(" ", "").replace("+", "")
+        print("new:", params[i])
+
+    M, typeM, SNR, R, N, n, th = params
+
+    # todo if switch to plot, change also restrictions there
     # here we cap the params
     M_err_msg = err_msg("M", int(M), 2, 64)
-    if M_err_msg[0] == 1:
-        return M_err_msg[1]
+    if M_err_msg[0] == 1: return M_err_msg[1]
+
+    n_err_msg = err_msg("n", int(n), 1, 1000000)
+    if n_err_msg[0] == 1: return n_err_msg[1]
+
+    th_err_msg = err_msg("threshold", float(th), 1e-15, 0.1)
+    if th_err_msg[0] == 1: return th_err_msg[1]
+
+    N_err_msg = err_msg("N", int(N), 2, 40)
+    if N_err_msg[0] == 1: return N_err_msg[1]
+
+    R_err_msg = err_msg("R", float(R), 0, 1e20)
+    if R_err_msg[0] == 1: return R_err_msg[1]
+
+    SNR_err_msg = err_msg("SNR", float(SNR), 0, 1e20)
+    if SNR_err_msg[0] == 1: return SNR_err_msg[1]
+
+    if typeM not in ['PAM','PSK']: return "Invalid constellation entered. Current supported constellations: PSK, PAM"
 
 
     """
