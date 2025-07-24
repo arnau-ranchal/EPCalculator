@@ -1200,5 +1200,446 @@ button.clicked,
 html {
   /* Set the base font size to 62.5% of the browser default (usually 16px) */
   /* This makes 1rem = 10px, creating a consistent and predictable base for all layouts */
-  font-size: 62.5%;
+  font-size: 75%;
+}
+
+
+/* Desktop (side-by-side) */
+@media (min-width: 1101px) {
+  .main-layout {
+    flex-direction: row;
+    align-items: stretch;
+    height: calc(100vh - 90px - 40px); /* adjust if needed for your header/footer */
+    min-height: 0;
+  }
+
+  .parameters-area,
+  .plot-area,
+  .chatbot-sidebar {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .parameters-area form,
+  .chatbot-area {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .input-group-block {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .parameters-area .button-group {
+    margin-top: 0;
+    margin-bottom: 0;
+    width: 100%;
+  }
+
+  #plot-output,
+  .chat-messages {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    max-height: none;
+  }
+}
+
+/* Mobile/vertical: revert to stacked, content auto height */
+@media (max-width: 1100px) {
+  .main-layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 32px;
+    width: 98vw;
+    height: auto;
+    min-height: 0;
+  }
+
+  .parameters-area,
+  .plot-area,
+  .chatbot-sidebar {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: block;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .parameters-area form,
+  .chatbot-area {
+    display: block;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .input-group-block {
+    flex: none;
+    min-height: 0;
+  }
+
+  .chat-messages,
+  #plot-output {
+    height: 300px; /* or auto, or adjust as needed for mobile */
+    min-height: 0;
+    max-height: 400px;
+    flex: none;
+  }
+}
+
+/* Remove fixed height for chat-messages globally */
+.chat-messages {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/*--- Header: Restore original height (auto with padding) ---*/
+header, #header, .center-header {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 10px 0 5px 0 !important;
+  box-sizing: border-box;
+}
+
+/*--- 2-column Input Grid for Parameters ---*/
+.parameters-area form .input-group-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+}
+
+.parameters-area form .input-group {
+  margin-bottom: 0;   /* Remove extra margin */
+  min-width: 0;
+  width: 100%;
+}
+
+/* Make section titles and toggles span both columns */
+.parameters-area form .section-title,
+.parameters-area form .advanced-toggle,
+.parameters-area form .advanced-section,
+.parameters-area form .additional-toggle,
+.parameters-area form .additional-section {
+  grid-column: 1 / -1;
+}
+
+/* Make button group span both columns */
+.parameters-area form .button-group {
+  grid-column: 1 / -1;
+}
+
+.parameters-area form .input-group-block {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr);
+  gap: 12px 24px;
+}
+
+/* Remove or comment out this block if you want 2 columns always */
+/*
+@media (max-width: 700px) {
+  .parameters-area form .input-group-block {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+*/
+
+#plot-list {
+  user-select: none;
+  will-change: transform;
+}
+
+.parameters-area form .input-group-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  gap: 20px 28px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.parameters-area form .input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  width: 100%;
+  gap: 5px;
+}
+
+/* Box styles: input/select/textarea fill the column */
+.parameters-area form .input-group input,
+.parameters-area form .input-group select,
+.parameters-area form .input-group textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-size: 1em;
+}
+
+/* Label goes below the box, smaller and lighter */
+.parameters-area form .input-group label {
+  font-size: 0.93em;
+  font-weight: 500;
+  color: #444;
+  margin: 0;
+  margin-top: 2px;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  opacity: 0.9;
+  order: 2; /* Always after the input/select */
+}
+
+/* Optional: tooltip below label, smaller */
+.parameters-area form .input-group .tooltip {
+  font-size: 0.85em;
+  margin-left: 4px;
+  display: inline-block;
+  vertical-align: middle;
+  opacity: 0.7;
+}
+
+/* Make section titles, toggles, and button group span both columns */
+.parameters-area form .section-title,
+.parameters-area form .advanced-toggle,
+.parameters-area form .advanced-section,
+.parameters-area form .additional-toggle,
+.parameters-area form .additional-section,
+.parameters-area form .button-group {
+  grid-column: 1 / -1;
+}
+
+.parameters-area {
+  width: 350px;
+  min-width: 260px;
+  max-width: 380px;
+  background: #FFF;
+  padding: 0;
+  box-sizing: border-box;
+  transition: width 0.3s ease, margin 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 90vh;            /* Make sidebar fill most of viewport */
+  max-height: 98vh;        /* Never exceed viewport */
+  overflow: hidden;        /* Hide accidental overflow */
+}
+
+.parameters-area form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.parameters-area .input-group-block {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.advanced-section,
+.additional-section {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  height: 0;
+  overflow: hidden;
+}
+
+.advanced-section.show,
+.additional-section.show {
+  opacity: 1;
+  pointer-events: all;
+  height: auto;
+  overflow: visible;
+}
+
+@media (max-width: 700px) {
+  .parameters-area {
+    width: 100vw;
+    min-width: 0;
+    max-width: 100vw;
+    height: 98vh;
+    max-height: 100vh;
+  }
+  .advanced-section,
+  .additional-section {
+    grid-template-columns: 1fr !important;
+  }
+  .parameters-area .input-group-block {
+    padding-bottom: 60px;
+  }
+}
+
+/* Button group and results at bottom, never covered */
+.parameters-area .button-group,
+.parameters-area .result,
+.parameters-area #plot-result {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: #fff;
+  margin-top: 6px;
+  padding-top: 8px;
+  box-shadow: 0 -3px 12px rgba(200,200,200,0.06);
+}
+
+.parameters-area .button-group {
+  gap: 10px;
+}
+
+/* Prevent overlap of result & button group */
+.parameters-area .result,
+.parameters-area #plot-result {
+  margin-bottom: 0;
+  padding-bottom: 8px;
+}
+
+/* ======== BUTTON GROUPS ======== */
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* Move button-group to the bottom and align with plot/chatbot area */
+.parameters-area {
+  display: flex;
+  flex-direction: column;
+  /* ...other properties remain unchanged... */
+  height: 100%; /* Ensure it stretches to parent */
+  min-height: 0;
+}
+
+.parameters-area form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  height: 100%;
+  min-height: 0;
+  /* ...other properties... */
+}
+
+.input-group-block {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* ...other properties... */
+}
+
+.parameters-area .button-group {
+  margin-top: auto;     /* Push to the bottom */
+  margin-bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  position: sticky;     /* Stick to the bottom if scrolled */
+  bottom: 0;
+  background: #fff;
+  z-index: 10;
+  padding-bottom: 20px;
+  padding-top: 12px;
+}
+
+/* Make sure result is always just below the button group and doesn't overlap */
+.parameters-area .result,
+.parameters-area #plot-result {
+  position: static;
+  background: #fff;
+  margin-top: 0;
+  padding-bottom: 8px;
+  z-index: 9;
+}
+
+/* Remove previous sticky for .result/.button-group if present */
+.parameters-area .result,
+.parameters-area #plot-result,
+.parameters-area .button-group {
+  /* Remove any old sticky/absolute if present, except as above */
+}
+
+/* On small screens stack the buttons */
+@media (max-width: 700px) {
+  .parameters-area .button-group {
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 10px;
+    padding-top: 6px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .parameters-area {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    transition: none !important;
+  }
+  .parameters-area.collapsed {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  /* Hide the toggle in vertical mode */
+  .sidebar-toggle,
+  .external-left-toggle {
+    display: none !important;
+  }
+}
+
+/* ======== PATCH: Start chatbot sidebar hidden & remove toggle ======== */
+.chatbot-sidebar {
+  width: 0 !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  margin-left: -40px; /* Prevent layout shift */
+  padding: 0 !important;
+  display: none; /* Ensure it's completely hidden */
+}
+
+/* Remove toggle button inside chatbot sidebar */
+.sidebar-toggle.right-toggle {
+  display: none !important;
+}
+
+/* Remove external toggle button that appears when collapsed */
+.main-layout::after {
+  display: none !important;
+}
+
+/* Adjust plot area to take full width when chatbot is hidden */
+.chatbot-sidebar.collapsed ~ .main-layout > .plot-area {
+  width: 100%;
+  margin-right: 0;
 }
