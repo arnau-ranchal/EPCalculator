@@ -9,6 +9,18 @@ window.addEventListener('DOMContentLoaded', () => {
     bindUnifiedEventHandlers();
 });
 
+window.addEventListener('resize', function() {
+  if (window.innerWidth <= 1100) {
+    // Always show sidebars when in vertical/mobile mode
+    document.getElementById('left-sidebar')?.classList.remove('collapsed');
+    document.getElementById('right-sidebar')?.classList.remove('collapsed');
+    leftCollapsed = false;
+    rightCollapsed = false;
+    // Remove any external toggle buttons
+    removeExternalToggle('left');
+    removeExternalToggle('right');
+  }
+});
 /* Global parameters pels eixos*/
 const axisLabelsMap = {
   M:   'Modulation size',
@@ -30,18 +42,21 @@ let currentScaleType = 'linear';  // Scale por defecto
 // ==================== UNIFIED ARCHITECTURE ====================
 
 function validateInputs() {
+    console.log('entered validateInputs()');
     // Validate modulation
     const M = document.getElementById('M');
+    console.log('M: '+ M);
     if (M.value) {
         const MVal = parseInt(M.value);
-        if (MVal < 2 || MVal > 128) {
-            alert('Modulation must be between 2 and 128');
+        if (MVal < 2 || MVal > 64) {
+            alert('Modulation must be between 2 and 64');
             return false;
         }
     }
 
     // Validate SNR
     const snr = document.getElementById('SNR');
+    console.log('SNR:' + SNR);
     if (snr.value) {
         const snrVal = parseFloat(snr.value);
         if (snrVal < 2 || snrVal > 10) {
@@ -52,6 +67,7 @@ function validateInputs() {
 
     // Validate Rate
     const rate = document.getElementById('R');
+    console.log('R:'+R);
     if (rate.value) {
         const rateVal = parseFloat(rate.value);
         if (rateVal < 0.1 || rateVal > 10) {
@@ -62,6 +78,7 @@ function validateInputs() {
 
     // Validate Code Length
     const n = document.getElementById('n');
+    console.log('n:'+n);
     if (n.value) {
         const nVal = parseInt(n.value);
         if (nVal < 1 || nVal > 200) {
@@ -72,6 +89,7 @@ function validateInputs() {
 
     // Validate Quadrature
     const N = document.getElementById('N');
+    console.log('N'+N);
     if (N.value) {
         const NVal = parseInt(N.value);
         if (NVal < 5 || NVal > 40) {
@@ -82,6 +100,7 @@ function validateInputs() {
 
     // Validate Threshold
     const th = document.getElementById('th');
+    console.log('th:'+th)
     if (th.value) {
         const thVal = parseFloat(th.value);
         if (thVal < 1e-15 || thVal > 0.1) {
@@ -93,17 +112,16 @@ function validateInputs() {
     return true;
 }
 
-/**
- * Unified function to gather computation parameters from form
- */
+
 function gatherComputationParameters() {
-    const M_val = document.getElementById('M').value;
-    const typeM_val = document.getElementById('TypeModulation').value;
-    const SNR_val = document.getElementById('SNR').value;
-    const R_val = document.getElementById('R').value;
-    const N_val = document.getElementById('N').value;
-    const n_val = document.getElementById('n').value;
-    const th_val = document.getElementById('th').value;
+    if (!validateInputs()) return;
+    const M_val = document.getElementById('M').value || 2;
+    const typeM_val = document.getElementById('TypeModulation').value || 'PAM';
+    const SNR_val = document.getElementById('SNR').value || 5.0;
+    const R_val = document.getElementById('R').value || 0.5;
+    const N_val = document.getElementById('N').value || 20;
+    const n_val = document.getElementById('n').value || 128;
+    const th_val = document.getElementById('th').value || 1e-6;
 
     const sanitize = (value, defaultValue) => {
         if (value === '' || value === null || value === undefined || String(value).toLowerCase() === 'undefined' || String(value).toLowerCase() === 'unknown' || String(value).toLowerCase() === 'none') {
@@ -127,21 +145,40 @@ function gatherComputationParameters() {
  * Unified function to gather plot parameters from form
  */
 function gatherPlotParameters() {
+    if (!validateInputs()) return;
     const y = document.getElementById('yVar').value;
     const x = document.getElementById('xVar').value;
     const x2 = document.getElementById('xVar2').value;
-    const [min, max] = document.getElementById('xRange').value.split(',').map(Number);
-    const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number);
+    let xRangeValue = document.getElementById('xRange').value;
+    if (!xRangeValue) {
+        xRangeValue = '1,5'; // Default range
+    }
+    const [min, max] = xRangeValue.split(',').map(Number);
+
+    let xRange2Value = document.getElementById('xRange2').value;
+    if (!xRange2Value) {
+        xRange2Value = '1,5'; // Default range
+    }
+    const [min2, max2] = xRange2Value.split(',').map(Number);
     const points = Number(document.getElementById('points').value);
     const points2 = Number(document.getElementById('points2').value);
 
     // Get fixed values
-    const M = document.getElementById('M').value;
+    let M = document.getElementById('M').value;
+    if(!M){
+        M = '2';
+    }
     const typeModulation = document.getElementById('TypeModulation').value;
-    const SNR = document.getElementById('SNR').value;
-    const Rate = document.getElementById('R').value;
+    let SNR = document.getElementById('SNR').value;
+    if(!SNR){
+        SNR = 2;
+    }
+    let Rate = document.getElementById('R').value;
+    if(!Rate){
+        Rate = 0.5;
+    }
     const N = document.getElementById('N').value || 20;
-    const n = document.getElementById('n').value;
+    const n = document.getElementById('n').value || 100;
     const th = document.getElementById('th').value || 1e-6;
 
     let selectedPlotType = document.getElementById('plotType').value;
@@ -264,7 +301,7 @@ function runPlot(parameters, isContour = false) {
             return response.json();
         })
         .then(data => {
-            console.log('Contour plot response data:', data);
+            document.getElementById('plot-result').innerHTML = ""; // <--- This hides "Computing..."
             drawContourPlot(data.x1, data.x2, data.z);
         })
         .catch(error => {
@@ -300,6 +337,7 @@ function runPlot(parameters, isContour = false) {
         })
         .then(response => response.json())
         .then(data => {
+            document.getElementById('plot-result').innerHTML = ""; // <--- This hides "Computing..."
             // Info que passarem per a poder visualitzar les dades
             const metadata = {
                 M: parameters.M,
@@ -318,7 +356,6 @@ function runPlot(parameters, isContour = false) {
                 metadata
             });
         })
-        .catch(error => console.error("Error:", error));
     }
 }
 
@@ -327,7 +364,7 @@ function runPlot(parameters, isContour = false) {
  */
 function handleManualComputation(event) {
     event.preventDefault();
-
+    if (!validateInputs()) return;
     // Get parameters from the form
     const M_val = document.getElementById('M').value;
     const typeM_val = document.getElementById('TypeModulation').value;
@@ -367,15 +404,15 @@ function handleManualComputation(event) {
         })
         .then(data => {
             resultDiv.innerHTML = `
-                <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
-                <p><strong>Exponents:</strong> ${data["error_exponent"].toFixed(4)}</p>
-                <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
+                <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toPrecision(6)}</p>
+                <p><strong>Exponents:</strong> ${data["error_exponent"].toPrecision(6)}</p>
+                <p><strong>Optimal rho:</strong> ${data["rho óptima"].toPrecision(6)}</p>
             `;
             resultDiv.classList.add('show');
         })
         .catch(error => {
             console.error("Error fetching exponents:", error);
-            resultDiv.innerHTML = `<p style="color: #000; font-weight: bold;">Unable to process the data. Please verify your inputs.</p>`;
+            resultDiv.innerHTML = `<p style="color: #000; font-weight: bold;">Not able to process the data. Please verify your inputs.</p>`;
             resultDiv.classList.add('show');
         });
 }
@@ -385,9 +422,123 @@ function handleManualComputation(event) {
  */
 function handleManualPlot(event) {
     event.preventDefault();
+    const resultDiv = document.getElementById('plot-result');
+    resultDiv.innerHTML = "<span class='loading-indicator'>Computing...</span>";
+    resultDiv.classList.add('show');
     const parameters = gatherPlotParameters();
+
+    // Update UI with default values
+    document.getElementById('xRange').value = `${parameters.min},${parameters.max}`;
+    document.getElementById('xRange2').value = `${parameters.min2},${parameters.max2}`;
+    if (!document.getElementById('points').value) document.getElementById('points').value = parameters.points;
+    if (!document.getElementById('points2').value) document.getElementById('points2').value = parameters.points2;
+    if (!document.getElementById('M').value) document.getElementById('M').value = parameters.M;
+    if (!document.getElementById('TypeModulation').value) document.getElementById('TypeModulation').value = parameters.typeModulation;
+    if (!document.getElementById('SNR').value) document.getElementById('SNR').value = parameters.SNR;
+    if (!document.getElementById('R').value) document.getElementById('R').value = parameters.Rate;
+    if (!document.getElementById('N').value) document.getElementById('N').value = parameters.N;
+    if (!document.getElementById('n').value) document.getElementById('n').value = parameters.n;
+    if (!document.getElementById('th').value) document.getElementById('th').value = parameters.th;
     const isContour = parameters.plotType === 'contour';
-    runPlot(parameters, isContour);
+
+    // Set timeout for error in ms
+    let timeout = setTimeout(() => {
+        resultDiv.innerHTML = "<span style='color: red; font-weight: bold;'>Error: computation timed out. Please wait 15 seconds and force reload the webpage.</span>";
+    }, 1200001); // todo watch, 20 min at the moment
+
+    // Wrap runPlot so that it clears the timeout on success/failure
+    function runPlotWithTimeout(params, isContourPlot) {
+        // For contour plot
+        if (isContourPlot) {
+            const payload = {
+                y: params.y,
+                x1: params.x,
+                x2: params.x2,
+                rang_x1: [params.min, params.max],
+                rang_x2: [params.min2, params.max2],
+                points1: params.points,
+                points2: params.points2,
+                typeModulation: params.typeModulation,
+                M: parseFloat(params.M) || 0,
+                SNR: parseFloat(params.SNR) || 0,
+                Rate: parseFloat(params.Rate) || 0,
+                N: parseFloat(params.N) || 0,
+                n: parseFloat(params.n) || 0,
+                th: parseFloat(params.th) || 0
+            };
+
+            fetch("/plot_contour", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearTimeout(timeout);
+                resultDiv.innerHTML = "";
+                drawContourPlot(data.x1, data.x2, data.z);
+            })
+            .catch(error => {
+                clearTimeout(timeout);
+                resultDiv.innerHTML = "<span style='color: red; font-weight: bold;'>Error: plot failed.</span>";
+            });
+        } else {
+            const lineType = document.getElementById('lineType').value || '-';
+            let color = document.getElementById('lineColor').value;
+            if (!document.getElementById('lineColor').dataset.userModified) {
+                color = "";
+            }
+
+            const payload = {
+                y: params.y,
+                x: params.x,
+                rang_x: [params.min, params.max],
+                points: params.points,
+                typeModulation: params.typeModulation,
+                M: parseFloat(params.M) || 0,
+                SNR: parseFloat(params.SNR) || 0,
+                Rate: parseFloat(params.Rate) || 0,
+                N: parseFloat(params.N) || 0,
+                n: parseFloat(params.n) || 0,
+                th: parseFloat(params.th) || 0,
+                color,
+                lineType
+            };
+
+            fetch("/plot_function2", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearTimeout(timeout);
+                resultDiv.innerHTML = "";
+                const metadata = {
+                    M: params.M,
+                    SNR: params.SNR,
+                    Rate: params.Rate,
+                    N: params.N,
+                    n: params.n,
+                    th: params.th,
+                    typeModulation: params.typeModulation,
+                    xVar: params.x
+                };
+                drawInteractivePlot(data.x, data.y, {
+                    color: color,
+                    lineType: lineType,
+                    plotType: params.plotType || 'linear',
+                    metadata
+                });
+            })
+            .catch(error => {
+                clearTimeout(timeout);
+                resultDiv.innerHTML = "<span style='color: red; font-weight: bold;'>Error: plot failed.</span>";
+            });
+        }
+    }
+
+    runPlotWithTimeout(parameters, isContour);
 }
 
 /**
@@ -598,8 +749,38 @@ function clearChat() {
     currentSessionId = null;
 }
 
+function fillDefaultsIfEmpty() {
+    const defaults = {
+        'M': '2',
+        'TypeModulation': 'PAM',
+        'SNR': '5.0',
+        'R': '0.5',
+        'N': '20',
+        'n': '128',
+        'th': '1e-6',
+        'yVar': 'error_probability',
+        'xVar': 'm',
+        'xVar2': 'rate',
+        'xRange': '1,100',
+        'xRange2': '1,100',
+        'points': '50',
+        'points2': '50',
+        'lineType': 'solid',
+        'lineColor': 'black',
+        'plotType': 'lineLog'
+    };
+    for (const [id, defVal] of Object.entries(defaults)) {
+        const el = document.getElementById(id);
+        if (el && (el.value === '' || el.value === null || typeof el.value === 'undefined')) {
+            el.value = defVal;
+        }
+    }
+}
+
+
 function calculateExponents(event) {
     event.preventDefault();
+    fillDefaultsIfEmpty(); // <-- Add this line
     if (!validateInputs()) return;
 
     const M_val = document.getElementById('M').value;
@@ -639,21 +820,22 @@ function calculateExponents(event) {
         })
         .then(data => {
             resultDiv.innerHTML = `
-                <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toFixed(4)}</p>
-                <p><strong>Exponents:</strong> ${data["error_exponent"].toFixed(4)}</p>
-                <p><strong>Optimal rho:</strong> ${data["rho óptima"].toFixed(4)}</p>
+                <p><strong>Probability error:</strong> ${data["Probabilidad de error"].toPrecision(6)}</p>
+                <p><strong>Exponents:</strong> ${data["error_exponent"].toPrecision(6)}</p>
+                <p><strong>Optimal rho:</strong> ${data["rho óptima"].toPrecision(6)}</p>
             `;
             resultDiv.classList.add('show');
         })
         .catch(error => {
             console.error("Error fetching exponents:", error);
-            resultDiv.innerHTML = `<p style="color: #000; font-weight: bold;">Unable to process the data. Please verify your inputs.</p>`;
+            resultDiv.innerHTML = `<p style="color: #000; font-weight: bold;">not able 2 to process the data. Please verify your inputs.</p>`;
             resultDiv.classList.add('show');
         });
 }
 
 /* Plot Using the ENDPOINT */
 function plotFromFunction() {
+    fillDefaultsIfEmpty(); // <-- Add this line
     if (!validateInputs()) return;
     var renamer = {
       "m": "M",
@@ -667,7 +849,9 @@ function plotFromFunction() {
     const y = document.getElementById('yVar').value;
     const x = document.getElementById('xVar').value;
     const x2 = document.getElementById('xVar2').value; /* Pel contour plot */
-    const [min, max] = document.getElementById('xRange').value.split(',').map(Number);
+    const [min, max] = [1,5];
+    //if (isNaN(min)) min = 1;
+    //if (isNaN(max)) max = 5;
     const [min2, max2] = document.getElementById('xRange2').value.split(',').map(Number); /* Pel contour plot */
     const points = Number(document.getElementById('points').value);
     const points2 = Number(document.getElementById('points2').value); /* Pel contour plot */
@@ -755,11 +939,12 @@ function plotFromFunction() {
           }
         }
 
+
         const payload = {
         y,
         x1: x,
         x2,
-        rang_x1: [min, max],
+        rang_x1: [1,5],
         rang_x2: [min2, max2],
         points1: points,
         points2,
@@ -831,6 +1016,7 @@ function plotFromFunction() {
             typeModulation,
             xVar: x
           };
+          document.getElementById('plot-result').innerHTML = "";
           drawInteractivePlot(data.x, data.y, {
               color: color,
               lineType: lineType,
@@ -1446,7 +1632,7 @@ function renderAll() {
           const y = event.clientY - svgRect.top - offsetY;
 
           window.__tooltip
-            .html(`x: ${pt.x}<br>y: ${pt.y.toFixed(4)}`)
+            .html(`x: ${pt.x}<br>y: ${pt.y.toPrecision(6)}`)
             .style('left', `${x}px`)
             .style('top', `${y}px`)
             .style('opacity', 1);
@@ -1575,7 +1761,7 @@ function drawInteractivePlot(x, y, opts) {
     let label = opts.label && opts.label.length > 0
       ? opts.label
       : (() => {
-          const yVal = document.getElementById('yVar').value;
+          const yVar = document.getElementById('yVar').value;
           const xVar = document.getElementById('xVar').value;
 
           const M    = opts.metadata?.M;
@@ -1586,15 +1772,22 @@ function drawInteractivePlot(x, y, opts) {
 
           const parts = [];
 
-          if (M && type) parts.push(`${M}-${type}`);
 
-          if (yVal === 'ErrorProb') {
-            if (xVar !== 'SNR' && SNR !== undefined) parts.push(`SNR=${SNR}`);
-            if (xVar !== 'Rate' && R !== undefined) parts.push(`R=${R}`);
+          console.log("x: " + xVar)
+          //console.log("y: " + yVar)
+
+           if (xVar !== 'M' && M !== undefined){
+            parts.push(`${M}-${type}`);
+           }
+           else{
+            parts.push(`${type}`);
+           }
+
+          if (xVar !== 'snr' && SNR !== undefined) parts.push(`SNR=${SNR}`);
+          if (xVar !== 'rate' && R !== undefined) parts.push(`R=${R}`);
+
+          if (yVar === 'error_probability') {
             if (xVar !== 'n' && n !== undefined) parts.push(`n=${n}`);
-          } else {
-            if (xVar !== 'SNR' && SNR !== undefined) parts.push(`SNR=${SNR}`);
-            if (xVar !== 'Rate' && R !== undefined) parts.push(`R=${R}`);
           }
 
           return parts.join(', ');

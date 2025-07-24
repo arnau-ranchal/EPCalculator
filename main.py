@@ -331,6 +331,14 @@ async def serve_index():
         return FileResponse(index_path)
     return {"error": "index.html not found"}
 
+def err_msg(label,param, min, max):
+    outerr = "Please check your parameter ranges. "
+    if param < min:
+        return [1, outerr + "At least {} should be bigger than {}".format(label, min)]
+    elif param > max:
+        return [1, outerr + "At least {} should be smaller than {}".format(label, max)]
+    else:
+        return[2, ""]
 
 @app.get("/exponents")
 async def exponents(
@@ -342,6 +350,12 @@ async def exponents(
         n: str = Query("128", description="Code length"),
         th: str = Query("1e-6", description="Threshold"),
 ):
+    # here we cap the params
+    M_err_msg = err_msg("M", int(M), 2, 64)
+    if M_err_msg[0] == 1:
+        return M_err_msg[1]
+
+
     """
     Calcula l'exponent `Pe`, 'E' i `RHO`.
     """
@@ -393,6 +407,7 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
         y_vals = []
         # Create a base dictionary of parameters
         base_params = plot_data.dict()
+        print("plot data:", plot_data)
 
         for x_point in x_vals:
             # Update the parameter for the current iteration
@@ -401,8 +416,7 @@ async def generate_plot_from_function(plot_data: FunctionPlotRequest):
                 plot_data.x = plot_data.x.capitalize()
 
             current_params[plot_data.x] = x_point
-            print("plot data:", plot_data)
-            print("received:", plot_data.x)
+            #print("received:", plot_data.x)
 
             # Call the C++ library and get results
             results = call_cpp_exponents(current_params)

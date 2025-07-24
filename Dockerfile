@@ -42,7 +42,7 @@ RUN echo "#!/bin/bash\n" \
     && chmod +x /entrypoint.sh
 
 # Exponer el puerto correcto
-EXPOSE 8000
+EXPOSE 80
 
 # Entrypoint to wait for MySQL and start app
 ENTRYPOINT ["/entrypoint.sh"]
