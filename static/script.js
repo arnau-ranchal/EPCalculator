@@ -59,8 +59,8 @@ function validateInputs() {
     console.log('SNR:' + SNR);
     if (snr.value) {
         const snrVal = parseFloat(snr.value);
-        if (snrVal < 2 || snrVal > 10) {
-            alert('SNR must be between 2 and 10');
+        if (snrVal < 0 || snrVal > 1e+20) {
+            alert('SNR must be between 0 and 1e20');
             return false;
         }
     }
@@ -70,8 +70,8 @@ function validateInputs() {
     console.log('R:'+R);
     if (rate.value) {
         const rateVal = parseFloat(rate.value);
-        if (rateVal < 0.1 || rateVal > 10) {
-            alert('Rate must be between 0.1 and 10');
+        if (rateVal < 0 || rateVal > 1e+20) {
+            alert('Rate must be between 0 and 1e20');
             return false;
         }
     }
@@ -81,8 +81,8 @@ function validateInputs() {
     console.log('n:'+n);
     if (n.value) {
         const nVal = parseInt(n.value);
-        if (nVal < 1 || nVal > 200) {
-            alert('Code length must be between 1 and 200');
+        if (nVal < 1 || nVal > 1000000) {
+            alert('Code length must be between 1 and 1000000');
             return false;
         }
     }
@@ -92,8 +92,8 @@ function validateInputs() {
     console.log('N'+N);
     if (N.value) {
         const NVal = parseInt(N.value);
-        if (NVal < 5 || NVal > 40) {
-            alert('Quadrature must be between 5 and 40');
+        if (NVal < 2 || NVal > 40) {
+            alert('Quadrature must be between 2 and 40');
             return false;
         }
     }
@@ -109,11 +109,23 @@ function validateInputs() {
         }
     }
 
+    // Validate npoints
+    const npoints = document.getElementById('points');
+    console.log('points: '+ npoints);
+    if (npoints.value) {
+        const npointsVal = parseInt(npoints.value);
+        if (npointsVal < 1 || npointsVal > 101) {
+            alert('X1 Points must be between 1 and 101');
+            return false;
+        }
+    }
+
     return true;
 }
 
 
 function gatherComputationParameters() {
+    console.log("calling 1")
     if (!validateInputs()) return;
     const M_val = document.getElementById('M').value || 2;
     const typeM_val = document.getElementById('TypeModulation').value || 'PAM';
@@ -145,6 +157,7 @@ function gatherComputationParameters() {
  * Unified function to gather plot parameters from form
  */
 function gatherPlotParameters() {
+    console.log("calling 2")
     if (!validateInputs()) return;
     const y = document.getElementById('yVar').value;
     const x = document.getElementById('xVar').value;
@@ -363,16 +376,36 @@ function runPlot(parameters, isContour = false) {
  * Unified manual computation handler
  */
 function handleManualComputation(event) {
+    console.log("calling 3")
     event.preventDefault();
     if (!validateInputs()) return;
     // Get parameters from the form
-    const M_val = document.getElementById('M').value;
+    // SET PARAMS FOR THE COMPUTATION
+    let M_val = document.getElementById('M').value;
+    if(!M_val){
+        document.getElementById('M').value = '2';
+    }
     const typeM_val = document.getElementById('TypeModulation').value;
-    const SNR_val = document.getElementById('SNR').value;
-    const R_val = document.getElementById('R').value;
-    const N_val = document.getElementById('N').value;
-    const n_val = document.getElementById('n').value;
-    const th_val = document.getElementById('th').value;
+    let SNR_val = document.getElementById('SNR').value;
+    if(!SNR_val){
+        document.getElementById('SNR').value = 2;
+    }
+    let R_val = document.getElementById('R').value;
+    if(!R_val){
+        document.getElementById('R').value = 0.5;
+    }
+    let N_val = document.getElementById('N').value;
+    if(!N_val){
+        document.getElementById('N').value = 20;
+    }
+    let n_val = document.getElementById('n').value;
+    if(!n_val){
+        document.getElementById('n').value = 100;
+    }
+    let th_val = document.getElementById('th').value;
+    if(!th_val){
+        document.getElementById('th').value = 1e-6;
+    }
     const resultDiv = document.getElementById('result');
 
     const sanitize = (value, defaultValue) => {
@@ -779,6 +812,7 @@ function fillDefaultsIfEmpty() {
 
 
 function calculateExponents(event) {
+    console.log("calling 4")
     event.preventDefault();
     fillDefaultsIfEmpty(); // <-- Add this line
     if (!validateInputs()) return;
@@ -835,6 +869,7 @@ function calculateExponents(event) {
 
 /* Plot Using the ENDPOINT */
 function plotFromFunction() {
+    console.log("calling 5")
     fillDefaultsIfEmpty(); // <-- Add this line
     if (!validateInputs()) return;
     var renamer = {

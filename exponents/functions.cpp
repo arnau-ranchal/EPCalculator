@@ -1407,7 +1407,7 @@ void setX(int npoints, string xmode) {
         //X = {-1/sqrt(2)-I*double(1/sqrt(2)), -1/sqrt(2)+I*double(1/sqrt(2)), +1/sqrt(2)-I*double(1/sqrt(2)), 1/sqrt(2)+I*double(1/sqrt(2))};
     } else {
         setX(npoints, "PAM");
-        cout << "ERROR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+        cout << "It's me, C++. Error. Unknown constellation name recieved: "+xmode;
     }
 
     //cout << "X: " << X_mat << endl;
@@ -2618,11 +2618,6 @@ double GD_co(double &r, double &rho, double &rho_interpolated, int num_iteration
         }
     }
 
-    //if (DEBUG) cout  << "i rho e0 e0-rho*R grad_rho " << endl;
-
-    //float error = 0.00000000001;
-    //double error = threshold;
-
     int my_n;
 
     double increment = (n - low) / num_iterations;
@@ -2736,82 +2731,6 @@ double GD_co(double &r, double &rho, double &rho_interpolated, int num_iteration
     rho = max(0.0, min(rho, 1.0)); // todo change
     return e0 - rho * R;
 }
-/*
-double GD_co(double& r, double& rho, double learning_rate, int num_iterations, int n, bool updateR) {
-    auto start_XX = std::chrono::high_resolution_clock::now();
-
-    if (DEBUG) cout  << "it |  rho   |  r  |-e0+rho*r| -grad_rho| -grad_r" << endl;
-
-    //float error = 0.00000000001;
-    float error = 0.0000001;
-
-    int my_n;
-
-    double increment = (n-low)/num_iterations;
-
-    int prev_n = -1;
-    vector<double> hweights;
-    vector<double> roots;
-    vector<double> multhweights;
-    double e0;
-    double grad_r, grad_rho, grad_2_rho;
-    double nextrho, auxrho = rho, nextauxrho;
-    double nextr, auxr = rho, nextauxr;
-    vms inner_times;
-
-    // vector<double> rhos = {0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1};
-
-    for (int i = 0; i < num_iterations; ++i) {
-
-        my_n = ceil(low + increment*i);
-
-        if(my_n != prev_n){
-            //free(&hweights); free(&roots); free(&multhweights);
-            hweights = all_hweights[my_n];
-            roots = all_roots[my_n];
-            multhweights = all_multhweights[my_n];
-        }
-
-        prev_n = my_n;
-
-        auto start_inner2 = std::chrono::high_resolution_clock::now();
-
-        E_0_co(0.5, rho, grad_rho, grad_2_rho, e0, my_n-1, hweights, multhweights, roots);
-        grad_rho -= R;
-
-
-        auto stop_inner2 = std::chrono::high_resolution_clock::now();
-        auto duration_inner2 = std::chrono::duration_cast<std::chrono::microseconds>(stop_inner2 - start_inner2);
-        inner_times.push_back(duration_inner2);
-
-        grad_rho = -grad_rho;
-        grad_r = -grad_r;
-
-
-        rho -= learning_rate * grad_rho;
-        //if (rho <= 0) rho = 0.00000001; else if (rho >= 1) rho = 0.99999999;
-        //rho += grad_rho;
-        if(rho <= -1) rho = -1;
-        if(rho >= 2) rho = 2;
-
-        if(grad_rho <= error && grad_rho >= -error){
-            auto stop_XX = std::chrono::high_resolution_clock::now();
-            auto duration_XX = std::chrono::duration_cast<std::chrono::microseconds>(stop_XX - start_XX);
-            //NAG_co_times.push_back(duration_XX - sum_(inner_times));
-            cout << "duration: " << duration_XX.count() << endl;
-            return e0 - rho*R;
-        }
-        cout << fixed <<   setprecision(17) << i << " " << rho << " " << e0 << " " << e0-rho*R << " " << grad_rho << endl;
-    }
-
-    auto stop_XX = std::chrono::high_resolution_clock::now();
-    auto duration_XX = std::chrono::duration_cast<std::chrono::microseconds>(stop_XX - start_XX);
-    //GD_co_times.push_back(duration_XX - sum_(inner_times));
-    cout << "duration: " << duration_XX.count() << endl;
-    return e0 - rho*R;
-
-}
-*/
 
 
 // Newton's Method of E0
