@@ -1643,3 +1643,21 @@ header, #header, .center-header {
   width: 100%;
   margin-right: 0;
 }
+
+#plot-controls-wrapper {
+  margin-top: 1px;
+  margin-bottom: 15px;  /* MOD: marge inferior */
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+
+#scale-toggle {
+  position: absolute;
+  top: 25px;  /* Adjust vertical position from the top */
+  right: 25px; /* Adjust horizontal position from the right */
+  z-index: 10;  /* Ensures buttons are on top of the plot */
+  margin-bottom: 0; /* Removes the old margin */
+}
+
