@@ -422,6 +422,7 @@ class FunctionPlotRequest(BaseModel):
 
 @app.post("/plot_function2")
 async def generate_plot_from_function(plot_data: FunctionPlotRequest):
+    print("ENTERED PLOT FUNCTION POST")
     try:
         # Generate x values, ensuring integers for specific parameters
         if plot_data.x in ["M", "N", "n"]:

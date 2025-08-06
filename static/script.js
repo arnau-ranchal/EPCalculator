@@ -9,18 +9,22 @@ window.addEventListener('DOMContentLoaded', () => {
     bindUnifiedEventHandlers();
 });
 
-window.addEventListener('resize', function() {
-  if (window.innerWidth <= 1100) {
-    // Always show sidebars when in vertical/mobile mode
-    document.getElementById('left-sidebar')?.classList.remove('collapsed');
-    document.getElementById('right-sidebar')?.classList.remove('collapsed');
-    leftCollapsed = false;
-    rightCollapsed = false;
-    // Remove any external toggle buttons
-    removeExternalToggle('left');
-    removeExternalToggle('right');
-  }
-});
+// Replace your existing resize listener with this one
+window.addEventListener('resize', debounce(function() {
+    // Keep the existing logic for sidebars
+    if (window.innerWidth <= 1100) {
+        document.getElementById('left-sidebar')?.classList.remove('collapsed');
+        document.getElementById('right-sidebar')?.classList.remove('collapsed');
+        leftCollapsed = false;
+        rightCollapsed = false;
+        removeExternalToggle('left');
+        removeExternalToggle('right');
+    }
+
+    // Add the call to redraw the chart
+    redrawChart();
+
+}, 250)); // Debounce with a 250ms delay
 /* Global parameters pels eixos*/
 const axisLabelsMap = {
   M:   'Modulation size',
@@ -196,6 +200,7 @@ function gatherPlotParameters() {
 
     let selectedPlotType = document.getElementById('plotType').value;
     let plotType = (selectedPlotType === 'lineLog') ? currentScaleType : 'contour';
+
 
     return {
         y, x, x2, min, max, min2, max2, points, points2,
@@ -453,34 +458,67 @@ function handleManualComputation(event) {
 /**
  * Unified manual plot handler
  */
-function handleManualPlot(event) {
+function handleManualPlot(event) { // COMMENTED RESULTDIV
+    console.log('calling 6');
     event.preventDefault();
     const resultDiv = document.getElementById('plot-result');
     resultDiv.innerHTML = "<span class='loading-indicator'>Computing...</span>";
     resultDiv.classList.add('show');
     const parameters = gatherPlotParameters();
+    console.log('Plot Parameters:', parameters);
 
-    // Update UI with default values
-    document.getElementById('xRange').value = `${parameters.min},${parameters.max}`;
-    document.getElementById('xRange2').value = `${parameters.min2},${parameters.max2}`;
-    if (!document.getElementById('points').value) document.getElementById('points').value = parameters.points;
-    if (!document.getElementById('points2').value) document.getElementById('points2').value = parameters.points2;
-    if (!document.getElementById('M').value) document.getElementById('M').value = parameters.M;
-    if (!document.getElementById('TypeModulation').value) document.getElementById('TypeModulation').value = parameters.typeModulation;
-    if (!document.getElementById('SNR').value) document.getElementById('SNR').value = parameters.SNR;
-    if (!document.getElementById('R').value) document.getElementById('R').value = parameters.Rate;
-    if (!document.getElementById('N').value) document.getElementById('N').value = parameters.N;
-    if (!document.getElementById('n').value) document.getElementById('n').value = parameters.n;
-    if (!document.getElementById('th').value) document.getElementById('th').value = parameters.th;
+    if(!parameters) return;
+
+    // Check for plot changes
+    const plotChanged = (
+        lastYVar !== null &&
+        (parameters.y !== lastYVar ||
+         parameters.x !== lastXVar ||
+         parameters.selectedPlotType !== lastPlotType)
+    );
+
+    const hasPlots = activePlots.length > 0;
     const isContour = parameters.plotType === 'contour';
 
-    // Set timeout for error in ms
-    let timeout = setTimeout(() => {
+    // Show modal if needed
+    if (plotChanged && hasPlots && !skipPlotWarning) {
+        showPlotWarningModal(() => {
+            // User confirmed - clear plots and run new plot
+            clearAllPlots();
+            lastYVar = parameters.y;
+            lastXVar = parameters.x;
+            lastPlotType = parameters.selectedPlotType;
+
+            // Initialize timeout here inside the callback
+
+            const timeout = setTimeout(() => {
+                resultDiv.innerHTML = "<span style='color: red; font-weight: bold;'>Error: computation timed out. Please wait 15 seconds and force reload the webpage.</span>";
+            }, 1200000); // 20 minutes
+
+            runPlotWithTimeout(parameters, isContour, timeout);
+        });
+        //resultDiv.innerHTML = ""; // Clear loading indicator
+        return; // Exit without plotting
+    }
+
+    // If no modal needed, proceed directly
+    if (plotChanged && hasPlots) {
+        clearAllPlots();
+    }
+
+    // Update last variables
+    lastYVar = parameters.y;
+    lastXVar = parameters.x;
+    lastPlotType = parameters.selectedPlotType;
+
+    // Initialize timeout for direct path
+
+    const timeout = setTimeout(() => {
         resultDiv.innerHTML = "<span style='color: red; font-weight: bold;'>Error: computation timed out. Please wait 15 seconds and force reload the webpage.</span>";
-    }, 1200001); // todo watch, 20 min at the moment
+    }, 1200000); // 20 minutes
 
     // Wrap runPlot so that it clears the timeout on success/failure
-    function runPlotWithTimeout(params, isContourPlot) {
+    function runPlotWithTimeout(params, isContourPlot, timeoutId) {
         // For contour plot
         if (isContourPlot) {
             const payload = {
@@ -507,12 +545,12 @@ function handleManualPlot(event) {
             })
             .then(response => response.json())
             .then(data => {
-                clearTimeout(timeout);
+                clearTimeout(timeoutId);
                 resultDiv.innerHTML = "";
                 drawContourPlot(data.x1, data.x2, data.z);
             })
             .catch(error => {
-                clearTimeout(timeout);
+                clearTimeout(timeoutId);
                 resultDiv.innerHTML = "<span style='color: red; font-weight: bold;'>Error: plot failed.</span>";
             });
         } else {
@@ -545,7 +583,7 @@ function handleManualPlot(event) {
             })
             .then(response => response.json())
             .then(data => {
-                clearTimeout(timeout);
+                clearTimeout(timeoutId);
                 resultDiv.innerHTML = "";
                 const metadata = {
                     M: params.M,
@@ -565,13 +603,14 @@ function handleManualPlot(event) {
                 });
             })
             .catch(error => {
-                clearTimeout(timeout);
+                clearTimeout(timeoutId);
                 resultDiv.innerHTML = "<span style='color: red; font-weight: bold;'>Error: plot failed.</span>";
             });
         }
     }
 
-    runPlotWithTimeout(parameters, isContour);
+    // Pass timeout to the function
+    runPlotWithTimeout(parameters, isContour, timeout);
 }
 
 /**
@@ -872,6 +911,7 @@ function plotFromFunction() {
     console.log("calling 5")
     fillDefaultsIfEmpty(); // <-- Add this line
     if (!validateInputs()) return;
+
     var renamer = {
       "m": "M",
       "snr": "SNR",
@@ -1034,7 +1074,7 @@ function plotFromFunction() {
       document.getElementById('plot-result').innerHTML = "";
       document.getElementById('plot-result').classList.remove('show');
 
-      fetch('/plot_function3', {
+      fetch('/plot_function2', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -1051,13 +1091,16 @@ function plotFromFunction() {
             typeModulation,
             xVar: x
           };
-          document.getElementById('plot-result').innerHTML = "";
-          drawInteractivePlot(data.x, data.y, {
-              color: color,
-              lineType: lineType,
-              plotType: plotType,
-              metadata
-          });
+          const allNull = data.y.every(x => x === null);
+          if(!allNull){
+              document.getElementById('plot-result').innerHTML = "";
+              drawInteractivePlot(data.x, data.y, {
+                  color: color,
+                  lineType: lineType,
+                  plotType: plotType,
+                  metadata
+              });
+          }
 
       })
       .catch(error => {
@@ -1136,6 +1179,14 @@ function plotManually() {
 
 
 function drawContourPlot(x1, x2, zMatrix) {
+if (!isRedrawing) {
+        activePlots.push({
+            x: x,
+            y: y,
+            options: options,
+            isContour: false
+        });
+    }
     console.log('drawContourPlot called with:', { x1, x2, zMatrix });
 
     // 1) Generar nou plotId
@@ -1179,6 +1230,7 @@ let plotIdCounter = 1;
 
 function initializeChart() {
   const plotOutput = d3.select('#plot-output');
+
   plotOutput.html(''); // Limpia contenido previo
 
   const plotWrapper = plotOutput
@@ -1186,9 +1238,10 @@ function initializeChart() {
     .attr('id', 'plot-wrapper')
     .style('display', 'flex')
     .style('flex-direction', 'column')
-    .style('align-items', 'center')
+    .style('align-items', 'start')
     .style('width', '100%')
-    .style('height', '100%');
+    .style('height', '100%')
+      .style("background", "#f0f0f0");
 
   const outer = plotWrapper
     .append('div')
@@ -1348,7 +1401,8 @@ function initializeChart() {
     .attr('id', 'plot-controls-wrapper')
     .style('display', 'flex')
     .style('justify-content', 'center')
-    .style('width', '100%');
+    .style('width', '100%')
+    .style('height', '10%');
 
   const controls = controlsWrapper.append('div')
     .attr('id', 'plot-controls')
@@ -1356,19 +1410,23 @@ function initializeChart() {
     .style('justify-content', 'center')
     .style('align-items', 'center')
     .style('gap', '20px')
-    .style('margin-top', '12px')
+    .style('margin-top', '0px')
     .style('flex-wrap', 'wrap');
 
   controls.append('button')
     .attr('type', 'button')
     .attr('class', 'reset-zoom-button')
+    .style('font-family', 'Inter')
     .text('Reset Zoom')
+    .style('font-size', '0.95em')
     .on('click', resetZoom);
 
   controls.append('button')
     .attr('type', 'button')
     .attr('class', 'reset-zoom-button')
     .text('Clear All Plots')
+        .style('font-size', '0.95em')
+    .style('font-family', 'Inter')
     .on('click', () => {
       activePlots = [];
       colorIndex = 0;
@@ -1378,10 +1436,24 @@ function initializeChart() {
       if (infoBox) infoBox.style.display = 'none';
     });
 
+controls.append('label')
+  .html('<input type="checkbox" id="toggleGrid" checked> Show grid')
+  .style('display', 'inline-flex')
+  .style('align-items', 'center')
+  .style('gap', '0.4em') // optional space between box and text
+  .style('font-size', '0.95em')
+  .style('font-family', 'Inter')
+      .style('accent-color', '#f0f0f0'); // ← change to your preferred color
+
   controls.append('label')
-    .html('<input type="checkbox" id="toggleGrid" checked> Show grid');
-  controls.append('label')
-    .html('<input type="checkbox" id="togglePoints"> Show points');
+  .html('<input type="checkbox" id="togglePoints"> Show points')
+  .style('display', 'inline-flex')
+  .style('align-items', 'center')
+  .style('gap', '0.4em') // optional space between box and text
+  .style('font-size', '0.95em')
+  .style('font-family', 'Inter')
+    .style('accent-color', '#f0f0f0'); // ← change to your preferred color
+
 
   window.__zoom = d3.zoom().scaleExtent([1, 10]).on('zoom', zoomed);
   window.__svg.call(window.__zoom);
@@ -1478,9 +1550,9 @@ function zoomed(event) {
         .tickFormat(formatX)
     ).select('.domain').remove();
 
-    // Mida valor eixos
+    // Mida valor eixos IMPORTANT
     window.__gX.selectAll("text")
-      .style("font-size", "18px");
+      .style("font-size", "1.5em");
 
     window.__gY.call(
       d3.axisLeft(newY)
@@ -1489,7 +1561,7 @@ function zoomed(event) {
     ).select('.domain').remove();
 
     window.__gY.selectAll("text")
-      .style("font-size", "18px");
+      .style("font-size", "1.5em");
 
 
     // 3) Grid toggle
@@ -1789,6 +1861,15 @@ function renderAll() {
 
 
 function drawInteractivePlot(x, y, opts) {
+
+    if (!isRedrawing) {
+        activePlots.push({
+            x: x,
+            y: y,
+            options: options,
+            isContour: false
+        });
+    }
     opts = opts || {};
     const plotId = `plot-${plotIdCounter++}`;
 
@@ -2279,31 +2360,20 @@ function toggleAdditionalParams() {
 }
 
 function showPlotWarningModal(onConfirm) {
-  const modal = document.getElementById('plot-warning-modal');
-  modal.style.display = 'flex';
+    const modal = document.getElementById('plot-warning-modal');
+    modal.style.display = 'flex';
 
-  const cancelBtn = document.getElementById('cancelWarningBtn');
-  const confirmBtn = document.getElementById('confirmWarningBtn');
-  const checkbox = document.getElementById('suppressWarningCheckbox');
+    document.getElementById('confirmWarningBtn').onclick = function() {
+        if (document.getElementById('suppressWarningCheckbox').checked) {
+            skipPlotWarning = true;
+        }
+        modal.style.display = 'none';
+        onConfirm(); // Execute the callback after confirmation
+    };
 
-  function close() {
-      modal.style.display = 'none';
-      cancelBtn.removeEventListener('click', onCancel);
-      confirmBtn.removeEventListener('click', onContinue);
-  }
-
-  function onCancel() {
-      close();
-  }
-
-  function onContinue() {
-      if (checkbox.checked) skipPlotWarning = true;
-      close();
-      onConfirm();
-  }
-
-  cancelBtn.addEventListener('click', onCancel);
-  confirmBtn.addEventListener('click', onContinue);
+    document.getElementById('cancelWarningBtn').onclick = function() {
+        modal.style.display = 'none';
+    };
 }
 
 /* Clear all plots del WARNING */
@@ -2470,3 +2540,69 @@ function changePlotScale(button) {
   renderAll();
 }
 
+function toggleAdvancedParams() {
+  const toggle = document.querySelector('.advanced-toggle');
+  const section = document.getElementById('advanced-params');
+
+  const isOpen = section.classList.contains('show');
+  toggle.classList.toggle('open', !isOpen);
+  section.classList.toggle('show', !isOpen);
+}
+
+/**
+ * Debounce function to limit the rate at which a function gets called.
+ */
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function() {
+        var context = this, args = arguments;
+        var later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+};
+
+// Global flag to prevent duplicating plots during redraw
+let isRedrawing = false;
+
+/**
+ * Redraws the entire chart based on the current window size.
+ */
+function redrawChart() {
+    const container = document.getElementById('plot-visualization');
+    if (!container) return;
+
+    // Set the redrawing flag to true
+    isRedrawing = true;
+
+    // Clear the old SVG
+    d3.select(container).select("svg").remove();
+
+    // Re-initialize the chart's SVG container
+    initializeChart();
+
+    // Redraw all active plots with their stored data and options
+    if (activePlots && activePlots.length > 0) {
+        activePlots.forEach(plot => {
+            // We assume drawInteractivePlot is the function that handles the D3 drawing.
+            // This will now use the new dimensions because initializeChart has been called again.
+            if (plot.isContour) {
+                 drawContourPlot(plot.x, plot.y, plot.z);
+            } else {
+                 drawInteractivePlot(plot.x, plot.y, plot.options);
+            }
+        });
+    } else {
+        // If there are no active plots, draw the default initial state
+        drawDefaultGrid();
+        plotInitialGraph();
+    }
+
+    // Reset the flag
+    isRedrawing = false;
+}
