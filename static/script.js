@@ -497,7 +497,7 @@ function handleManualPlot(event) { // COMMENTED RESULTDIV
 
             runPlotWithTimeout(parameters, isContour, timeout);
         });
-        //resultDiv.innerHTML = ""; // Clear loading indicator
+        resultDiv.innerHTML = ""; // Clear loading indicator
         return; // Exit without plotting
     }
 
@@ -545,6 +545,7 @@ function handleManualPlot(event) { // COMMENTED RESULTDIV
             })
             .then(response => response.json())
             .then(data => {
+                console.log("data:" , data);
                 clearTimeout(timeoutId);
                 resultDiv.innerHTML = "";
                 drawContourPlot(data.x1, data.x2, data.z);
@@ -1861,12 +1862,13 @@ function renderAll() {
 
 
 function drawInteractivePlot(x, y, opts) {
-
+    console.log("x_received:" , x);
+    console.log("y_received:", y);
     if (!isRedrawing) {
         activePlots.push({
             x: x,
             y: y,
-            options: options,
+            options: opts,
             isContour: false
         });
     }
@@ -1970,6 +1972,11 @@ function updatePlotListUI() {
       return;
     }
     container.style.display = 'block';
+    container.style.position = 'absolute';
+    container.style.top = '20px';
+    container.style.left = '50%';
+    container.style.transform = 'translateX(-50%)';
+    container.style.zIndex = '1000';
 
     // Title opcional -- els profes m'han demanat que no es mostri
     /* const title = document.createElement('h4');
