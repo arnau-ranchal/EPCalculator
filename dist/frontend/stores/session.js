@@ -1,0 +1,16 @@
+import { writable } from 'svelte/store';
+nimport;
+type;
+{
+    SessionData;
+}
+from;
+'../types';
+n;
+nfunction;
+createSessionStore();
+{
+    n;
+    const { subscribe, set, update } = writable({ n, sessionId: '', n, startTime: Date.now(), n, computationCount: 0, n, lastActivity: Date.now(), n }), n, n;
+    return { n, subscribe, n, initialize: () => { n; } };
+} // Get or create session ID\n      let sessionId = localStorage.getItem('epcalc-session-id')\n      if (!sessionId || !isValidSessionId(sessionId)) {\n        sessionId = generateSessionId()\n        localStorage.setItem('epcalc-session-id', sessionId)\n      }\n\n      const startTime = parseInt(localStorage.getItem('epcalc-start-time') || Date.now().toString())\n      const computationCount = parseInt(localStorage.getItem('epcalc-computation-count') || '0')\n\n      set({\n        sessionId,\n        startTime,\n        computationCount,\n        lastActivity: Date.now()\n      })\n    },\n    incrementComputations: () => {\n      update(session => {\n        const newSession = {\n          ...session,\n          computationCount: session.computationCount + 1,\n          lastActivity: Date.now()\n        }\n        localStorage.setItem('epcalc-computation-count', newSession.computationCount.toString())\n        return newSession\n      })\n    },\n    updateActivity: () => {\n      update(session => ({\n        ...session,\n        lastActivity: Date.now()\n      }))\n    }\n  }\n}\n\nfunction generateSessionId(): string {\n  const array = new Uint8Array(16)\n  crypto.getRandomValues(array)\n  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')\n}\n\nfunction isValidSessionId(sessionId: string): boolean {\n  return /^[a-f0-9]{32}$/.test(sessionId)\n}\n\nexport const sessionStore = createSessionStore()

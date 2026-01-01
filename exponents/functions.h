@@ -13,6 +13,8 @@ using namespace std;
 
 void setX(int npoints, string xmode);
 
+void setCustomConstellation(const double* real_parts, const double* imag_parts, const double* probabilities, int num_points);
+
 void setR(double r);
 
 void setSNR(double snr);
@@ -95,7 +97,9 @@ vector<chrono::microseconds> getE0_times();
 
 void test();
 
-void setQ();
+void setQ(string distribution = "uniform", double shaping_param = 0.0);
+
+void normalizeX_for_Q();
 
 void setPI();
 
@@ -124,5 +128,10 @@ double initial_guess(double r, double E0_0, double E0_1, double E0_0_der, double
 bool connect_to_db();
 
 bool disconnect_from_db();
+
+// Getter functions for mutual information and cutoff rate
+// These values are computed during GD_co/GD_iid optimization
+double getMutualInformation();
+double getCutoffRate();
 
 #endif //TFG_FUNCTIONS_H

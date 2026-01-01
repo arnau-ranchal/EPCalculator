@@ -1,0 +1,562 @@
+================================================================================
+TEST: Does Quadrature Convergence Depend on rho?
+================================================================================
+
+Configuration:
+  Constellation: PAM (M=64)
+  SNR: 1.000000000000 dB (1.258925411794 linear)
+  Code rate R: 0.500000000000
+
+Initializing constellation and prior...
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=0.999999974663, scale=1.000000012668
+  Done.
+
+Test parameters:
+  rho values: 0.000000000000 0.100000000000 0.200000000000 0.300000000000 0.400000000000 0.500000000000 0.600000000000 0.700000000000 0.800000000000 0.900000000000 1.000000000000 
+  N values: 2 3 4 5 6 7 8 9 10 12 15 20 30 40 
+  Reference N: 40
+
+Running convergence test...
+================================================================================
+
+rho = 0.000000000000:
+     N                E0    Error vs N=40     Rel Error
+  ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.000000000000    1.249e-14      1.083e+00      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.000000000000    1.313e-14      1.139e+00      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   -0.000000000000   9.290e-15      8.056e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.000000000000    1.682e-14      1.458e+00      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   -0.000000000000   5.766e-15      5.000e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.000000000000    1.554e-14      1.347e+00      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   -0.000000000000   1.602e-15      1.389e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   -0.000000000000   4.805e-15      4.167e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  -0.000000000000   1.922e-15      1.667e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  -0.000000000000   7.368e-15      6.389e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  -0.000000000000   2.563e-15      2.222e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.000000000000    3.444e-14      2.986e+00      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  -0.000000000000   4.485e-15      3.889e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  -0.000000000000   0.000e+00      0.000e+00      
+
+rho = 0.100000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.086079115509    9.704e-04      1.140e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.085112141141    3.376e-06      3.967e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.085110325761    1.561e-06      1.834e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.085108478360    2.866e-07      3.367e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.085108825683    6.077e-08      7.140e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.085108759858    5.059e-09      5.944e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.085108761569    3.348e-09      3.933e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.085108767137    2.220e-09      2.609e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.085108764107    8.098e-10      9.515e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.085108764906    1.067e-11      1.253e-10      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.085108764911    6.463e-12      7.594e-11      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.085108764917    5.590e-14      6.568e-13      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.085108764917    2.554e-15      3.000e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.085108764917    0.000e+00      0.000e+00      
+
+rho = 0.200000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.168681515641    4.860e-03      2.966e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.164038051347    2.162e-04      1.320e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.163831071356    9.210e-06      5.622e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.163821915246    5.436e-08      3.318e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.163821905064    4.418e-08      2.697e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.163821865869    4.987e-09      3.044e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.163821855645    5.237e-09      3.197e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.163821862852    1.971e-09      1.203e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.163821860446    4.358e-10      2.660e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.163821860926    4.410e-11      2.692e-10      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.163821860879    3.036e-12      1.853e-11      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.163821860882    5.204e-14      3.177e-13      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.163821860882    1.185e-14      7.234e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.163821860882    0.000e+00      0.000e+00      
+
+rho = 0.300000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.247493417682    1.069e-02      4.516e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.237623925991    8.249e-04      3.484e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.236856000941    5.697e-05      2.406e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.236802238152    3.210e-06      1.356e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.236799215491    1.878e-07      7.930e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.236799044853    1.714e-08      7.238e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.236799024182    3.532e-09      1.491e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.236799028662    9.488e-10      4.007e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.236799027647    6.657e-11      2.811e-10      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.236799027753    3.977e-11      1.679e-10      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.236799027713    2.061e-13      8.704e-13      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.236799027714    5.662e-15      2.391e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.236799027714    4.330e-15      1.828e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.236799027714    0.000e+00      0.000e+00      
+
+rho = 0.400000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.322419643973    1.782e-02      5.849e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.306482259798    1.879e-03      6.170e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.304784648679    1.818e-04      5.968e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.304618457464    1.560e-05      5.123e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.304604064658    1.212e-06      3.979e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.304602945179    9.243e-08      3.035e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.304602856352    3.606e-09      1.184e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.304602853304    5.587e-10      1.834e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.304602852816    7.074e-11      2.322e-10      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.304602852764    1.861e-11      6.109e-11      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.304602852745    3.992e-13      1.311e-12      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.304602852745    1.554e-15      5.103e-15      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.304602852745    5.496e-15      1.804e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.304602852745    0.000e+00      0.000e+00      
+
+rho = 0.500000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.393492950487    2.577e-02      7.009e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.371081585651    3.362e-03      9.143e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.368129596623    4.101e-04      1.115e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.367765060629    4.561e-05      1.240e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.367724059867    4.610e-06      1.254e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.367719879512    4.292e-07      1.167e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.367719485700    3.534e-08      9.611e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.367719453133    2.775e-09      7.547e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.367719450599    2.417e-10      6.573e-10      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.367719450364    6.041e-12      1.643e-11      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.367719450358    2.300e-13      6.254e-13      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.367719450358    8.049e-15      2.189e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.367719450358    2.942e-15      8.001e-15      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.367719450358    0.000e+00      0.000e+00      
+
+rho = 0.600000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.460820540140    3.425e-02      8.028e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.431798313945    5.225e-03      1.225e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.427329382513    7.560e-04      1.772e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.426674604636    1.012e-04      2.372e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.426585851119    1.243e-05      2.915e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.426574821197    1.404e-06      3.291e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.426573562828    1.454e-07      3.408e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.426573431334    1.388e-08      3.254e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.426573418695    1.243e-09      2.913e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.426573417460    8.401e-12      1.969e-11      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.426573417452    3.808e-14      8.927e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.426573417452    0.000e+00      0.000e+00      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.426573417452    8.216e-15      1.926e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.426573417452    0.000e+00      0.000e+00      
+
+rho = 0.700000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.524551747037    4.301e-02      8.932e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.488947329424    7.408e-03      1.538e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.482761509103    1.223e-03      2.539e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.481727402793    1.885e-04      3.914e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.481565804497    2.690e-05      5.586e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.481542450189    3.544e-06      7.359e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.481539337799    4.312e-07      8.955e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.481538955147    4.858e-08      1.009e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.481538911641    5.079e-09      1.055e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.481538906608    4.506e-11      9.358e-11      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.481538906563    1.998e-15      4.150e-15      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.481538906563    8.493e-15      1.764e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.481538906563    9.825e-15      2.040e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.481538906563    0.000e+00      0.000e+00      
+
+rho = 0.800000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.584858151023    5.191e-02      9.740e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.542800455643    9.852e-03      1.849e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.534753711075    1.806e-03      3.388e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.533259395289    3.114e-04      5.843e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.532998019003    5.001e-05      9.385e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.532955458306    7.454e-06      1.399e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.532949034684    1.031e-06      1.934e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.532948136475    1.324e-07      2.484e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.532948019925    1.582e-08      2.969e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.532948004287    1.849e-10      3.469e-10      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.532948004102    1.198e-13      2.248e-13      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.532948004102    2.331e-15      4.375e-15      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.532948004102    1.299e-14      2.437e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.532948004102    0.000e+00      0.000e+00      
+
+rho = 0.900000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.641921188371    6.082e-02      1.047e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.593597862655    1.250e-02      2.151e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.583593118191    2.496e-03      4.295e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.581568670814    4.715e-04      8.113e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.581180559408    8.336e-05      1.435e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.581110935166    1.374e-05      2.364e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.581099306915    2.107e-06      3.626e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.581097501133    3.011e-07      5.182e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.581097240164    4.017e-08      6.913e-08      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.581097200578    5.874e-10      1.011e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.581097199992    6.465e-13      1.113e-12      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.581097199991    2.220e-15      3.821e-15      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.581097199991    1.454e-14      2.503e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.581097199991    0.000e+00      0.000e+00      
+
+rho = 1.000000000000:
+  N   E0                Error vs N=    40Rel Error
+       ------------------------------------------------------------
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  2   0.695924389481    6.967e-02      1.113e-01      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  3   0.641555299348    1.530e-02      2.444e-02      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  4   0.629533497843    3.281e-03      5.239e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  5   0.626920896801    6.684e-04      1.067e-03      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  6   0.626380440974    1.280e-04      2.043e-04      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  7   0.626275391050    2.291e-05      3.658e-05      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  8   0.626256311294    3.831e-06      6.117e-06      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  9   0.626253079043    5.983e-07      9.554e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  10  0.626252568164    8.743e-08      1.396e-07      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  12  0.626252482280    1.541e-09      2.461e-09      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  15  0.626252480741    2.312e-12      3.692e-12      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  20  0.626252480739    7.883e-15      1.259e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  30  0.626252480739    7.105e-15      1.135e-14      
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+  40  0.626252480739    0.000e+00      0.000e+00      
+
+================================================================================
+Test complete! Results saved to: rho_convergence_results.csv
+================================================================================
+
+NEXT STEPS:
+1. Run Python analysis script to visualize results
+2. Check if convergence curves are parallel (rho-independent)
+   or diverging (rho-dependent)
+
+Python analysis command:
+  python3 analyze_rho_convergence.py
+
