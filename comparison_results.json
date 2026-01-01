@@ -1,0 +1,282 @@
+[
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 5,
+      "R": 0.3,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 2.5177747644592443e-27,
+      "error_exponent": 0.6903117895126343,
+      "optimal_rho": 1.0,
+      "computation_time": 0.00396275520324707,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 2.906002579954901e-29,
+      "error_exponent": 0.7406006153744894,
+      "optimal_rho": 5.33255362821591,
+      "computation_time": 0.001,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.005714
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 5,
+      "R": 0.5,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 1.2805139745823881e-19,
+      "error_exponent": 0.49031180143356323,
+      "optimal_rho": 1.0,
+      "computation_time": 0.008217334747314453,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 9.142798147348959e-27,
+      "error_exponent": 0.6757767405721021,
+      "optimal_rho": 4.690619181484421,
+      "computation_time": 0.001,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.1207666
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 5,
+      "R": 0.7,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 6.512560022514657e-12,
+      "error_exponent": 0.2903118133544922,
+      "optimal_rho": 1.0,
+      "computation_time": 0.0068700313568115234,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 2.876486020341552e-24,
+      "error_exponent": 0.6109528657697149,
+      "optimal_rho": 4.0485582782973095,
+      "computation_time": 0,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.2392411
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 10,
+      "R": 0.3,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 1.0720972147133373e-27,
+      "error_exponent": 0.6999345421791077,
+      "optimal_rho": 1.0,
+      "computation_time": 0.004191875457763672,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 1.3816405259276244e-45,
+      "error_exponent": 1.1642217340981884,
+      "optimal_rho": 9.52694330556192,
+      "computation_time": 0.001,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.3614044
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 10,
+      "R": 0.5,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 5.452574265144956e-20,
+      "error_exponent": 0.4999345541000366,
+      "optimal_rho": 1.0,
+      "computation_time": 0.0057866573333740234,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 9.55259444543159e-43,
+      "error_exponent": 1.0905235583104607,
+      "optimal_rho": 8.797255516259987,
+      "computation_time": 0.001,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.484694
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 10,
+      "R": 0.7,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 2.7731222266430544e-12,
+      "error_exponent": 0.2999345660209656,
+      "optimal_rho": 1.0,
+      "computation_time": 0.005932331085205078,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 6.6046166804227035e-40,
+      "error_exponent": 1.0168253825227322,
+      "optimal_rho": 8.067565522736299,
+      "computation_time": 0,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.6814094
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 15,
+      "R": 0.3,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 1.065931542589376e-27,
+      "error_exponent": 0.6999995708465576,
+      "optimal_rho": 1.0,
+      "computation_time": 0.004958629608154297,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 2.4756251403779333e-56,
+      "error_exponent": 1.443126409654342,
+      "optimal_rho": 10,
+      "computation_time": 0,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.801653
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 15,
+      "R": 0.5,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 5.421216365110953e-20,
+      "error_exponent": 0.4999995827674866,
+      "optimal_rho": 1.0,
+      "computation_time": 0.0064601898193359375,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 2.508601325348898e-53,
+      "error_exponent": 1.3651195767000535,
+      "optimal_rho": 10,
+      "computation_time": 0.001,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810407.9415164
+  },
+  {
+    "test_case": {
+      "M": 2,
+      "modType": "PAM",
+      "SNR": 15,
+      "R": 0.7,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 2.757173829526227e-12,
+      "error_exponent": 0.2999995946884155,
+      "optimal_rho": 1.0,
+      "computation_time": 0.00586247444152832,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 2.5420167645339804e-50,
+      "error_exponent": 1.2871127437457646,
+      "optimal_rho": 10,
+      "computation_time": 0,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810408.0636246
+  },
+  {
+    "test_case": {
+      "M": 4,
+      "modType": "PAM",
+      "SNR": 5,
+      "R": 0.3,
+      "N": 15,
+      "n": 128,
+      "threshold": 1e-06
+    },
+    "old_result": {
+      "error_probability": 3.784346632755601e-41,
+      "error_exponent": 1.0490548610687256,
+      "optimal_rho": 1.0,
+      "computation_time": 0.011149406433105469,
+      "success": true,
+      "error_message": null
+    },
+    "new_result": {
+      "error_probability": 3.092858402481301e-26,
+      "error_exponent": 0.6620405443884776,
+      "optimal_rho": 4.554580434623981,
+      "computation_time": 0.001,
+      "success": true,
+      "error_message": null
+    },
+    "timestamp": 1758810408.2221203
+  }
+]

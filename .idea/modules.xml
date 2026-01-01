@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/EPCalculator.iml" filepath="$PROJECT_DIR$/.idea/EPCalculator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/main.py.iml" filepath="$PROJECT_DIR$/.idea/main.py.iml" />
     </modules>
   </component>
 </project>

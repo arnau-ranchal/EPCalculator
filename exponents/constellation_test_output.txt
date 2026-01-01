@@ -1,0 +1,5353 @@
+================================================================================
+COMPREHENSIVE CONVERGENCE TEST ACROSS CONSTELLATIONS
+================================================================================
+
+Test configuration:
+  SNR: 1.000000 (linear)
+  Code rate R: 0.500000
+  rho range: [0, 1]
+  rho points: 11
+  N values: 14
+  N_ref: 40
+  Constellations to test: 17
+
+================================================================================
+TEST 1/17: 2-PSK
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 2-PSK:
+  Mean convergence rate: -7.633858
+  Std deviation: 2.757050
+  CV: 36.116078%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 2/17: 4-PSK
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 4-PSK:
+  Mean convergence rate: -11.948161
+  Std deviation: 2.382823
+  CV: 19.943008%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 3/17: 8-PSK
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 8-PSK:
+  Mean convergence rate: -9.807829
+  Std deviation: 2.561370
+  CV: 26.115565%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 4/17: 16-PSK
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 16-PSK:
+  Mean convergence rate: -10.019953
+  Std deviation: 2.629977
+  CV: 26.247400%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 5/17: 32-PSK
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 32-PSK:
+  Mean convergence rate: -10.064997
+  Std deviation: 2.635514
+  CV: 26.184951%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 6/17: 64-PSK
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 64-PSK:
+  Mean convergence rate: -10.065321
+  Std deviation: 2.641079
+  CV: 26.239391%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 7/17: 2-PAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 2-PAM:
+  Mean convergence rate: -7.634460
+  Std deviation: 2.758247
+  CV: 36.128911%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 8/17: 4-PAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 4-PAM:
+  Mean convergence rate: -12.083552
+  Std deviation: 2.004826
+  CV: 16.591361%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 9/17: 8-PAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 8-PAM:
+  Mean convergence rate: -12.564228
+  Std deviation: 1.505233
+  CV: 11.980310%
+  ρ-independent: YES ✓
+
+================================================================================
+TEST 10/17: 16-PAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 16-PAM:
+  Mean convergence rate: -12.700700
+  Std deviation: 1.331727
+  CV: 10.485465%
+  ρ-independent: YES ✓
+
+================================================================================
+TEST 11/17: 32-PAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 32-PAM:
+  Mean convergence rate: -12.535852
+  Std deviation: 1.170639
+  CV: 9.338330%
+  ρ-independent: YES ✓
+
+================================================================================
+TEST 12/17: 64-PAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 64-PAM:
+  Mean convergence rate: -12.454923
+  Std deviation: 1.112843
+  CV: 8.934964%
+  ρ-independent: YES ✓
+
+================================================================================
+TEST 13/17: 128-PAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 128-PAM:
+  Mean convergence rate: -12.210701
+  Std deviation: 1.262244
+  CV: 10.337191%
+  ρ-independent: YES ✓
+
+================================================================================
+TEST 14/17: 4-QAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 4-QAM:
+  Mean convergence rate: -8.933917
+  Std deviation: 2.602874
+  CV: 29.134743%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 15/17: 16-QAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 16-QAM:
+  Mean convergence rate: -10.883160
+  Std deviation: 2.542307
+  CV: 23.360013%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 16/17: 64-QAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 64-QAM:
+  Mean convergence rate: -11.710748
+  Std deviation: 1.925508
+  CV: 16.442233%
+  ρ-independent: NO ✗
+
+================================================================================
+TEST 17/17: 256-QAM
+================================================================================
+
+INFO: Uniform distribution set
+INFO: X normalized for uniform Q, avg_power=1.000000, scale=1.000000
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+
+it  rho       r         -e0+rho*r    -d_rho       d_r          N  
+Results for 256-QAM:
+  Mean convergence rate: -11.461606
+  Std deviation: 1.764589
+  CV: 15.395649%
+  ρ-independent: NO ✗
+
+
+================================================================================
+FINAL SUMMARY: ρ-INDEPENDENCE ACROSS ALL CONSTELLATIONS
+================================================================================
+
+Constellation  Mean Rate      CV (%)      ρ-Independent?
+    --------------------------------------------------------------
+2-PSK          -7.633858      36.116078   NO ✗              
+4-PSK          -11.948161     19.943008   NO ✗              
+8-PSK          -9.807829      26.115565   NO ✗              
+16-PSK         -10.019953     26.247400   NO ✗              
+32-PSK         -10.064997     26.184951   NO ✗              
+64-PSK         -10.065321     26.239391   NO ✗              
+2-PAM          -7.634460      36.128911   NO ✗              
+4-PAM          -12.083552     16.591361   NO ✗              
+8-PAM          -12.564228     11.980310   YES ✓             
+16-PAM         -12.700700     10.485465   YES ✓             
+32-PAM         -12.535852     9.338330    YES ✓             
+64-PAM         -12.454923     8.934964    YES ✓             
+128-PAM        -12.210701     10.337191   YES ✓             
+4-QAM          -8.933917      29.134743   NO ✗              
+16-QAM         -10.883160     23.360013   NO ✗              
+64-QAM         -11.710748     16.442233   NO ✗              
+256-QAM        -11.461606     15.395649   NO ✗              
+
+CONCLUSION:
+  Configurations tested: 17
+  ρ-independent (CV < 15%): 5 (29.411765%)
+
+⚠ CONVERGENCE IS ρ-DEPENDENT FOR SOME CONSTELLATIONS!
+  Polynomial approximation may need constellation-specific tuning.
+
+Output files:
+  - constellation_convergence_summary.csv (summary table)
+  - convergence_<M>-<TYPE>.csv (detailed data for each constellation)
+
