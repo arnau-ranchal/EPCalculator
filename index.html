@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EPCalculator v2 - Error Probability Calculator</title>
+    <meta name="description" content="Modern error probability calculator for digital transmission systems with interactive plotting capabilities">
+    <meta name="keywords" content="error probability, digital transmission, modulation, PAM, PSK, QAM, information theory">
+    <meta name="author" content="EPCalculator Team - UPF">
+
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;800&display=swap" rel="stylesheet">
+
+    <script>
+      // Apply theme colors immediately from localStorage to prevent flash
+      (function() {
+        const colorThemes = {
+          'red': { primary: '#C8102E', dark: '#A00E24' },
+          'blue': { primary: '#1976D2', dark: '#1565C0' },
+          'green': { primary: '#2E7D32', dark: '#1B5E20' },
+          'purple': { primary: '#7B1FA2', dark: '#6A1B9A' },
+          'orange': { primary: '#E65100', dark: '#BF360C' },
+          'teal': { primary: '#00796B', dark: '#004D40' },
+          'pink': { primary: '#C2185B', dark: '#AD1457' },
+          'indigo': { primary: '#303F9F', dark: '#283593' },
+          'black': { primary: '#1a1a1a', dark: '#000000' }
+        };
+        try {
+          const stored = localStorage.getItem('theme');
+          if (stored) {
+            const theme = JSON.parse(stored);
+            const colors = colorThemes[theme.colorTheme] || colorThemes['red'];
+            document.documentElement.style.setProperty('--primary-color', colors.primary);
+            document.documentElement.style.setProperty('--primary-color-dark', colors.dark);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Critical CSS for loading state */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', Arial, sans-serif;
+        background: #FFFFFF;
+        color: #222222;
+      }
+
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-color, #C8102E) 0%, var(--primary-color-dark, #A00E24) 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+
+      .loading-content {
+        text-align: center;
+      }
+
+      .loading-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0 0 1rem 0;
+        letter-spacing: -0.02em;
+      }
+
+      .loading-subtitle {
+        font-size: 1.1rem;
+        margin: 0 0 2rem 0;
+        opacity: 0.9;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .loading-info {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+
+      /* Hide loading screen when app loads */
+      .app-loaded .loading-screen {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading screen -->
+    <div class="loading-screen">
+      <div class="loading-content">
+        <h1 class="loading-title">EPCalculator v2</h1>
+        <p class="loading-subtitle">Error Probability Calculator for Digital Transmission Systems</p>
+        <div class="loading-spinner"></div>
+        <p class="loading-info">Loading modern web interface...</p>
+      </div>
+    </div>
+
+    <!-- App container -->
+    <div id="app"></div>
+
+    <!-- Main application script -->
+    <script type="module" src="/src/frontend/main.js"></script>
+
+    <!-- Hide loading screen when app is ready -->
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        // Add small delay to ensure smooth loading experience
+        setTimeout(() => {
+          document.body.classList.add('app-loaded');
+        }, 1000);
+      });
+
+      // Fallback: hide loading screen after maximum time
+      setTimeout(() => {
+        document.body.classList.add('app-loaded');
+      }, 5000);
+    </script>
+  </body>
+</html>
