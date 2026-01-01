@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.so
+build/
+dist/
 *.log
 *.tmp
 node_modules/

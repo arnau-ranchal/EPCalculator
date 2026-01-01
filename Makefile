@@ -3,13 +3,13 @@
 # Compilador y flags
 CXX := g++
 CXXFLAGS := -c -fPIC -Ieigen-3.4.0  # Add Eigen include path
-LDFLAGS := -shared
+LDFLAGS := -shared -lmysqlclient
 
 # Directorios
 BUILD_DIR := build
 
-# Fuentes y objetos (excluding database.cpp - MySQL not needed)
-SOURCES := exponents/exponents.cpp exponents/functions.cpp exponents/hermite.cpp
+# Fuentes y objetos
+SOURCES := exponents/exponents.cpp exponents/functions.cpp exponents/database.cpp
 OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(notdir $(SOURCES)))
 
 # Objetivo principal
@@ -21,7 +21,7 @@ $(BUILD_DIR)/libfunctions.so: $(OBJECTS)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
 # Regla genérica para objetos
-$(BUILD_DIR)/%.o: exponents/%.cpp exponents/functions.h
+$(BUILD_DIR)/%.o: exponents/%.cpp exponents/functions.h exponents/database.h
 	@mkdir -p $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $< -o $@
 
