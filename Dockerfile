@@ -1,49 +1,88 @@
-# Imagen base con Python 3.10
-FROM python:3.10-slim
+# Production Dockerfile for EPCalculator with Svelte frontend
+# Optimized for Docker registry with proper layer caching
 
-# Instalar dependencias del sistema (usando paquetes MariaDB)
+# Stage 1: Build frontend
+FROM node:18-bookworm AS frontend-builder
+
+WORKDIR /build
+
+# Copy package files first (better caching)
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY vite.config.ts ./
+
+# Install ALL dependencies (including devDependencies for build)
+# Skip native addons like ffi-napi since frontend doesn't need them
+RUN npm ci --ignore-scripts
+
+# Install terser separately for vite minification
+RUN npm install terser --save-dev
+
+# Copy frontend source
+COPY index.html ./
+COPY src/frontend ./src/frontend
+
+# Build frontend (outputs to public/)
+RUN npm run build:frontend
+
+# Stage 2: Build C++ library
+FROM node:18-bookworm AS cpp-builder
+
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     g++ \
     make \
-    nodejs \
-    npm \
-    default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear directorio de trabajo
-WORKDIR /app
+WORKDIR /build
 
-# 1. Copy only files needed for C++ compilation
-COPY eigen-3.4.0 ./eigen-3.4.0
-COPY Makefile ./
-COPY exponents ./exponents
+# Copy C++ source
+COPY EPCalculatorOld ./EPCalculatorOld
 
-# 2. Compile C++ library with MariaDB/MySQL compatibility
+# Build C++ library
+WORKDIR /build/EPCalculatorOld/EPCalculatorOld
 RUN make clean && make
 
-# 3. Install Python dependencies
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Stage 3: Production runtime
+FROM node:18-bookworm-slim AS production
 
-# 4. Copy everything else (including frontend)
-COPY . .
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y \
+    libstdc++6 \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
-# Add MySQL connection wait script
-RUN echo "#!/bin/bash\n" \
-         "set -e\n\n" \
-         "if [ -n \"\$MYSQL_HOST\" ]; then\n" \
-         "  echo \"Waiting for MySQL at \$MYSQL_HOST...\"\n" \
-         "  while ! mysqladmin ping -h\"\$MYSQL_HOST\" -u\"\$MYSQL_USER\" -p\"\$MYSQL_PASSWORD\" --silent; do\n" \
-         "    sleep 1\n" \
-         "  done\n" \
-         "  echo \"MySQL is ready!\"\n" \
-         "fi\n" \
-         "exec \"\$@\"" > /entrypoint.sh \
-    && chmod +x /entrypoint.sh
+WORKDIR /app
 
-# Exponer el puerto correcto
-EXPOSE 80
+# Copy package files
+COPY package*.json ./
 
-# Entrypoint to wait for MySQL and start app
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Install production dependencies only (no build tools)
+RUN npm ci --omit=dev --ignore-scripts
+
+# Copy application code
+COPY simple-server-working.js ./
+COPY src/services ./src/services
+
+# Copy built artifacts from previous stages
+COPY --from=frontend-builder /build/public ./public
+COPY --from=cpp-builder /build/EPCalculatorOld/EPCalculatorOld/build/libfunctions.so \
+    /app/EPCalculatorOld/EPCalculatorOld/build/libfunctions.so
+
+# Create non-root user
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs nodeuser && \
+    chown -R nodeuser:nodejs /app
+
+USER nodeuser
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8000/api/health || exit 1
+
+# Start application
+CMD ["node", "simple-server-working.js"]
