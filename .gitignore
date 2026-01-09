@@ -79,6 +79,3 @@ __pycache__/
 # Temporary files
 *.tmp
 *.temp
-
-# Docs
-docs/
