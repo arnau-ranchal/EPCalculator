@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabs Mockup - EPCalculator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #fff5f5 0%, white 100%);
+      border-radius: 8px;
+      border: 1px solid #e5e5e5;
+    }
+
+    .header h1 {
+      color: #C8102E;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* TAB NAVIGATION */
+    .tabs-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      border: 1px solid #e5e5e5;
+    }
+
+    .tab-nav {
+      display: flex;
+      background: #fafafa;
+      border-bottom: 2px solid #e5e5e5;
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 18px 24px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-size: 15px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .tab-button:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .tab-button.active {
+      background: white;
+      color: #C8102E;
+      border-bottom-color: #C8102E;
+    }
+
+    .tab-icon {
+      font-size: 20px;
+      margin-right: 8px;
+    }
+
+    /* TAB CONTENT */
+    .tab-content {
+      display: none;
+      padding: 32px;
+      min-height: 600px;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* TWO COLUMN LAYOUT */
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    /* FORM ELEMENTS */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+      transition: all 0.2s;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #C8102E;
+      box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+    }
+
+    .input-with-unit {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-with-unit input {
+      flex: 1;
+    }
+
+    .input-with-unit select {
+      min-width: 90px;
+    }
+
+    /* BUTTONS */
+    .button-primary {
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #C8102E 0%, #a00d25 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3);
+      width: 100%;
+    }
+
+    .button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(200, 16, 46, 0.4);
+    }
+
+    /* RESULTS DISPLAY */
+    .results-box {
+      padding: 20px;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 2px solid #86efac;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-label {
+      font-weight: 500;
+      color: #166534;
+    }
+
+    .result-value {
+      font-family: 'Courier New', monospace;
+      color: #15803d;
+      font-weight: 600;
+    }
+
+    /* PARAMETER REFERENCE BOX */
+    .param-reference {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 2px solid #93c5fd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .param-reference-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .param-reference-icon {
+      font-size: 24px;
+    }
+
+    .param-reference-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e40af;
+    }
+
+    .param-reference-subtitle {
+      font-size: 12px;
+      color: #3b82f6;
+      margin-top: 2px;
+    }
+
+    .param-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .param-pill {
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid #93c5fd;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #1e40af;
+    }
+
+    .param-pill strong {
+      color: #1e3a8a;
+    }
+
+    .edit-params-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .edit-params-link:hover {
+      color: #1e40af;
+    }
+
+    /* PLOTTING SECTION */
+    .plotting-layout {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 24px;
+    }
+
+    .plot-controls {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 24px;
+      height: fit-content;
+      position: sticky;
+      top: 20px;
+    }
+
+    .plot-gallery {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 24px;
+      min-height: 600px;
+    }
+
+    .gallery-empty {
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      gap: 16px;
+    }
+
+    .gallery-empty-icon {
+      font-size: 64px;
+      opacity: 0.3;
+    }
+
+    .section-divider {
+      height: 2px;
+      background: linear-gradient(to right, transparent, #e5e5e5, transparent);
+      margin: 24px 0;
+    }
+
+    /* RANGE INPUTS */
+    .range-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .range-group input {
+      flex: 1;
+    }
+
+    .range-separator {
+      color: #999;
+      font-weight: 600;
+    }
+
+    /* COMPARISON TAB */
+    .compare-layout {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .compare-selector {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .compare-result {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 24px;
+      min-height: 400px;
+    }
+
+    @media (max-width: 1200px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+
+      .plotting-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .plot-controls {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>EPCalculator v2</h1>
+      <p>Error Probability Calculator - Tabs Design Mockup</p>
+    </div>
+
+    <div class="tabs-container">
+      <!-- TAB NAVIGATION -->
+      <nav class="tab-nav">
+        <button class="tab-button active" onclick="switchTab(0)">
+          <span class="tab-icon">🎯</span>
+          Single Point Computation
+        </button>
+        <button class="tab-button" onclick="switchTab(1)">
+          <span class="tab-icon">📈</span>
+          Plotting & Visualization
+        </button>
+        <button class="tab-button" onclick="switchTab(2)">
+          <span class="tab-icon">⚖️</span>
+          Compare Plots
+        </button>
+      </nav>
+
+      <!-- TAB 1: SINGLE POINT COMPUTATION -->
+      <div class="tab-content active">
+        <div class="two-column">
+          <!-- PARAMETERS -->
+          <div class="panel">
+            <h2 class="panel-title">Simulation Parameters</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5;">
+              Configure modulation parameters and channel conditions. Click "Compute" to calculate error probability for a single configuration.
+            </p>
+            <form class="form-grid">
+              <div class="form-group">
+                <label>Modulation Size (M)</label>
+                <select>
+                  <option>4</option>
+                  <option>8</option>
+                  <option selected>16</option>
+                  <option>32</option>
+                  <option>64</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Type</label>
+                <select>
+                  <option selected>PAM</option>
+                  <option>QAM</option>
+                  <option>PSK</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Signal-to-Noise Ratio</label>
+                <div class="input-with-unit">
+                  <input type="number" value="7" step="0.1">
+                  <select>
+                    <option selected>dB</option>
+                    <option>linear</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Code Rate (R)</label>
+                <input type="number" value="0.5" step="0.01" min="0" max="1">
+              </div>
+              <div class="form-group">
+                <label>Blocklength (n)</label>
+                <input type="number" value="100" step="10" min="10">
+              </div>
+              <div class="form-group">
+                <label>Distribution</label>
+                <select>
+                  <option selected>Uniform</option>
+                  <option>Maxwell-Boltzmann</option>
+                </select>
+              </div>
+              <div class="form-group full-width" style="margin-top: 16px;">
+                <button type="submit" class="button-primary">
+                  Compute Error Probability
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- RESULTS -->
+          <div class="panel">
+            <h2 class="panel-title">Computation Results</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5;">
+              Information-theoretic bounds for the configured parameters.
+            </p>
+            <div class="results-box">
+              <div class="result-item">
+                <span class="result-label">Error Probability:</span>
+                <span class="result-value">2.45 × 10⁻⁶</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Error Exponent:</span>
+                <span class="result-value">0.324</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Optimal ρ:</span>
+                <span class="result-value">0.856</span>
+              </div>
+              <div class="result-item">
+                <span class="result-label">Computation Time:</span>
+                <span class="result-value">45 ms</span>
+              </div>
+            </div>
+            <p style="font-size: 12px; color: #666; margin-top: 16px; text-align: center; line-height: 1.5;">
+              💡 <strong>Tip:</strong> These parameters will be used automatically in the "Plotting" tab. You can vary any parameter to see how error probability changes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: PLOTTING -->
+      <div class="tab-content">
+        <div class="plotting-layout">
+          <!-- PLOT CONTROLS -->
+          <div class="plot-controls">
+            <h2 class="panel-title">Plot Configuration</h2>
+
+            <!-- PARAMETER REFERENCE BOX -->
+            <div class="param-reference">
+              <div class="param-reference-header">
+                <span class="param-reference-icon">🔗</span>
+                <div>
+                  <div class="param-reference-title">Using Base Parameters</div>
+                  <div class="param-reference-subtitle">from "Single Point Computation" tab</div>
+                </div>
+              </div>
+              <div class="param-pills">
+                <span class="param-pill"><strong>M:</strong> 16</span>
+                <span class="param-pill"><strong>Type:</strong> PAM</span>
+                <span class="param-pill"><strong>SNR:</strong> 7 dB</span>
+                <span class="param-pill"><strong>R:</strong> 0.5</span>
+                <span class="param-pill"><strong>n:</strong> 100</span>
+                <span class="param-pill"><strong>Dist:</strong> Uniform</span>
+              </div>
+              <a class="edit-params-link" onclick="switchTab(0)">← Go to tab 1 to edit these values</a>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- PLOT TYPE -->
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label>Plot Type</label>
+              <select>
+                <option selected>Line Plot (Y vs X)</option>
+                <option>2D Contour (Y vs X1 vs X2)</option>
+                <option>3D Surface (Y vs X1 vs X2)</option>
+              </select>
+            </div>
+
+            <!-- AXES CONFIGURATION -->
+            <div style="background: #fafafa; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+              <p style="font-size: 12px; color: #666; margin-bottom: 12px;">
+                <strong>Note:</strong> Selected axis variable will <u>override</u> the base parameter value above.
+              </p>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label>X-Axis (vary this parameter)</label>
+                <select>
+                  <option selected>SNR</option>
+                  <option>Code Rate (R)</option>
+                  <option>Blocklength (n)</option>
+                  <option>Modulation Size (M)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label>X Range</label>
+                <div class="range-group">
+                  <input type="number" value="0" step="0.1">
+                  <span class="range-separator">to</span>
+                  <input type="number" value="20" step="0.1">
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom: 12px;">
+                <label>Y-Axis (measure)</label>
+                <select>
+                  <option selected>Error Probability</option>
+                  <option>Error Exponent</option>
+                  <option>Optimal ρ</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Number of Points</label>
+                <input type="number" value="50" step="5" min="10">
+              </div>
+            </div>
+
+            <button class="button-primary">
+              Generate Plot →
+            </button>
+
+            <p style="font-size: 11px; color: #666; margin-top: 12px; text-align: center; line-height: 1.4;">
+              Will compute 50 points with SNR varying from 0 to 20 dB,<br>
+              using M=16 (PAM), R=0.5, n=100
+            </p>
+          </div>
+
+          <!-- PLOT GALLERY -->
+          <div class="plot-gallery">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f0f0f0;">
+              <h2 style="font-size: 20px; font-weight: 600; margin: 0;">Generated Plots</h2>
+              <button style="padding: 8px 16px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 13px;">Clear All</button>
+            </div>
+            <div class="gallery-empty">
+              <div class="gallery-empty-icon">📊</div>
+              <h3 style="font-size: 18px; font-weight: 600;">No Plots Yet</h3>
+              <p style="font-size: 14px; max-width: 400px; text-align: center; line-height: 1.6;">
+                Configure your plot axes on the left, then click "Generate Plot" to create visualizations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: COMPARE -->
+      <div class="tab-content">
+        <div class="compare-layout">
+          <h2 style="font-size: 24px; font-weight: 600; margin-bottom: 8px;">Compare Contour Plots</h2>
+          <p style="font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.6;">
+            Select two contour plots to compare and visualize which one has higher Y-axis values across different regions.
+          </p>
+
+          <!-- PLOT SELECTORS -->
+          <div class="compare-selector">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Plot 1 (Red regions)</label>
+                <select>
+                  <option value="">Select a contour plot...</option>
+                  <option>Error Prob vs SNR vs Rate (16-PAM)</option>
+                  <option>Error Prob vs SNR vs n (16-PAM)</option>
+                  <option>Error Exponent vs SNR vs Rate (16-PAM)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Plot 2 (Blue regions)</label>
+                <select>
+                  <option value="">Select a contour plot...</option>
+                  <option>Error Prob vs SNR vs Rate (32-PAM)</option>
+                  <option>Error Prob vs SNR vs n (32-PAM)</option>
+                  <option>Error Exponent vs SNR vs Rate (32-PAM)</option>
+                </select>
+              </div>
+              <div class="form-group full-width" style="margin-top: 8px;">
+                <button class="button-primary">
+                  Generate Comparison →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMPARISON RESULT -->
+          <div class="compare-result">
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Comparison Result</h3>
+            <div class="gallery-empty">
+              <div class="gallery-empty-icon">⚖️</div>
+              <h3 style="font-size: 18px; font-weight: 600;">Select Two Plots</h3>
+              <p style="font-size: 14px; max-width: 500px; text-align: center; line-height: 1.6;">
+                Choose two contour plots from the dropdowns above. The comparison will show:<br><br>
+                <strong>🔴 Red regions:</strong> Where Plot 1 has higher Y values<br>
+                <strong>🔵 Blue regions:</strong> Where Plot 2 has higher Y values<br>
+                <strong>Intensity:</strong> Darker = larger difference
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(index) {
+      // Update tab buttons
+      const buttons = document.querySelectorAll('.tab-button');
+      buttons.forEach((btn, i) => {
+        if (i === index) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Update tab content
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach((content, i) => {
+        if (i === index) {
+          content.classList.add('active');
+        } else {
+          content.classList.remove('active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
