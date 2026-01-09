@@ -177,7 +177,12 @@
     "custom": "কাস্টম",
     "editParams": "প্যারামিটার সম্পাদনা করুন",
     "sweepingOver": "সুইপ করা হচ্ছে",
-    "and": "এবং"
+    "and": "এবং",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "কাস্টম কনস্টেলেশন",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ডেটা আমদানি করুন",

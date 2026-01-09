@@ -179,7 +179,12 @@
     "custom": "Personalitzada",
     "editParams": "Editar Paràmetres",
     "sweepingOver": "Variant sobre",
-    "and": "i"
+    "and": "i",
+    "constellationParams": "Constel·lació",
+    "codeParams": "Canal i Codi",
+    "advancedParams": "Avançat",
+    "shapingBeta": "β (conformació)",
+    "editConstellation": "Editar constel·lació"
   },
   "constellation": {
     "title": "Constel·lació Personalitzada",
@@ -214,7 +219,8 @@
     "magnitude": "Magnitud",
     "phase": "Fase (°)",
     "cartesianMode": "Coordenades cartesianes (Real/Imaginari)",
-    "polarMode": "Coordenades polars (Magnitud/Fase)"
+    "polarMode": "Coordenades polars (Magnitud/Fase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Importar Dades",

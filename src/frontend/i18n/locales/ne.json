@@ -177,7 +177,12 @@
     "custom": "अनुकूलन",
     "editParams": "प्यारामिटरहरू सम्पादन गर्नुहोस्",
     "sweepingOver": "स्वीप गर्दै",
-    "and": "र"
+    "and": "र",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "अनुकूलन तारामण्डल",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "डाटा आयात गर्नुहोस्",

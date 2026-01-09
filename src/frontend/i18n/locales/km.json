@@ -165,7 +165,12 @@
       "name": "កម្រិតប្រមូលផ្តុំ",
       "desc": "ភាពជាក់លាក់នៃការធ្វើអោយប្រសើរ ρ",
       "range": "ជាធម្មតា 10⁻⁶ ដល់ 10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "ប្រព័ន្ធផ្កាយផ្ទាល់ខ្លួន",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "នាំចូលទិន្នន័យ",

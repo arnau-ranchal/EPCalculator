@@ -177,7 +177,12 @@
     "custom": "사용자 정의",
     "editParams": "매개변수 편집",
     "sweepingOver": "스위핑 대상",
-    "and": "및"
+    "and": "및",
+    "constellationParams": "성상",
+    "codeParams": "채널 및 코드",
+    "advancedParams": "고급",
+    "shapingBeta": "β (정형)",
+    "editConstellation": "성상 편집"
   },
   "constellation": {
     "title": "사용자 정의 성상도",
@@ -212,7 +217,8 @@
     "magnitude": "크기",
     "phase": "위상 (°)",
     "cartesianMode": "직교 좌표 (실수/허수)",
-    "polarMode": "극좌표 (크기/위상)"
+    "polarMode": "극좌표 (크기/위상)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "데이터 가져오기",

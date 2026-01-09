@@ -177,7 +177,12 @@
     "custom": "Własna",
     "editParams": "Edytuj Parametry",
     "sweepingOver": "Przemiatanie po",
-    "and": "i"
+    "and": "i",
+    "constellationParams": "Konstelacja",
+    "codeParams": "Kanał i kod",
+    "advancedParams": "Zaawansowane",
+    "shapingBeta": "β (kształtowanie)",
+    "editConstellation": "Edytuj konstelację"
   },
   "constellation": {
     "title": "Własna Konstelacja",
@@ -212,7 +217,8 @@
     "magnitude": "Moduł",
     "phase": "Faza (°)",
     "cartesianMode": "Współrzędne kartezjańskie (Rzeczywista/Urojona)",
-    "polarMode": "Współrzędne biegunowe (Moduł/Faza)"
+    "polarMode": "Współrzędne biegunowe (Moduł/Faza)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Importuj Dane",

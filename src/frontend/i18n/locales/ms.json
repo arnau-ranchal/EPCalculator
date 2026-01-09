@@ -177,7 +177,12 @@
     "custom": "Tersuai",
     "editParams": "Edit Parameter",
     "sweepingOver": "Menyapu",
-    "and": "dan"
+    "and": "dan",
+    "constellationParams": "Konstelasi",
+    "codeParams": "Saluran & Kod",
+    "advancedParams": "Lanjutan",
+    "shapingBeta": "β (pembentukan)",
+    "editConstellation": "Edit konstelasi"
   },
   "constellation": {
     "title": "Konstelasi Tersuai",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitud",
     "phase": "Fasa (°)",
     "cartesianMode": "Koordinat Cartesian (Nyata/Khayalan)",
-    "polarMode": "Koordinat kutub (Magnitud/Fasa)"
+    "polarMode": "Koordinat kutub (Magnitud/Fasa)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Import Data",

@@ -165,7 +165,12 @@
       "name": "अभिसरण थ्रेशोल्ड",
       "desc": "ρ ऑप्टिमायझेशन अचूकता",
       "range": "सामान्यतः 10⁻⁶ ते 10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "सानुकूल नक्षत्र",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "डेटा आयात करा",

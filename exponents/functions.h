@@ -129,9 +129,10 @@ bool connect_to_db();
 
 bool disconnect_from_db();
 
-// Getter functions for mutual information and cutoff rate
+// Getter functions for mutual information, cutoff rate, and critical rate
 // These values are computed during GD_co/GD_iid optimization
 double getMutualInformation();
 double getCutoffRate();
+double getCriticalRate();
 
 #endif //TFG_FUNCTIONS_H

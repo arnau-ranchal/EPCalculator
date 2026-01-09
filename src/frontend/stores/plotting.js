@@ -42,6 +42,9 @@ export const plotSnrUnits = writable(new Map()); // plotId -> 'dB' | 'linear'
 // Show frame (box) around plot - per-plot setting
 export const plotShowFrame = writable(new Map()); // plotId -> boolean (default true)
 
+// Global preference for default frame visibility (applies to new plots)
+export const defaultShowFrame = writable(true);
+
 // UI state
 export const showAdditionalParams = writable(false);
 export const isPlotting = writable(false);
@@ -177,7 +180,86 @@ export function findExistingPlot(newPlotData, plotParams, simulationParams) {
   return existingPlotId;
 }
 
-function areParametersIdentical(existingPlot, newPlotData, plotParams, simulationParams) {
+// Check if a plot with identical DATA parameters exists but styling may differ
+// Returns: { plotId, seriesIndex, stylingDiffers, existingPlot } or null
+export function findExistingPlotWithStyling(newPlotData, plotParams, simulationParams, constellationInfo = null) {
+  let result = null;
+  activePlots.subscribe(plots => {
+    for (const plot of plots) {
+      const plotsToCheck = plot.isMultiSeries && plot.series ? plot.series : [plot];
+
+      for (let i = 0; i < plotsToCheck.length; i++) {
+        const plotToCheck = plotsToCheck[i];
+        if (areParametersIdentical(plotToCheck, newPlotData, plotParams, simulationParams, constellationInfo)) {
+          // Check if styling differs
+          const existingLineType = plotToCheck.metadata?.lineType || plotToCheck.plotParams?.lineType || 'solid';
+          const existingLineColor = plotToCheck.metadata?.lineColor || plotToCheck.plotParams?.lineColor || 'emphasis';
+          const newLineType = plotParams.lineType || 'solid';
+          const newLineColor = plotParams.lineColor || 'emphasis';
+
+          const stylingDiffers = existingLineType !== newLineType || existingLineColor !== newLineColor;
+
+          result = {
+            plotId: plot.plotId,
+            seriesIndex: plot.isMultiSeries ? i : -1,
+            stylingDiffers,
+            existingPlot: plot,
+            existingSeries: plotToCheck
+          };
+          return;
+        }
+      }
+    }
+  })();
+  return result;
+}
+
+// Update styling of an existing plot/series without recomputing data
+export function updatePlotStyling(plotId, seriesIndex, newLineType, newLineColor) {
+  activePlots.update(plots => {
+    return plots.map(plot => {
+      if (plot.plotId !== plotId) return plot;
+
+      if (plot.isMultiSeries && plot.series && seriesIndex >= 0) {
+        // Update specific series in multi-series plot
+        const updatedSeries = plot.series.map((series, idx) => {
+          if (idx !== seriesIndex) return series;
+          return {
+            ...series,
+            metadata: {
+              ...series.metadata,
+              lineType: newLineType,
+              lineColor: newLineColor
+            },
+            plotParams: {
+              ...series.plotParams,
+              lineType: newLineType,
+              lineColor: newLineColor
+            }
+          };
+        });
+        return { ...plot, series: updatedSeries };
+      } else {
+        // Update single plot
+        return {
+          ...plot,
+          metadata: {
+            ...plot.metadata,
+            lineType: newLineType,
+            lineColor: newLineColor
+          },
+          plotParams: {
+            ...plot.plotParams,
+            lineType: newLineType,
+            lineColor: newLineColor
+          }
+        };
+      }
+    });
+  });
+}
+
+function areParametersIdentical(existingPlot, newPlotData, plotParams, simulationParams, constellationInfo = null) {
   // Compare plot parameters
   const existingPlotParams = existingPlot.plotParams || {};
   const newPlotParams = plotParams;
@@ -223,16 +305,56 @@ function areParametersIdentical(existingPlot, newPlotData, plotParams, simulatio
     }
   }
 
-  // Compare custom constellation points if present
+  // Compare constellation info for custom constellations
+  const existingConstellationInfo = existingPlot.constellationInfo;
+  const newConstellationInfo = constellationInfo;
+
+  // Check if one is custom and the other isn't
+  const existingIsCustom = existingSimParams.typeModulation === 'Custom';
+  const newIsCustom = newSimParams.typeModulation === 'Custom';
+
+  console.log('[areParametersIdentical] Constellation comparison:', {
+    existingIsCustom,
+    newIsCustom,
+    existingConstellationInfo,
+    newConstellationInfo
+  });
+
+  if (existingIsCustom || newIsCustom) {
+    // If both are custom, compare constellation IDs
+    if (existingIsCustom && newIsCustom) {
+      const existingId = existingConstellationInfo?.constellationId;
+      const newId = newConstellationInfo?.constellationId;
+
+      console.log('[areParametersIdentical] Comparing IDs:', { existingId, newId });
+
+      // If IDs are different, not identical
+      if (existingId !== newId) {
+        console.log('[areParametersIdentical] IDs differ, returning false');
+        return false;
+      }
+
+      // If no IDs but have names, compare names
+      if (!existingId && !newId) {
+        const existingName = existingConstellationInfo?.constellationName;
+        const newName = newConstellationInfo?.constellationName;
+        console.log('[areParametersIdentical] No IDs, comparing names:', { existingName, newName });
+        if (existingName !== newName) {
+          return false;
+        }
+      }
+    }
+    // If only one is custom, they're already different (typeModulation differs)
+  }
+
+  // Legacy check: Compare custom constellation points if present in simulationParams
   const existingCustomConst = existingSimParams.customConstellation;
   const newCustomConst = newSimParams.customConstellation;
 
-  // If one has custom constellation and other doesn't, not identical
   if ((existingCustomConst && !newCustomConst) || (!existingCustomConst && newCustomConst)) {
     return false;
   }
 
-  // If both have custom constellations, compare points
   if (existingCustomConst && newCustomConst) {
     if (JSON.stringify(existingCustomConst.points) !== JSON.stringify(newCustomConst.points)) {
       return false;
@@ -334,7 +456,37 @@ function findRangeExtensionPlot(plots, newPlotData) {
 
     if (!simParamsMatch) continue;
 
-    // Check custom constellation
+    // Check constellation info for custom constellations
+    const plotIsCustom = plotSimParams.typeModulation === 'Custom';
+    const newIsCustom = newSimParams.typeModulation === 'Custom';
+
+    if (plotIsCustom || newIsCustom) {
+      if (plotIsCustom && newIsCustom) {
+        // Both are custom - compare constellation IDs
+        const plotConstellationInfo = plot.constellationInfo;
+        const newConstellationInfo = newPlotData.constellationInfo;
+
+        const plotId = plotConstellationInfo?.constellationId;
+        const newId = newConstellationInfo?.constellationId;
+
+        // If IDs differ, not a match
+        if (plotId !== newId) {
+          continue;
+        }
+
+        // If no IDs, compare names
+        if (!plotId && !newId) {
+          const plotName = plotConstellationInfo?.constellationName;
+          const newName = newConstellationInfo?.constellationName;
+          if (plotName !== newName) {
+            continue;
+          }
+        }
+      }
+      // If only one is custom, typeModulation already differs so simParamsMatch would be false
+    }
+
+    // Legacy check: custom constellation in simulationParams
     const plotCustomConst = plotSimParams.customConstellation;
     const newCustomConst = newSimParams.customConstellation;
 
@@ -414,7 +566,48 @@ function findExactMatchPlot(plots, newPlotData) {
 
     if (!simParamsMatch) continue;
 
-    // Check custom constellation
+    // Check constellation info for custom constellations
+    const plotIsCustom = plotSimParams.typeModulation === 'Custom';
+    const newIsCustom = newSimParams.typeModulation === 'Custom';
+
+    console.log('[findExactMatchPlot] Constellation check:', {
+      plotIsCustom,
+      newIsCustom,
+      plotConstellationInfo: plot.constellationInfo,
+      newConstellationInfo: newPlotData.constellationInfo
+    });
+
+    if (plotIsCustom || newIsCustom) {
+      if (plotIsCustom && newIsCustom) {
+        // Both are custom - compare constellation IDs
+        const plotConstellationInfo = plot.constellationInfo;
+        const newConstellationInfo = newPlotData.constellationInfo;
+
+        const plotId = plotConstellationInfo?.constellationId;
+        const newId = newConstellationInfo?.constellationId;
+
+        console.log('[findExactMatchPlot] Comparing constellation IDs:', { plotId, newId });
+
+        // If IDs differ, not a match
+        if (plotId !== newId) {
+          console.log('[findExactMatchPlot] IDs differ, skipping this plot');
+          continue;
+        }
+
+        // If no IDs, compare names
+        if (!plotId && !newId) {
+          const plotName = plotConstellationInfo?.constellationName;
+          const newName = newConstellationInfo?.constellationName;
+          console.log('[findExactMatchPlot] No IDs, comparing names:', { plotName, newName });
+          if (plotName !== newName) {
+            continue;
+          }
+        }
+      }
+      // If only one is custom, typeModulation already differs so simParamsMatch would be false
+    }
+
+    // Legacy check: custom constellation in simulationParams
     const plotCustomConst = plotSimParams.customConstellation;
     const newCustomConst = newSimParams.customConstellation;
 
@@ -835,35 +1028,36 @@ export function confirmMerge() {
         return updatedPlot;
       } else if (mergeType === 'compatibleAxes') {
         // Add as new series
+        // For multi-series, don't pre-assign colors - let PlotContainer resolve them
+        // based on series index and current theme color (to avoid color collisions)
+        // IMPORTANT: First series must have a DIFFERENT plotId than the container
+        // to allow individual series removal without removing the entire plot
         const existingSeries = plot.series || [{
           ...plot,
-          plotId: plot.plotId,
+          plotId: `series_${plot.plotId}_0`,  // Unique ID for first series
           timestamp: plot.timestamp,
           data: plot.data,
           metadata: {
             ...plot.metadata,
-            lineColor: plot.metadata.lineColor && plot.metadata.lineColor !== 'steelblue'
-              ? plot.metadata.lineColor
-              : defaultColors[0]
+            // Keep 'emphasis' for first series, otherwise undefined (will use index-based color)
+            lineColor: plot.metadata.lineColor === 'emphasis' ? 'emphasis' : undefined
           },
           plotParams: plot.plotParams,
           simulationParams: plot.simulationParams
         }];
 
-        const colorIdx = plot.series ? colorIndex : 1;
-        const assignedColor = defaultColors[colorIdx % defaultColors.length];
+        // Don't assign a specific color - let PlotContainer handle it based on index
         const newSeriesData = {
           ...newPlotData,
           plotId: `plot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now(),
           metadata: {
             ...newPlotData.metadata,
-            lineColor: assignedColor
+            lineColor: undefined // Will be resolved by PlotContainer based on index
           }
         };
 
-        console.log(`Adding as new series with color ${assignedColor}`);
-        colorIndex = plot.series ? colorIndex + 1 : 2;
+        console.log(`Adding as new series (color will be assigned by PlotContainer)`);
 
         const multiSeriesPlot = {
           ...plot,

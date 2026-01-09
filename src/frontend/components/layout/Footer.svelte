@@ -1,6 +1,14 @@
 <script>
   import { _ } from 'svelte-i18n';
+  import PreferencesModal from './PreferencesModal.svelte';
+
   const currentYear = new Date().getFullYear();
+  let preferencesOpen = false;
+
+  function openPreferences(event) {
+    event.preventDefault();
+    preferencesOpen = true;
+  }
 </script>
 
 <footer class="footer">
@@ -37,6 +45,7 @@
         <li><a href="/api" target="_blank">{$_('footer.apiReference')}</a></li>
         <li><a href="https://github.com/arnau-ranchal/EPCalculator" target="_blank">{$_('footer.sourceCode')}</a></li>
         <li><a href="/examples" target="_blank">{$_('footer.examples')}</a></li>
+        <li><a href="#preferences" on:click={openPreferences}>{$_('footer.preferences')}</a></li>
       </ul>
     </div>
   </div>
@@ -53,6 +62,8 @@
     </div>
   </div>
 </footer>
+
+<PreferencesModal bind:isOpen={preferencesOpen} />
 
 <style>
   .footer {

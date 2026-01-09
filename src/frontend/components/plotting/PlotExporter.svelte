@@ -1,6 +1,95 @@
 <script>
   import { createEventDispatcher } from 'svelte';
   import { _ } from 'svelte-i18n';
+  import { currentColorTheme } from '../../stores/theme.js';
+
+  // Color resolution helpers (same as PlottingPanel/PlotContainer)
+  function hexToHsl(hex) {
+    let r, g, b;
+    if (hex.startsWith('#')) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (result) {
+        r = parseInt(result[1], 16) / 255;
+        g = parseInt(result[2], 16) / 255;
+        b = parseInt(result[3], 16) / 255;
+      } else {
+        return { h: 0, s: 0, l: 0.5 };
+      }
+    } else {
+      const namedColorHues = {
+        'black': { h: 0, s: 0, l: 0 },
+        'steelblue': { h: 207, s: 0.44, l: 0.49 },
+        'purple': { h: 300, s: 1, l: 0.25 },
+        'seagreen': { h: 146, s: 0.5, l: 0.36 },
+        'goldenrod': { h: 43, s: 0.74, l: 0.49 },
+        'royalblue': { h: 225, s: 0.73, l: 0.57 },
+        'orchid': { h: 302, s: 0.59, l: 0.65 },
+        'darkcyan': { h: 180, s: 1, l: 0.27 },
+        'teal': { h: 180, s: 1, l: 0.25 },
+        'navy': { h: 240, s: 1, l: 0.25 },
+        'forestgreen': { h: 120, s: 0.61, l: 0.34 },
+        'darkorange': { h: 33, s: 1, l: 0.5 },
+        'chocolate': { h: 25, s: 0.75, l: 0.47 },
+        'darkslateblue': { h: 248, s: 0.39, l: 0.39 },
+        'olive': { h: 60, s: 1, l: 0.25 }
+      };
+      return namedColorHues[hex.toLowerCase()] || { h: 0, s: 0, l: 0.5 };
+    }
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+      h *= 360;
+    }
+    return { h, s, l };
+  }
+
+  function areColorsSimilar(color1, color2, hueThreshold = 35) {
+    const hsl1 = hexToHsl(color1);
+    const hsl2 = hexToHsl(color2);
+
+    if ((hsl1.l < 0.15 || hsl1.s < 0.1) && (hsl2.l < 0.15 || hsl2.s < 0.1)) {
+      return true;
+    }
+
+    let hueDiff = Math.abs(hsl1.h - hsl2.h);
+    if (hueDiff > 180) hueDiff = 360 - hueDiff;
+
+    return hueDiff < hueThreshold;
+  }
+
+  const basePalette = [
+    "black", "steelblue", "#FF8C00", "purple", "seagreen", "goldenrod",
+    "royalblue", "orchid", "darkcyan", "teal", "navy", "forestgreen",
+    "darkorange", "chocolate", "darkslateblue", "olive"
+  ];
+
+  // Get series color - matches PlotContainer/PlottingPanel logic
+  function getSeriesColor(series, index) {
+    const emphasisColorValue = $currentColorTheme?.primary || '#C8102E';
+
+    // If series has explicit color, resolve it
+    if (series?.metadata?.lineColor) {
+      if (series.metadata.lineColor === 'emphasis') {
+        return emphasisColorValue;
+      }
+      return series.metadata.lineColor;
+    }
+    // Otherwise use filtered palette based on emphasis color
+    const filteredPalette = basePalette.filter(color => !areColorsSimilar(color, emphasisColorValue));
+    return filteredPalette[index % filteredPalette.length];
+  }
 
   export let plotElement = null;
   export let plotId = '';
@@ -277,8 +366,8 @@
       let totalLegendWidth = 0;
       const legendItems = [];
 
-      seriesData.forEach((series) => {
-        const color = series.metadata?.lineColor || 'steelblue';
+      seriesData.forEach((series, index) => {
+        const color = getSeriesColor(series, index);
         const label = series.metadata?.seriesLabel || 'Series';
         const itemWidth = 15 + 5 + tempCtx.measureText(label).width + 20;
         legendItems.push({ color, label, width: itemWidth });
@@ -318,7 +407,8 @@
     const clonedPlot = mainSvg.cloneNode(true);
 
     // Convert to light mode for export (always white background, black text)
-    convertSvgToLightMode(clonedPlot);
+    // embedFontData=false for SVG (can use @import which works when opened in browser)
+    await convertSvgToLightMode(clonedPlot, false);
 
     const plotGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     plotGroup.setAttribute('transform', `translate(${padding}, ${yOffset})`);
@@ -469,7 +559,7 @@
     console.log(`[PNG Export] Found plot: ${plotWidth}x${plotHeight}`);
     console.log(`[PNG Export] Title: "${plotTitle}", Params: ${globalParams.length > 0 ? globalParams.join(' • ') : 'none'}, Legend: ${hasLegend ? 'YES' : 'NO'}`);
 
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         // Create composite canvas with extra space for title, subtitle (global params), and legend
         const padding = 20;
@@ -551,8 +641,8 @@
           let totalLegendWidth = 0;
           const legendItems = [];
 
-          seriesData.forEach((series) => {
-            const color = series.metadata?.lineColor || 'steelblue';
+          seriesData.forEach((series, index) => {
+            const color = getSeriesColor(series, index);
             const label = series.metadata?.seriesLabel || 'Series';
             const itemWidth = 15 + 5 + ctx.measureText(label).width + 20; // box + gap + text + spacing
             legendItems.push({ color, label, width: itemWidth });
@@ -609,7 +699,8 @@
         inlineStyles(mainSvg, clonedSvg);
 
         // Convert SVG to light mode for export (always export with white background, black text)
-        convertSvgToLightMode(clonedSvg);
+        // embedFontData=true to embed Inter font as base64 for isolated blob rendering
+        await convertSvgToLightMode(clonedSvg, true);
 
         // Convert SVG to image and draw on canvas
         const serializer = new XMLSerializer();
@@ -876,16 +967,217 @@
     }
   }
 
+  // Redraw SVG text labels on canvas with proper Inter font
+  // This is needed because SVG rendered as blob can't access web fonts
+  function redrawTextLabelsOnCanvas(ctx, svg, offsetX, offsetY) {
+    const textElements = svg.querySelectorAll('text');
+
+    textElements.forEach(text => {
+      const content = text.textContent;
+      if (!content || content.trim() === '') return;
+
+      // Get position from transform or x/y attributes
+      let x = parseFloat(text.getAttribute('x')) || 0;
+      let y = parseFloat(text.getAttribute('y')) || 0;
+
+      // Check for transform attribute
+      const transform = text.getAttribute('transform');
+      if (transform) {
+        const translateMatch = transform.match(/translate\(([^,]+),?\s*([^)]*)\)/);
+        if (translateMatch) {
+          x += parseFloat(translateMatch[1]) || 0;
+          y += parseFloat(translateMatch[2]) || 0;
+        }
+        // Handle rotation for axis labels
+        const rotateMatch = transform.match(/rotate\(([^)]+)\)/);
+        if (rotateMatch) {
+          // Skip rotated text for now - it's complex to handle
+          // The y-axis label will use system font but that's acceptable
+        }
+      }
+
+      // Check parent g elements for transforms
+      let parent = text.parentElement;
+      while (parent && parent.tagName === 'g') {
+        const parentTransform = parent.getAttribute('transform');
+        if (parentTransform) {
+          const translateMatch = parentTransform.match(/translate\(([^,]+),?\s*([^)]*)\)/);
+          if (translateMatch) {
+            x += parseFloat(translateMatch[1]) || 0;
+            y += parseFloat(translateMatch[2]) || 0;
+          }
+        }
+        parent = parent.parentElement;
+      }
+
+      // Get text styling
+      const textAnchor = text.getAttribute('text-anchor') || 'start';
+      const fontSize = parseFloat(text.getAttribute('font-size')) || 12;
+
+      // Set canvas text properties
+      ctx.font = `300 ${fontSize}px 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`;
+      ctx.fillStyle = 'black';
+
+      // Set text alignment based on text-anchor
+      if (textAnchor === 'middle') {
+        ctx.textAlign = 'center';
+      } else if (textAnchor === 'end') {
+        ctx.textAlign = 'right';
+      } else {
+        ctx.textAlign = 'left';
+      }
+      ctx.textBaseline = 'middle';
+
+      // Draw a white rectangle behind the text to cover the SVG text
+      const metrics = ctx.measureText(content);
+      const textWidth = metrics.width;
+      const textHeight = fontSize * 1.2;
+
+      let bgX = x + offsetX;
+      if (textAnchor === 'middle') bgX -= textWidth / 2;
+      else if (textAnchor === 'end') bgX -= textWidth;
+
+      ctx.fillStyle = 'white';
+      ctx.fillRect(bgX - 2, y + offsetY - textHeight / 2 - 1, textWidth + 4, textHeight + 2);
+
+      // Draw the text
+      ctx.fillStyle = 'black';
+      ctx.fillText(content, x + offsetX, y + offsetY);
+    });
+  }
+
+  // Embed Inter font in SVG for consistent export rendering
+  // For PNG export, we need to embed the actual font data since blob rendering is isolated
+  async function embedInterFontInSvg(svg, embedFontData = false) {
+    // Create a defs element if it doesn't exist
+    let defs = svg.querySelector('defs');
+    if (!defs) {
+      defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      svg.insertBefore(defs, svg.firstChild);
+    }
+
+    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    style.setAttribute('type', 'text/css');
+
+    if (embedFontData) {
+      // For PNG export: Fetch the Inter font and embed as base64
+      try {
+        console.log('[Export] Fetching Inter font for embedding...');
+        const response = await fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiJ-Ek-_EeA.woff2');
+
+        if (!response.ok) {
+          throw new Error(`Font fetch failed: ${response.status}`);
+        }
+
+        const fontBuffer = await response.arrayBuffer();
+        console.log('[Export] Font fetched, size:', fontBuffer.byteLength);
+
+        // Convert to base64
+        const uint8Array = new Uint8Array(fontBuffer);
+        let binary = '';
+        for (let i = 0; i < uint8Array.length; i++) {
+          binary += String.fromCharCode(uint8Array[i]);
+        }
+        const base64Font = btoa(binary);
+        console.log('[Export] Font encoded, base64 length:', base64Font.length);
+
+        style.textContent = `
+          @font-face {
+            font-family: 'InterEmbed';
+            font-style: normal;
+            font-weight: 100 900;
+            src: url(data:font/woff2;base64,${base64Font}) format('woff2-variations'), url(data:font/woff2;base64,${base64Font}) format('woff2');
+          }
+          text {
+            font-family: 'InterEmbed', 'Inter', Arial, sans-serif !important;
+            font-weight: 100 !important;
+            font-variation-settings: 'wght' 100 !important;
+          }
+        `;
+        console.log('[Export] Font embedded in SVG style');
+      } catch (e) {
+        console.warn('[Export] Could not embed font:', e);
+        style.textContent = `text { font-family: Arial, sans-serif !important; }`;
+      }
+    } else {
+      // For SVG export: Use @import (works when opened in browser)
+      style.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        text {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
+        }
+      `;
+    }
+
+    defs.appendChild(style);
+  }
+
   // Convert SVG to light mode colors for export (always white background, black text)
   // Also restore hidden text elements (hidden by HTML overlay system in PlotContainer)
-  function convertSvgToLightMode(svg) {
-    // Restore visibility of all text elements (they may be hidden for HTML overlay)
+  // and apply the same font styling as the HTML overlays for consistent appearance
+  // embedFontData: true for PNG (needs embedded font), false for SVG (can use @import)
+  async function convertSvgToLightMode(svg, embedFontData = false) {
+    // Embed Inter font for consistent rendering in exported files
+    await embedInterFontInSvg(svg, embedFontData);
+
+    // Apply font styling to all text elements
+    // Use 'InterEmbed' when font is embedded (PNG), or 'Inter' with fallbacks (SVG)
+    const fontFamily = embedFontData
+      ? "'InterEmbed', Arial, sans-serif"
+      : "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif";
+
     const textElements = svg.querySelectorAll('text');
-    textElements.forEach(text => {
-      text.style.visibility = 'visible';
-      // Also set the font to match the HTML overlay style
-      text.style.fontFamily = 'Inter, Arial, sans-serif';
-      text.style.fontWeight = '300';
+    const fontWeight = embedFontData ? '100' : '300';
+    console.log(`[Export] Applying font-weight: ${fontWeight} to ${textElements.length} text elements`);
+
+    textElements.forEach((text, i) => {
+      // Get current style and rebuild it with our font overrides
+      const currentStyle = text.getAttribute('style') || '';
+
+      // Remove any existing font properties from the style string
+      const cleanedStyle = currentStyle
+        .replace(/font-family\s*:[^;]+;?/gi, '')
+        .replace(/font-size\s*:[^;]+;?/gi, '')
+        .replace(/font-weight\s*:[^;]+;?/gi, '');
+
+      // Check if this is an axis label (contains arrows ↑ or →) - use Arial for consistent arrows
+      const textContent = text.textContent || '';
+      const isAxisLabel = textContent.includes('↑') || textContent.includes('→');
+      const effectiveFontFamily = isAxisLabel ? 'Arial, sans-serif' : fontFamily;
+
+      // For axis labels, enlarge arrows by wrapping them in tspan FIRST (before setting styles)
+      if (isAxisLabel) {
+        console.log('[Export] Found axis label with arrow:', textContent);
+        // Clear and rebuild with tspans for larger arrows
+        while (text.firstChild) {
+          text.removeChild(text.firstChild);
+        }
+        const parts = textContent.split(/(↑|→)/);
+        console.log('[Export] Split into parts:', parts);
+        parts.forEach(part => {
+          const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+          tspan.textContent = part;
+          if (part === '↑' || part === '→') {
+            tspan.setAttribute('style', 'font-size: 16px; font-family: Arial, sans-serif;');
+            console.log('[Export] Created arrow tspan with larger font');
+          }
+          text.appendChild(tspan);
+        });
+      }
+
+      // Apply our font styling with visibility restored
+      const newStyle = `${cleanedStyle}; visibility: visible; font-family: ${effectiveFontFamily}; font-size: 12px; font-weight: ${fontWeight};`;
+      text.setAttribute('style', newStyle);
+
+      // Also set attributes as backup (some SVG renderers prefer attributes over style)
+      text.setAttribute('font-family', effectiveFontFamily);
+      text.setAttribute('font-size', '12');
+      text.setAttribute('font-weight', fontWeight);
+
+      // Debug: log first text element's final style
+      if (i === 0) {
+        console.log('[Export] First text element style:', text.getAttribute('style'));
+      }
     });
 
     // Dark mode colors to replace

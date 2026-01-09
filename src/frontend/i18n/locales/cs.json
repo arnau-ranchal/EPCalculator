@@ -177,7 +177,12 @@
     "custom": "Vlastní",
     "editParams": "Upravit parametry",
     "sweepingOver": "Procházení přes",
-    "and": "a"
+    "and": "a",
+    "constellationParams": "Konstelace",
+    "codeParams": "Kanál a kód",
+    "advancedParams": "Pokročilé",
+    "shapingBeta": "β (tvarování)",
+    "editConstellation": "Upravit konstelaci"
   },
   "constellation": {
     "title": "Vlastní konstelace",
@@ -212,7 +217,8 @@
     "magnitude": "Modul",
     "phase": "Fáze (°)",
     "cartesianMode": "Kartézské souřadnice (Reálná/Imaginární)",
-    "polarMode": "Polární souřadnice (Modul/Fáze)"
+    "polarMode": "Polární souřadnice (Modul/Fáze)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Import dat",

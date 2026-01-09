@@ -177,7 +177,12 @@
     "custom": "కస్టమ్",
     "editParams": "పారామీటర్లను సవరించండి",
     "sweepingOver": "స్వీపింగ్ చేస్తోంది",
-    "and": "మరియు"
+    "and": "మరియు",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "కస్టమ్ నక్షత్రరాశి",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "డేటాను దిగుమతి చేయండి",

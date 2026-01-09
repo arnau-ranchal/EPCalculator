@@ -177,7 +177,12 @@
     "custom": "Власний",
     "editParams": "Редагувати параметри",
     "sweepingOver": "Розгортка по",
-    "and": "та"
+    "and": "та",
+    "constellationParams": "Сузір'я",
+    "codeParams": "Канал та код",
+    "advancedParams": "Розширені",
+    "shapingBeta": "β (формування)",
+    "editConstellation": "Редагувати сузір'я"
   },
   "constellation": {
     "title": "Власне сузір'я",
@@ -212,7 +217,8 @@
     "magnitude": "Модуль",
     "phase": "Фаза (°)",
     "cartesianMode": "Декартові координати (Реальна/Уявна)",
-    "polarMode": "Полярні координати (Модуль/Фаза)"
+    "polarMode": "Полярні координати (Модуль/Фаза)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Імпорт даних",

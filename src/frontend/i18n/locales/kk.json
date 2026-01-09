@@ -177,7 +177,12 @@
     "custom": "Реттелетін",
     "editParams": "Параметрлерді өңдеу",
     "sweepingOver": "Қарау үшін",
-    "and": "және"
+    "and": "және",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "Реттелетін шоқжұлдыз",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Деректерді импорттау",

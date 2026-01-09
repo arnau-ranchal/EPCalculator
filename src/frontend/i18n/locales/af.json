@@ -177,7 +177,12 @@
     "custom": "Aangepas",
     "editParams": "Wysig Parameters",
     "sweepingOver": "Sweep oor",
-    "and": "en"
+    "and": "en",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "Aangepaste Konstellasie",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Voer Data In",

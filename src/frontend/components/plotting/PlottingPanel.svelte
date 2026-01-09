@@ -1,10 +1,11 @@
 <script>
   import { _, locale } from 'svelte-i18n';
-  import { activePlots, isPlotting, addPlot, removePlot, clearAllPlots, formatPlotData, formatContourData, findExistingPlot, plotScales, plotScalesZ, updatePlotScale, updatePlotScaleZ, plotSnrUnits, updatePlotSnrUnit, plotShowFrame, transposePlot, selectedContourPlots, showContourSelection, togglePlotSelection, clearPlotSelection, isPlotSelected, getSelectedContourPlots, pendingMerge, confirmMerge, confirmNewFigure, cancelPendingMerge } from '../../stores/plotting.js';
+  import { activePlots, isPlotting, addPlot, removePlot, clearAllPlots, formatPlotData, formatContourData, findExistingPlotWithStyling, updatePlotStyling, plotScales, plotScalesZ, updatePlotScale, updatePlotScaleZ, plotSnrUnits, updatePlotSnrUnit, plotShowFrame, defaultShowFrame, transposePlot, selectedContourPlots, showContourSelection, togglePlotSelection, clearPlotSelection, isPlotSelected, getSelectedContourPlots, pendingMerge, confirmMerge, confirmNewFigure, cancelPendingMerge, plotParams, updatePlotParam } from '../../stores/plotting.js';
   import { getPlotData, getContourData, mapPlotParams, handleApiError, computeExponents } from '../../utils/api.js';
   import { shouldShowPlotTutorial, shouldShowContourComparisonTutorial, startSpotlightTutorial, tutorialState } from '../../stores/tutorial.js';
   import { currentColorTheme } from '../../stores/theme.js';
   import { docHover } from '../../actions/documentation.js';
+  import { simulationParams, updateParam as updateSimulationParam, useCustomConstellation, customConstellation } from '../../stores/simulation.js';
   import PlottingControls from './PlottingControls.svelte';
   import PlotContainer from './PlotContainer.svelte';
   import PlotExporter from './PlotExporter.svelte';
@@ -27,7 +28,8 @@
     error_exponent: $_('plotAxis.errorExponent'),
     rho: $_('plotAxis.optimalRho'),
     mutual_information: $_('plotAxis.mutualInformation'),
-    cutoff_rate: $_('plotAxis.cutoffRate')
+    cutoff_rate: $_('plotAxis.cutoffRate'),
+    critical_rate: $_('plotAxis.criticalRate')
   };
 
   // Helper function to get translated axis label (accepts labels param for reactivity)
@@ -60,6 +62,19 @@
   let plotElementRefs = new Map(); // Store plot element references by plotId
   let hoveredSeries = new Map(); // Track hovered series by plotId -> seriesIndex
   let transposeDropdownOpen = new Map(); // Track which transpose dropdowns are open
+  let fullscreenPlotId = null; // Track which plot is in fullscreen mode
+  let plotRenderKey = 0; // Key to force re-render of plots
+
+  function exitFullscreen() {
+    const exitingPlotId = fullscreenPlotId;
+    fullscreenPlotId = null;
+    // Force re-render of the plot that was in fullscreen to fix label positions
+    if (exitingPlotId) {
+      setTimeout(() => {
+        plotRenderKey++;
+      }, 50);
+    }
+  }
 
   // Sticky header tracking
   let plotsHeaderEl = null;
@@ -91,12 +106,93 @@
   $: existingPlotInfo = $pendingMerge ? getPlotInfo($pendingMerge.existingPlot) : null;
   $: newPlotInfo = $pendingMerge ? getPlotInfo($pendingMerge.newPlotData) : null;
 
-  // Helper to resolve 'emphasis' color to the actual CSS variable value
-  function resolveColor(color) {
-    if (color === 'emphasis') {
-      return $currentColorTheme?.primary || '#C8102E';
+  // Convert hex color to HSL for perceptual comparison
+  function hexToHsl(hex) {
+    let r, g, b;
+    if (hex.startsWith('#')) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (result) {
+        r = parseInt(result[1], 16) / 255;
+        g = parseInt(result[2], 16) / 255;
+        b = parseInt(result[3], 16) / 255;
+      } else {
+        return { h: 0, s: 0, l: 0.5 };
+      }
+    } else {
+      const namedColorHues = {
+        'black': { h: 0, s: 0, l: 0 },
+        'steelblue': { h: 207, s: 0.44, l: 0.49 },
+        'purple': { h: 300, s: 1, l: 0.25 },
+        'seagreen': { h: 146, s: 0.5, l: 0.36 },
+        'goldenrod': { h: 43, s: 0.74, l: 0.49 },
+        'royalblue': { h: 225, s: 0.73, l: 0.57 },
+        'orchid': { h: 302, s: 0.59, l: 0.65 },
+        'darkcyan': { h: 180, s: 1, l: 0.27 },
+        'teal': { h: 180, s: 1, l: 0.25 },
+        'navy': { h: 240, s: 1, l: 0.25 },
+        'forestgreen': { h: 120, s: 0.61, l: 0.34 },
+        'darkorange': { h: 33, s: 1, l: 0.5 },
+        'chocolate': { h: 25, s: 0.75, l: 0.47 },
+        'darkslateblue': { h: 248, s: 0.39, l: 0.39 },
+        'olive': { h: 60, s: 1, l: 0.25 }
+      };
+      return namedColorHues[hex.toLowerCase()] || { h: 0, s: 0, l: 0.5 };
     }
-    return color;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+      h *= 360;
+    }
+    return { h, s, l };
+  }
+
+  // Check if two colors are perceptually similar
+  function areColorsSimilar(color1, color2, hueThreshold = 35) {
+    const hsl1 = hexToHsl(color1);
+    const hsl2 = hexToHsl(color2);
+
+    if ((hsl1.l < 0.15 || hsl1.s < 0.1) && (hsl2.l < 0.15 || hsl2.s < 0.1)) {
+      return true;
+    }
+
+    let hueDiff = Math.abs(hsl1.h - hsl2.h);
+    if (hueDiff > 180) hueDiff = 360 - hueDiff;
+
+    return hueDiff < hueThreshold;
+  }
+
+  // Base color palette for fallback colors
+  const basePalette = [
+    "black", "steelblue", "#FF8C00", "purple", "seagreen", "goldenrod",
+    "royalblue", "orchid", "darkcyan", "teal", "navy", "forestgreen",
+    "darkorange", "chocolate", "darkslateblue", "olive"
+  ];
+
+  // Get series color for legend - matches PlotContainer logic
+  // Takes emphasisColor as parameter to ensure Svelte reactivity when theme changes
+  function getSeriesColor(series, index, emphasisColor) {
+    // If series has explicit color, resolve it
+    if (series?.metadata?.lineColor) {
+      if (series.metadata.lineColor === 'emphasis') {
+        return emphasisColor;
+      }
+      return series.metadata.lineColor;
+    }
+    // Otherwise use filtered palette based on emphasis color
+    const filteredPalette = basePalette.filter(color => !areColorsSimilar(color, emphasisColor));
+    return filteredPalette[index % filteredPalette.length];
   }
 
   // Helper to extract plot info for modal display
@@ -240,7 +336,8 @@
         error_probability: parseFloat(result.error_probability),
         rho: parseFloat(result.optimal_rho),
         mutual_information: parseFloat(result.mutual_information),
-        cutoff_rate: parseFloat(result.cutoff_rate)
+        cutoff_rate: parseFloat(result.cutoff_rate),
+        critical_rate: parseFloat(result.critical_rate)
       });
     }
 
@@ -305,11 +402,51 @@
     try {
       errorMessage = '';
 
-      // Check if plot with identical parameters already exists
-      const existingPlotId = findExistingPlot(null, plotParams, simulationParams);
-      if (existingPlotId) {
-        // Instead of showing error, scroll to existing plot
-        scrollToPlot(existingPlotId);
+      // Include constellation info if using custom constellation
+      const currentConstellationInfo = $useCustomConstellation ? {
+        constellationId: $customConstellation.id,
+        constellationName: $customConstellation.name
+      } : null;
+
+      console.log('[PlottingPanel] Constellation check:', {
+        useCustomConstellation: $useCustomConstellation,
+        constellationId: $customConstellation.id,
+        constellationName: $customConstellation.name,
+        currentConstellationInfo
+      });
+
+      // Check if plot with identical data parameters already exists
+      const existingMatch = findExistingPlotWithStyling(null, plotParams, simulationParams, currentConstellationInfo);
+      if (existingMatch) {
+        if (existingMatch.stylingDiffers) {
+          // Same data but different styling - update styling without recomputing
+          // Get the existing stored color (could be 'emphasis', a specific color, or undefined)
+          const storedColor = existingMatch.existingSeries?.metadata?.lineColor ||
+                             existingMatch.existingSeries?.plotParams?.lineColor;
+
+          // If stored color is 'emphasis' or explicit, keep it
+          // If undefined (index-based), resolve to actual rendered color
+          let existingColor;
+          if (storedColor === 'emphasis' || (storedColor && storedColor !== 'emphasis')) {
+            existingColor = storedColor;
+          } else {
+            // Resolve index-based color from palette
+            existingColor = getSeriesColor(
+              existingMatch.existingSeries,
+              existingMatch.seriesIndex >= 0 ? existingMatch.seriesIndex : 0,
+              $currentColorTheme?.primary || '#C8102E'
+            );
+          }
+
+          updatePlotStyling(
+            existingMatch.plotId,
+            existingMatch.seriesIndex,
+            plotParams.lineType || 'solid',
+            existingColor  // Keep the original color behavior
+          );
+        }
+        // Scroll to existing plot (whether styling was updated or not)
+        scrollToPlot(existingMatch.plotId);
         return;
       }
 
@@ -393,6 +530,7 @@
         data: convertedData,
         plotParams: { ...plotParams },
         simulationParams: { ...simulationParams },
+        constellationInfo: currentConstellationInfo,
         timestamp: Date.now()
       };
 
@@ -459,6 +597,60 @@
 
   function handleRemovePlot(plotId) {
     removePlot(plotId);
+  }
+
+  // Context menu state for series
+  let contextMenu = { show: false, x: 0, y: 0, series: null };
+
+  function handleSeriesContextMenu(event, series) {
+    event.preventDefault();
+    contextMenu = {
+      show: true,
+      x: event.clientX,
+      y: event.clientY,
+      series: series
+    };
+  }
+
+  function closeContextMenu() {
+    contextMenu = { show: false, x: 0, y: 0, series: null };
+  }
+
+  function copySeriesParameters(series) {
+    if (!series) return;
+
+    // Copy simulation parameters
+    if (series.simulationParams) {
+      if (series.simulationParams.M !== undefined) updateSimulationParam('M', series.simulationParams.M);
+      if (series.simulationParams.typeModulation) updateSimulationParam('typeModulation', series.simulationParams.typeModulation);
+      if (series.simulationParams.SNR !== undefined) updateSimulationParam('SNR', series.simulationParams.SNR);
+      updateSimulationParam('SNRUnit', series.simulationParams.SNRUnit || 'dB');
+      if (series.simulationParams.R !== undefined) updateSimulationParam('R', series.simulationParams.R);
+      if (series.simulationParams.n !== undefined) updateSimulationParam('n', series.simulationParams.n);
+      if (series.simulationParams.N !== undefined) updateSimulationParam('N', series.simulationParams.N);
+      if (series.simulationParams.threshold !== undefined) updateSimulationParam('threshold', series.simulationParams.threshold);
+    }
+
+    // Copy plot parameters
+    if (series.plotParams) {
+      if (series.plotParams.distribution) updatePlotParam('distribution', series.plotParams.distribution);
+      if (series.plotParams.shaping_param !== undefined) updatePlotParam('shaping_param', series.plotParams.shaping_param);
+      if (series.plotParams.xVar) updatePlotParam('xVar', series.plotParams.xVar);
+      if (series.plotParams.yVar) updatePlotParam('yVar', series.plotParams.yVar);
+      if (series.plotParams.xRange) updatePlotParam('xRange', series.plotParams.xRange);
+      if (series.plotParams.points) updatePlotParam('points', series.plotParams.points);
+      if (series.plotParams.lineType) updatePlotParam('lineType', series.plotParams.lineType);
+      if (series.plotParams.lineColor) updatePlotParam('lineColor', series.plotParams.lineColor);
+    }
+
+    closeContextMenu();
+  }
+
+  // Close context menu when clicking elsewhere
+  function handleWindowClick(event) {
+    if (contextMenu.show) {
+      closeContextMenu();
+    }
   }
 
   function clearError() {
@@ -693,8 +885,30 @@
       }
     }
 
-    // Format: "N-MOD" (e.g., "16-PAM")
-    if (M !== undefined && typeModulation !== undefined) {
+    // Format: "N-MOD" (e.g., "16-PAM") or custom constellation name
+    if (typeModulation === 'Custom') {
+      // For custom constellations, use the constellation name instead of "M-Custom"
+      let constellationName = null;
+
+      if (plot.isMultiSeries && plot.series) {
+        // Check if all series have the same constellation name
+        const names = plot.series.map(s => s.constellationInfo?.constellationName);
+        const uniqueNames = [...new Set(names.filter(n => n))];
+        if (uniqueNames.length === 1) {
+          constellationName = uniqueNames[0];
+        }
+      } else {
+        constellationName = plot.constellationInfo?.constellationName;
+      }
+
+      if (constellationName) {
+        parts.unshift(constellationName);
+      } else if (M !== undefined) {
+        parts.unshift(`${M}-Custom`);
+      } else {
+        parts.unshift('Custom');
+      }
+    } else if (M !== undefined && typeModulation !== undefined) {
       parts.unshift(`${M}-${typeModulation}`);
     } else if (M !== undefined) {
       parts.unshift(`M=${M}`);
@@ -764,6 +978,34 @@
     // Check other simulation params (excluding SNR which we handled above)
     for (const key of availableSimParams) {
       if (key === 'SNR') continue; // Already handled above
+      if (key === 'typeModulation') {
+        // Special handling for typeModulation: check for different constellations
+        const types = seriesData.map(s => s.simulationParams?.typeModulation);
+        const uniqueTypes = [...new Set(types)];
+
+        // Check if any series uses custom constellation
+        const hasCustom = types.some(t => t === 'Custom');
+
+        if (hasCustom) {
+          // Get constellation identifiers (use id if available, fall back to name)
+          const constellationIds = seriesData.map(s => {
+            if (s.simulationParams?.typeModulation === 'Custom') {
+              return s.constellationInfo?.constellationId || s.constellationInfo?.constellationName || 'Custom';
+            }
+            return s.simulationParams?.typeModulation; // PAM, PSK, QAM
+          });
+          const uniqueConstellations = [...new Set(constellationIds)];
+
+          if (uniqueConstellations.length > 1) {
+            // Different constellations (could be Custom vs PAM, or Custom1 vs Custom2)
+            varyingParams.push({ source: 'constellation', key: 'constellation' });
+          }
+        } else if (uniqueTypes.length > 1) {
+          // Standard types vary (PAM vs PSK vs QAM)
+          varyingParams.push({ source: 'sim', key });
+        }
+        continue;
+      }
       const values = seriesData.map(s => s.simulationParams?.[key]);
       const uniqueValues = [...new Set(values)];
       if (uniqueValues.length > 1) {
@@ -829,6 +1071,20 @@
           const snrUnit = series.simulationParams?.SNRUnit || 'dB';
           const snrLabel = snrUnit === 'dB' ? `SNR: ${snrValue} dB` : `SNR: ${snrValue}`;
           labelParts.push(snrLabel);
+          continue;
+        }
+
+        // Special handling for constellation: show name or type
+        if (param.source === 'constellation') {
+          const typeModulation = series.simulationParams?.typeModulation;
+          if (typeModulation === 'Custom') {
+            const name = series.constellationInfo?.constellationName || 'Custom';
+            labelParts.push(name);
+          } else {
+            // Standard type (PAM, PSK, QAM)
+            const M = series.simulationParams?.M;
+            labelParts.push(M ? `${M}-${typeModulation}` : typeModulation);
+          }
           continue;
         }
 
@@ -1098,6 +1354,11 @@
       }
     });
     transposeDropdownOpen = transposeDropdownOpen;
+
+    // Close series context menu
+    if (contextMenu.show) {
+      closeContextMenu();
+    }
   }
 
   // Select all contour plots (or all compatible ones if reference exists)
@@ -1581,27 +1842,28 @@
                         </button>
                       {/if}
 
-                      <!-- Frame toggle button -->
-                      {@const showFrame = $plotShowFrame.get(plot.plotId) !== false}
+                      <!-- Fullscreen button -->
                       <button
                         type="button"
                         class="button-secondary log-toggle"
-                        class:active={showFrame}
-                        on:click={() => {
-                          plotShowFrame.update(map => {
-                            const newMap = new Map(map);
-                            newMap.set(plot.plotId, !showFrame);
-                            return newMap;
-                          });
-                        }}
-                        title={showFrame ? $_('plotItem.hideFrame') : $_('plotItem.showFrame')}
+                        on:click={() => fullscreenPlotId = plot.plotId}
+                        title={$_('plotItem.fullscreen')}
                       >
-                        ☐
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <!-- Top-left corner -->
+                          <path d="M1 5V2C1 1.5 1.5 1 2 1H5" />
+                          <!-- Top-right corner -->
+                          <path d="M9 1H12C12.5 1 13 1.5 13 2V5" />
+                          <!-- Bottom-left corner -->
+                          <path d="M1 9V12C1 12.5 1.5 13 2 13H5" />
+                          <!-- Bottom-right corner -->
+                          <path d="M9 13H12C12.5 13 13 12.5 13 12V9" />
+                        </svg>
                       </button>
                     {/if}
 
                     <div class="plot-actions-group">
-                      <span data-tutorial="export" use:docHover={{ key: 'export', position: 'bottom' }}>
+                      <span data-tutorial="export">
                         <PlotExporter
                           plotElement={plotElementRefs.get(plot.plotId)}
                           plotId={plot.plotId}
@@ -1647,8 +1909,9 @@
                             hoveredSeries.delete(plot.plotId);
                             hoveredSeries = hoveredSeries;
                           }}
+                          on:contextmenu={(e) => handleSeriesContextMenu(e, series)}
                         >
-                          <div class="series-indicator" style="background-color: {resolveColor(series.metadata?.lineColor) || 'steelblue'}"></div>
+                          <div class="series-indicator" style="background-color: {getSeriesColor(series, index, $currentColorTheme?.primary || '#C8102E')}"></div>
                           <div class="series-info">
                             <span class="series-label">
                               {getSeriesLabel(plot.series, index, plot.metadata?.xVar || plot.plotParams?.xVar, plot.metadata?.yVar || plot.plotParams?.yVar)}
@@ -1670,6 +1933,7 @@
                   </div>
                 {/if}
 
+{#key plotRenderKey}
                 <PlotContainer
                   data={plot.data}
                   metadata={{
@@ -1686,9 +1950,10 @@
                   series={plot.series}
                   isMultiSeries={plot.isMultiSeries}
                   hoveredSeriesIndex={hoveredSeries.get(plot.plotId)}
-                  showFrame={$plotShowFrame.get(plot.plotId) !== false}
+                  showFrame={$plotShowFrame.has(plot.plotId) ? $plotShowFrame.get(plot.plotId) : $defaultShowFrame}
                   onPlotElementReady={handlePlotElementReady(plot.plotId)}
                 />
+{/key}
               </div>
             {/each}
           </div>
@@ -1726,6 +1991,77 @@
     on:cancel={handleCancelMerge}
   />
 </div>
+
+<!-- Series Context Menu -->
+{#if contextMenu.show}
+  <div
+    class="context-menu"
+    style="left: {contextMenu.x}px; top: {contextMenu.y}px;"
+    on:click|stopPropagation
+  >
+    <button
+      class="context-menu-item"
+      on:click={() => copySeriesParameters(contextMenu.series)}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      {$_('plottingPanel.copyParameters')}
+    </button>
+  </div>
+{/if}
+
+<!-- Fullscreen Plot Overlay -->
+{#if fullscreenPlotId}
+  {@const fullscreenPlot = $activePlots.find(p => p.plotId === fullscreenPlotId)}
+  {#if fullscreenPlot}
+    <div
+      class="fullscreen-overlay"
+      on:click={exitFullscreen}
+      on:keydown={(e) => e.key === 'Escape' && exitFullscreen()}
+      tabindex="-1"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="fullscreen-content" on:click|stopPropagation>
+        <button
+          class="fullscreen-close"
+          on:click={exitFullscreen}
+          title={$_('plotItem.exitFullscreen')}
+        >
+          <svg width="18" height="18" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Exit fullscreen: corners in center pointing inward -->
+            <!-- Top-left corner bracket (at center, pointing to top-left) -->
+            <path d="M5 2V5H2" />
+            <!-- Top-right corner bracket (at center, pointing to top-right) -->
+            <path d="M9 2V5H12" />
+            <!-- Bottom-left corner bracket (at center, pointing to bottom-left) -->
+            <path d="M5 12V9H2" />
+            <!-- Bottom-right corner bracket (at center, pointing to bottom-right) -->
+            <path d="M9 12V9H12" />
+          </svg>
+        </button>
+        <div class="fullscreen-plot">
+          <PlotContainer
+            data={fullscreenPlot.data}
+            metadata={fullscreenPlot.metadata}
+            type={fullscreenPlot.type}
+            scale={$plotScales.get(fullscreenPlotId) || fullscreenPlot.recommendedScale || 'linear'}
+            scaleZ={$plotScalesZ.get(fullscreenPlotId) || 'linear'}
+            snrUnit={$plotSnrUnits.get(fullscreenPlotId) || fullscreenPlot.plotParams?.snrUnit || 'dB'}
+            axisLabels={axisLabels}
+            plotId={fullscreenPlotId}
+            series={fullscreenPlot.series}
+            isMultiSeries={fullscreenPlot.isMultiSeries}
+            showFrame={$plotShowFrame.has(fullscreenPlotId) ? $plotShowFrame.get(fullscreenPlotId) : $defaultShowFrame}
+            fullscreen={true}
+          />
+        </div>
+      </div>
+    </div>
+  {/if}
+{/if}
 
 <style>
   .plotting-panel {
@@ -2293,5 +2629,122 @@
     .plot-controls-header {
       justify-content: center;
     }
+  }
+
+  /* Fullscreen overlay styles */
+  :global(.fullscreen-overlay) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  :global(.fullscreen-content) {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 95vw;
+    max-height: 95vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.fullscreen-close) {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--card-background, white);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 4px;
+    padding: 8px;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-color, #333);
+    transition: all var(--transition-fast);
+    z-index: 10;
+  }
+
+  :global(.fullscreen-close:hover) {
+    background: var(--surface-color, #f5f5f5);
+    transform: translateY(-1px);
+  }
+
+  :global(.fullscreen-plot) {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-background, white);
+    border-radius: 8px;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  :global(.fullscreen-plot figure) {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+
+  :global(.fullscreen-plot svg) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Context menu styles */
+  .context-menu {
+    position: fixed;
+    background: var(--card-background, white);
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 4px;
+    min-width: 160px;
+    z-index: 10000;
+  }
+
+  .context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: var(--text-color, #333);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+  }
+
+  .context-menu-item:hover {
+    background: var(--surface-color, #f5f5f5);
+  }
+
+  .context-menu-item svg {
+    flex-shrink: 0;
+    color: var(--text-color-secondary, #666);
   }
 </style>

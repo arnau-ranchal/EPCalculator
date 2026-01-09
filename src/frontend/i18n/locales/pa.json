@@ -177,7 +177,12 @@
     "custom": "ਕਸਟਮ",
     "editParams": "ਪੈਰਾਮੀਟਰ ਸੋਧੋ",
     "sweepingOver": "ਸਵੀਪ ਕਰ ਰਿਹਾ ਹੈ",
-    "and": "ਅਤੇ"
+    "and": "ਅਤੇ",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "ਕਸਟਮ ਤਾਰਾਮੰਡਲ",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ਡਾਟਾ ਇੰਪੋਰਟ ਕਰੋ",

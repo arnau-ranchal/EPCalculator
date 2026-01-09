@@ -165,7 +165,12 @@
       "name": "ಒಮ್ಮುಖ ಮಿತಿ",
       "desc": "ρ ಅತ್ಯುತ್ತಮಗೊಳಿಸುವ ನಿಖರತೆ",
       "range": "ಸಾಮಾನ್ಯವಾಗಿ 10⁻⁶ ರಿಂದ 10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "ಕಸ್ಟಮ್ ನಕ್ಷತ್ರಪುಂಜ",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ಡೇಟಾ ಆಮದು ಮಾಡಿ",

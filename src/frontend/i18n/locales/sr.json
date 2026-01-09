@@ -177,7 +177,12 @@
     "custom": "Прилагођена",
     "editParams": "Уреди Параметре",
     "sweepingOver": "Прелазак преко",
-    "and": "и"
+    "and": "и",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "Прилагођена Констелација",
@@ -212,7 +217,8 @@
     "magnitude": "Модул",
     "phase": "Фаза (°)",
     "cartesianMode": "Декартове координате (Реални/Имагинарни)",
-    "polarMode": "Поларне координате (Модул/Фаза)"
+    "polarMode": "Поларне координате (Модул/Фаза)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Увоз Података",

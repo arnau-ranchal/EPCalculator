@@ -177,7 +177,12 @@
     "custom": "ᓵ⚍ᓭℸ ̣ 𝙹ᒲ",
     "editParams": "ᒷ↸╎ℸ ̣",
     "sweepingOver": "ᓭ∴ᒷᒷp╎リ⊣ 𝙹⍊ᒷ∷",
-    "and": "ᔑリ↸"
+    "and": "ᔑリ↸",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "ᓵ⚍ᓭℸ ̣ 𝙹ᒲ ᓵ𝙹リᓭℸ ̣ ᒷꖎꖎᔑℸ ̣ ╎𝙹リ",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "╎ᒲp𝙹∷ℸ ̣  ↸ᔑℸ ̣ ᔑ",

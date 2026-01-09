@@ -177,7 +177,12 @@
     "custom": "自訂",
     "editParams": "編輯參數",
     "sweepingOver": "掃描範圍",
-    "and": "和"
+    "and": "和",
+    "constellationParams": "星座",
+    "codeParams": "通道與編碼",
+    "advancedParams": "進階",
+    "shapingBeta": "β (整形)",
+    "editConstellation": "編輯星座"
   },
   "constellation": {
     "title": "自訂星座圖",
@@ -212,7 +217,8 @@
     "magnitude": "幅度",
     "phase": "相位 (°)",
     "cartesianMode": "笛卡兒座標 (實部/虛部)",
-    "polarMode": "極座標 (幅度/相位)"
+    "polarMode": "極座標 (幅度/相位)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "匯入資料",

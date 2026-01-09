@@ -177,7 +177,12 @@
     "custom": "Mukautettu",
     "editParams": "Muokkaa Parametreja",
     "sweepingOver": "Pyyhkäisy yli",
-    "and": "ja"
+    "and": "ja",
+    "constellationParams": "Konstellaatio",
+    "codeParams": "Kanava ja koodi",
+    "advancedParams": "Lisäasetukset",
+    "shapingBeta": "β (muotoilu)",
+    "editConstellation": "Muokkaa konstellaatiota"
   },
   "constellation": {
     "title": "Mukautettu Konstellaatio",
@@ -212,7 +217,8 @@
     "magnitude": "Itseisarvo",
     "phase": "Vaihe (°)",
     "cartesianMode": "Karteesiset koordinaatit (Reaaliluku/Imaginaariluku)",
-    "polarMode": "Napakoordinaatit (Itseisarvo/Vaihe)"
+    "polarMode": "Napakoordinaatit (Itseisarvo/Vaihe)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Tuo Data",

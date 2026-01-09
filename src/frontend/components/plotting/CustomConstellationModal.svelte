@@ -3,7 +3,8 @@
   import { createEventDispatcher, tick, onDestroy } from 'svelte';
   import { fade } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { customConstellation, useCustomConstellation, updateParam } from '../../stores/simulation.js';
+  import { customConstellation, useCustomConstellation, updateParam, simulationParams, generateStandardConstellation, customConstellationCounter, saveCustomConstellation } from '../../stores/simulation.js';
+  import { get } from 'svelte/store';
   import { shouldShowConstellationTutorial, startSpotlightTutorial, tutorialState, spotlightTutorial } from '../../stores/tutorial.js';
   import { showDocumentation } from '../../stores/documentation.js';
   import CustomConstellation from '../simulation/CustomConstellation.svelte';
@@ -11,34 +12,19 @@
   import DocumentationPanel from '../documentation/DocumentationPanel.svelte';
 
   export let isOpen = false;
+  export let originalModulationType = null;
 
   const dispatch = createEventDispatcher();
 
   let localPoints = [];
   let isValid = false;
   let showTable = true;
-  let showTableButtons = true; // Delayed version of showTable for buttons
-  let tableButtonsTimeout = null;
+  let showPlot = true;
   let wasDragging = false;
   let constellationComponent;
   let plotMode = 'cartesian';
-
-  function toggleTable() {
-    if (tableButtonsTimeout) clearTimeout(tableButtonsTimeout);
-
-    if (!showTable) {
-      // About to show table - hide buttons first, show them after transition
-      showTableButtons = false;
-      showTable = true;
-      tableButtonsTimeout = setTimeout(() => {
-        showTableButtons = true;
-      }, 175);
-    } else {
-      // About to hide table - fade out buttons and collapse simultaneously
-      showTableButtons = false;
-      showTable = false;
-    }
-  }
+  let isTransitioning = false;
+  let transitionTimeout = null;
 
   // Lucky button configuration
   let showLuckyDropdown = false;
@@ -69,6 +55,15 @@
   $: fixedMeanReal = fixedMeanRealOverride ?? currentMeanReal;
   $: fixedMeanImag = fixedMeanImagOverride ?? currentMeanImag;
 
+  // Track original points when modal opens
+  let originalPoints = null;
+  let wasOpenLastFrame = false;
+
+  // Naming prompt state
+  let showNamingPrompt = false;
+  let constellationName = '';
+  let pendingSavePoints = null;
+
   // Initialize local points from store when modal opens
   $: if (isOpen && $customConstellation.points) {
     localPoints = JSON.parse(JSON.stringify($customConstellation.points));
@@ -78,19 +73,34 @@
     fixedMeanImagOverride = null;
   }
 
-  // Trigger constellation tutorial when modal opens for the first time
-  // DEBUG: Temporarily reset tutorial state on each modal open to test
+  // Capture original points only on the transition from closed to open
   $: {
-    console.log('[CustomConstellationModal] isOpen:', isOpen, 'shouldShowConstellationTutorial:', $shouldShowConstellationTutorial);
-    if (isOpen) {
-      // Temporarily force tutorial to show every time for debugging
-      // TODO: Remove this debug override and use: if (isOpen && $shouldShowConstellationTutorial)
+    if (isOpen && !wasOpenLastFrame) {
+      // Modal just opened - capture original points
+      originalPoints = JSON.parse(JSON.stringify($customConstellation.points));
+    }
+    wasOpenLastFrame = isOpen;
+  }
+
+  // Trigger constellation tutorial when modal opens for the first time
+  $: {
+    if (isOpen && $shouldShowConstellationTutorial) {
       triggerTutorial();
     }
   }
 
+  // Track layout transitions to disable scroll-to-row during expansion/collapse
+  $: {
+    // This block runs when showTable or showPlot changes
+    showTable; showPlot;
+    if (transitionTimeout) clearTimeout(transitionTimeout);
+    isTransitioning = true;
+    transitionTimeout = setTimeout(() => {
+      isTransitioning = false;
+    }, 400); // Match modal transition duration
+  }
+
   async function triggerTutorial() {
-    console.log('[CustomConstellationModal] triggerTutorial called');
     // Mark as seen immediately so it won't trigger again
     tutorialState.markConstellationTutorialSeen();
 
@@ -98,10 +108,6 @@
 
     // Add a slight delay before showing the tutorial
     await new Promise(resolve => setTimeout(resolve, 600));
-
-    // Debug: Check if elements exist
-    console.log('[CustomConstellationModal] Looking for .visualization svg:', document.querySelector('.visualization svg'));
-    console.log('[CustomConstellationModal] Looking for .points-table-container:', document.querySelector('.points-table-container'));
 
     const tutorialSteps = [
       {
@@ -144,22 +150,139 @@
     }, 100);
   }
 
+  // Check if two constellations are equivalent (same points within tolerance)
+  function constellationsMatch(points1, points2) {
+    if (points1.length !== points2.length) return false;
+
+    const tolerance = 0.01;
+
+    // Sort both by real then imag for comparison
+    const sort = (pts) => [...pts].sort((a, b) => {
+      if (Math.abs(a.real - b.real) > tolerance) return a.real - b.real;
+      return a.imag - b.imag;
+    });
+
+    const sorted1 = sort(points1);
+    const sorted2 = sort(points2);
+
+    for (let i = 0; i < sorted1.length; i++) {
+      if (Math.abs(sorted1[i].real - sorted2[i].real) > tolerance) return false;
+      if (Math.abs(sorted1[i].imag - sorted2[i].imag) > tolerance) return false;
+      if (Math.abs(sorted1[i].prob - sorted2[i].prob) > tolerance) return false;
+    }
+    return true;
+  }
+
   function handleSave() {
     if (!isValid) {
       return;
     }
 
-    // Update the store
+    const M = localPoints.length;
+
+    // Check if points match the original modulation type's standard constellation
+    if (originalModulationType && originalModulationType !== 'Custom') {
+      const standardPoints = generateStandardConstellation(M, originalModulationType);
+      const match = constellationsMatch(localPoints, standardPoints);
+      if (match) {
+        // Points match the original type - keep it as standard modulation
+        customConstellation.set({
+          points: localPoints,
+          isValid: true,
+          name: null
+        });
+        updateParam('M', M);
+        updateParam('typeModulation', originalModulationType);
+        useCustomConstellation.set(false);
+        dispatch('save');
+        isOpen = false;
+        return;
+      }
+    }
+
+    // Points were modified - check if they match any standard type
+    let matchedType = null;
+
+    for (const type of ['PAM', 'PSK', 'QAM']) {
+      // Skip QAM if M is not a perfect square
+      if (type === 'QAM' && Math.sqrt(M) !== Math.floor(Math.sqrt(M))) continue;
+
+      const standardPoints = generateStandardConstellation(M, type);
+      if (constellationsMatch(localPoints, standardPoints)) {
+        matchedType = type;
+        break;
+      }
+    }
+
+    if (matchedType) {
+      // Matches a standard type - not custom
+      customConstellation.set({
+        points: localPoints,
+        isValid: true,
+        name: null
+      });
+      updateParam('M', M);
+      updateParam('typeModulation', matchedType);
+      useCustomConstellation.set(false);
+      dispatch('save');
+      isOpen = false;
+    } else {
+      // Truly custom constellation - prompt for name
+      pendingSavePoints = localPoints;
+      // Generate default name
+      const counter = get(customConstellationCounter) + 1;
+      constellationName = `Custom ${counter}`;
+      showNamingPrompt = true;
+    }
+  }
+
+  function confirmCustomName() {
+    if (!pendingSavePoints) return;
+
+    const M = pendingSavePoints.length;
+    const finalName = constellationName.trim() || `Custom ${get(customConstellationCounter) + 1}`;
+
+    // Increment counter
+    customConstellationCounter.update(n => n + 1);
+
+    // Save to the collection and get ID
+    const id = saveCustomConstellation(finalName, pendingSavePoints);
+
+    // Update the store with the name and ID
     customConstellation.set({
-      points: localPoints,
-      isValid: true
+      points: pendingSavePoints,
+      isValid: true,
+      name: finalName,
+      id: id
     });
+
+    updateParam('M', M);
+    updateParam('typeModulation', 'Custom');
     useCustomConstellation.set(true);
-    // Update M to match the number of constellation points
-    updateParam('M', localPoints.length);
+
+    // Reset naming prompt state
+    showNamingPrompt = false;
+    pendingSavePoints = null;
+    constellationName = '';
 
     dispatch('save');
     isOpen = false;
+  }
+
+  function cancelCustomName() {
+    showNamingPrompt = false;
+    pendingSavePoints = null;
+    constellationName = '';
+  }
+
+  function handleNameKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      confirmCustomName();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelCustomName();
+    }
   }
 
   function handleCancel() {
@@ -222,6 +345,7 @@
 
   onDestroy(() => {
     if (docHoverTimeout) clearTimeout(docHoverTimeout);
+    if (transitionTimeout) clearTimeout(transitionTimeout);
   });
 </script>
 
@@ -232,147 +356,10 @@
 
 {#if isOpen}
   <div class="modal-backdrop" on:click={handleBackdropClick}>
-    <div class="modal-container" class:compact={!showTable}>
+    <div class="modal-container" class:compact={!showTable || !showPlot}>
       <div class="modal-header">
         <h3>{$_('constellation.title')}</h3>
         <div class="header-actions">
-          {#if showTableButtons}
-            <div class="lucky-container" in:fade={{ duration: 350 }} out:fade={{ duration: 50 }}>
-              <button
-                type="button"
-                class="lucky-btn"
-                on:click={(e) => { handleDocLeave(); handleLuckyClick(); }}
-                on:mouseenter={(e) => handleDocHover('constellation-lucky', e)}
-                on:mouseleave={handleDocLeave}
-              >
-                {$_('constellation.feelingLucky')}
-              </button>
-              <button
-                type="button"
-                class="lucky-dropdown-toggle"
-                on:click={toggleLuckyDropdown}
-                title={$_('constellation.luckyOptions') || 'Options'}
-              >
-                ▾
-              </button>
-              {#if showLuckyDropdown}
-                <div class="lucky-dropdown" on:click|stopPropagation>
-                  <div class="lucky-option-row">
-                    <label class="lucky-option">
-                      <input type="checkbox" bind:checked={luckyOptions.randomizeNumPoints} />
-                      <span>{$_('constellation.randomNumPoints') || 'Random number of points'}</span>
-                    </label>
-                    {#if luckyOptions.randomizeNumPoints}
-                      <div class="lucky-fixed-input range-inputs">
-                        <input
-                          type="number"
-                          min="2"
-                          max="49"
-                          value={luckyOptions.numPointsMin}
-                          on:blur={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val)) {
-                              luckyOptions.numPointsMin = Math.max(2, Math.min(49, Math.min(val, luckyOptions.numPointsMax - 1)));
-                            }
-                            e.target.value = luckyOptions.numPointsMin;
-                          }}
-                          on:click|stopPropagation
-                        />
-                        <span class="input-label">to</span>
-                        <input
-                          type="number"
-                          min="3"
-                          max="50"
-                          value={luckyOptions.numPointsMax}
-                          on:blur={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val)) {
-                              luckyOptions.numPointsMax = Math.max(3, Math.min(50, Math.max(val, luckyOptions.numPointsMin + 1)));
-                            }
-                            e.target.value = luckyOptions.numPointsMax;
-                          }}
-                          on:click|stopPropagation
-                        />
-                      </div>
-                    {:else}
-                      <div class="lucky-fixed-input">
-                        <input
-                          type="number"
-                          min="2"
-                          max="50"
-                          value={fixedNumPoints}
-                          on:blur={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val)) {
-                              fixedNumPointsOverride = Math.max(2, Math.min(50, val));
-                            }
-                            e.target.value = fixedNumPointsOverride ?? fixedNumPoints;
-                          }}
-                          on:click|stopPropagation
-                        />
-                        <span class="input-label">{$_('constellation.points') || 'points'}</span>
-                      </div>
-                    {/if}
-                  </div>
-                  <div class="lucky-option-row">
-                    <label class="lucky-option">
-                      <input type="checkbox" bind:checked={luckyOptions.randomizeMean} />
-                      <span>{$_('constellation.randomMean') || 'Random mean position'}</span>
-                    </label>
-                    {#if !luckyOptions.randomizeMean}
-                      <div class="lucky-fixed-input mean-inputs">
-                        <label>
-                          <span>Re:</span>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={fixedMeanReal}
-                            on:input={(e) => fixedMeanRealOverride = parseFloat(e.target.value) || 0}
-                            on:click|stopPropagation
-                          />
-                        </label>
-                        <label>
-                          <span>Im:</span>
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={fixedMeanImag}
-                            on:input={(e) => fixedMeanImagOverride = parseFloat(e.target.value) || 0}
-                            on:click|stopPropagation
-                          />
-                        </label>
-                      </div>
-                    {/if}
-                  </div>
-                  <div class="lucky-option-row">
-                    <label class="lucky-option">
-                      <input type="checkbox" bind:checked={luckyOptions.randomizePositions} />
-                      <span>{$_('constellation.randomPositions') || 'Random point positions'}</span>
-                    </label>
-                  </div>
-                </div>
-              {/if}
-            </div>
-            <div class="select-container" in:fade={{ duration: 350 }} out:fade={{ duration: 50 }}>
-              <select on:change={(e) => { constellationComponent?.doLoadPreset(e.target.value); e.target.value = ''; }}>
-                <option value="">{$_('constellation.loadPreset')}</option>
-                <option value="bpsk">BPSK (2 {$_('constellation.points')})</option>
-                <option value="qpsk">QPSK (4 {$_('constellation.points')})</option>
-                <option value="4pam">4-PAM</option>
-                <option value="8psk">8-PSK</option>
-                <option value="16qam">16-QAM</option>
-              </select>
-            </div>
-          {/if}
-          <button
-            type="button"
-            class="toggle-table-btn"
-            on:click={toggleTable}
-            on:mouseenter={(e) => handleDocHover('constellation-hide-table', e)}
-            on:mouseleave={handleDocLeave}
-          >
-            {showTable ? $_('constellation.hideTable') : $_('constellation.showTable')}
-          </button>
           <button type="button" class="close-button" on:click={handleCancel}>
             <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
               <path d="M1 1L9 9M9 1L1 9"/>
@@ -386,8 +373,10 @@
           bind:this={constellationComponent}
           points={localPoints}
           bind:showTable={showTable}
+          bind:showPlot={showPlot}
           bind:plotMode={plotMode}
           showHeader={false}
+          {isTransitioning}
           on:change={handleConstellationChange}
           on:dragstart={handleDragStart}
           on:dragend={handleDragEnd}
@@ -399,6 +388,123 @@
           <button type="button" class="button-secondary" on:click={handleCancel}>
             {$_('dataImport.cancel')}
           </button>
+          <div class="lucky-container">
+            <button
+              type="button"
+              class="button-secondary lucky-btn"
+              on:click={handleLuckyClick}
+            >
+              <span class="lucky-text">
+                {$_('constellation.feelingLucky')}
+              </span>
+              <span
+                class="lucky-gear"
+                on:click|stopPropagation={toggleLuckyDropdown}
+                title={$_('constellation.luckyOptions') || 'Options'}
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                  <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+              </span>
+            </button>
+            {#if showLuckyDropdown}
+              <div class="lucky-dropdown lucky-dropdown-footer" on:click|stopPropagation>
+                <div class="lucky-option-row">
+                  <label class="lucky-option">
+                    <input type="checkbox" bind:checked={luckyOptions.randomizeNumPoints} />
+                    <span>{$_('constellation.randomNumPoints') || 'Random number of points'}</span>
+                  </label>
+                  {#if luckyOptions.randomizeNumPoints}
+                    <div class="lucky-fixed-input range-inputs">
+                      <input
+                        type="number"
+                        min="2"
+                        max="49"
+                        value={luckyOptions.numPointsMin}
+                        on:blur={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val)) {
+                            luckyOptions.numPointsMin = Math.max(2, Math.min(49, Math.min(val, luckyOptions.numPointsMax - 1)));
+                          }
+                          e.target.value = luckyOptions.numPointsMin;
+                        }}
+                        on:click|stopPropagation
+                      />
+                      <span class="input-label">to</span>
+                      <input
+                        type="number"
+                        min="3"
+                        max="50"
+                        value={luckyOptions.numPointsMax}
+                        on:blur={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val)) {
+                            luckyOptions.numPointsMax = Math.max(3, Math.min(50, Math.max(val, luckyOptions.numPointsMin + 1)));
+                          }
+                          e.target.value = luckyOptions.numPointsMax;
+                        }}
+                        on:click|stopPropagation
+                      />
+                    </div>
+                  {:else}
+                    <div class="lucky-fixed-input">
+                      <input
+                        type="number"
+                        min="2"
+                        max="50"
+                        value={fixedNumPoints}
+                        on:blur={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val)) {
+                            fixedNumPointsOverride = Math.max(2, Math.min(50, val));
+                          }
+                          e.target.value = fixedNumPointsOverride ?? fixedNumPoints;
+                        }}
+                        on:click|stopPropagation
+                      />
+                      <span class="input-label">{$_('constellation.points') || 'points'}</span>
+                    </div>
+                  {/if}
+                </div>
+                <div class="lucky-option-row">
+                  <label class="lucky-option">
+                    <input type="checkbox" bind:checked={luckyOptions.randomizeMean} />
+                    <span>{$_('constellation.randomMean') || 'Random mean position'}</span>
+                  </label>
+                  {#if !luckyOptions.randomizeMean}
+                    <div class="lucky-fixed-input mean-inputs">
+                      <label>
+                        <span>Re:</span>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={fixedMeanReal}
+                          on:input={(e) => fixedMeanRealOverride = parseFloat(e.target.value) || 0}
+                          on:click|stopPropagation
+                        />
+                      </label>
+                      <label>
+                        <span>Im:</span>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={fixedMeanImag}
+                          on:input={(e) => fixedMeanImagOverride = parseFloat(e.target.value) || 0}
+                          on:click|stopPropagation
+                        />
+                      </label>
+                    </div>
+                  {/if}
+                </div>
+                <div class="lucky-option-row">
+                  <label class="lucky-option">
+                    <input type="checkbox" bind:checked={luckyOptions.randomizePositions} />
+                    <span>{$_('constellation.randomPositions') || 'Random point positions'}</span>
+                  </label>
+                </div>
+              </div>
+            {/if}
+          </div>
           <button
             type="button"
             class:button-secondary={!isValid}
@@ -413,11 +519,37 @@
               }
             }}
           >
-            {isValid ? $_('constellation.useConstellation') : $_('constellation.normalize')}
+            {isValid ? $_('constellation.use') : $_('constellation.normalize')}
           </button>
         </div>
       </div>
     </div>
+
+    <!-- Naming Prompt Overlay -->
+    {#if showNamingPrompt}
+      <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+      <div class="naming-overlay" on:click|stopPropagation>
+        <div class="naming-dialog">
+          <h4>{$_('constellation.nameTitle') || 'Name Your Constellation'}</h4>
+          <p>{$_('constellation.nameDescription') || 'This constellation doesn\'t match any standard type (PAM, PSK, QAM). Give it a name for easy identification.'}</p>
+          <input
+            type="text"
+            bind:value={constellationName}
+            placeholder={$_('constellation.namePlaceholder') || 'e.g., My Custom 8-QAM'}
+            on:keydown={handleNameKeydown}
+            autofocus
+          />
+          <div class="naming-buttons">
+            <button type="button" class="button-secondary" on:click={cancelCustomName}>
+              {$_('dataImport.cancel')}
+            </button>
+            <button type="button" class="button-primary" on:click={confirmCustomName}>
+              {$_('constellation.use')}
+            </button>
+          </div>
+        </div>
+      </div>
+    {/if}
   </div>
 {/if}
 
@@ -438,22 +570,23 @@
   }
 
   .modal-container {
+    position: relative;
     background: var(--card-background);
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    max-width: 900px;
-    width: 100%;
+    width: 740px;
+    max-width: 95vw;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--border-color);
-    transition: max-width 0.4s ease-out;
+    transition: width 0.4s ease-out;
     overflow-x: hidden;
   }
 
   .modal-container.compact {
-    max-width: 390px;
+    width: 390px;
   }
 
   .modal-header {
@@ -503,79 +636,44 @@
     flex-shrink: 0;
   }
 
-  .header-actions select {
-    background-color: var(--card-background);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-color);
-    cursor: pointer;
-    min-height: 32px;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M3 5l3 3 3-3'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 6px center;
-    padding-right: 24px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  }
-
-  .header-actions select:hover {
-    border-color: var(--text-color-secondary);
-    background-color: var(--hover-background);
-  }
-
   .lucky-container {
     position: relative;
     display: flex;
   }
 
-  .select-container {
-    display: flex;
-  }
-
   .lucky-btn {
-    background: var(--card-background);
-    border: 1px solid var(--border-color);
-    border-radius: 4px 0 0 4px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
-    min-height: 32px;
-    white-space: nowrap;
-    border-right: none;
+    gap: 0;
+    transition: gap 0.15s ease;
   }
 
   .lucky-btn:hover {
-    border-color: var(--text-color-secondary);
-    background: var(--hover-background);
+    gap: 6px;
   }
 
-  .lucky-dropdown-toggle {
-    background: var(--card-background);
-    border: 1px solid var(--border-color);
-    border-radius: 0 4px 4px 0;
-    padding: 0 6px;
-    font-size: 10px;
-    color: var(--text-color-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
+  .lucky-gear {
     display: flex;
     align-items: center;
-    min-height: 32px;
+    justify-content: center;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: width 0.15s ease, opacity 0.15s ease;
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 3px 0;
+    margin: -3px 0;
   }
 
-  .lucky-dropdown-toggle:hover {
-    border-color: var(--text-color-secondary);
+  .lucky-btn:hover .lucky-gear {
+    width: 20px;
+    padding: 3px;
+    opacity: 1;
+  }
+
+  .lucky-gear:hover {
     background: var(--hover-background);
-    color: var(--text-color);
   }
 
   .lucky-dropdown {
@@ -590,6 +688,13 @@
     z-index: 100;
     min-width: 200px;
     padding: 8px 0;
+  }
+
+  .lucky-dropdown-footer {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 4px;
   }
 
   .lucky-option {
@@ -692,33 +797,13 @@
     width: 50px;
   }
 
-  .toggle-table-btn {
-    background: var(--card-background);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    min-height: 32px;
-    white-space: nowrap;
-  }
-
-  .toggle-table-btn:hover {
-    background: var(--hover-background);
-    border-color: var(--text-color-secondary);
-  }
-
   .modal-body {
     padding: 0 var(--spacing-sm);
     overflow-y: auto;
     overflow-x: hidden;
     flex: 1;
+    display: flex;
+    justify-content: center;
   }
 
   .modal-footer {
@@ -768,6 +853,74 @@
   .button-secondary:hover {
     background: var(--hover-background);
     border-color: var(--text-color-secondary);
+  }
+
+  /* Naming prompt overlay */
+  .naming-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 12px;
+  }
+
+  .naming-dialog {
+    background: var(--card-background);
+    border-radius: 8px;
+    padding: var(--spacing-lg);
+    max-width: 360px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+  }
+
+  .naming-dialog h4 {
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  .naming-dialog p {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .naming-dialog input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-background);
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-bottom: var(--spacing-md);
+    box-sizing: border-box;
+  }
+
+  .naming-dialog input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.1);
+  }
+
+  .naming-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+  }
+
+  .naming-buttons button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
   }
 
   @media (max-width: 768px) {

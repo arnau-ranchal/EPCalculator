@@ -15,8 +15,10 @@
   ];
 
   export let showTable = true;
+  export let showPlot = true;
   export let showHeader = true;
   export let plotMode = 'cartesian'; // 'cartesian' (Re/Im) or 'polar' (Magnitude/Phase)
+  export let isTransitioning = false; // Disable scroll-to-row during modal transitions
 
   // Expose functions for external control
   export function doNormalize() { normalize(); }
@@ -93,6 +95,74 @@
   let energyLabelX = 0;
   let energyLabelY = 0;
 
+  // Track which input is being actively edited to prevent cursor jumping
+  let activeInputIndex = -1;
+  let activeInputField = null;
+
+  // Input blur handlers
+  function handleInputBlur(e, index, field) {
+    activeInputIndex = -1;
+    activeInputField = null;
+    // Final update on blur
+    handlePointInput(index, field, e.target.value);
+  }
+
+  function handlePolarBlur(e, index, field) {
+    activeInputIndex = -1;
+    activeInputField = null;
+    handlePolarInput(index, field, e.target.value);
+  }
+
+  function handleInputKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation(); // Prevent form submission / plot generation
+      e.target.blur();
+    }
+  }
+
+  // Svelte action to manage input value without cursor jumping
+  function editableValue(node, params) {
+    let isFocused = false;
+    let currentParams = params;
+
+    function updateValue() {
+      if (!isFocused) {
+        node.value = currentParams.value;
+      }
+    }
+
+    function handleFocus() {
+      isFocused = true;
+      activeInputIndex = currentParams.index;
+      activeInputField = currentParams.field;
+    }
+
+    function handleBlur() {
+      isFocused = false;
+      activeInputIndex = -1;
+      activeInputField = null;
+      // Value will be updated by the blur handler
+    }
+
+    node.addEventListener('focus', handleFocus);
+    node.addEventListener('blur', handleBlur);
+
+    // Initial value
+    updateValue();
+
+    return {
+      update(newParams) {
+        currentParams = newParams;
+        updateValue();
+      },
+      destroy() {
+        node.removeEventListener('focus', handleFocus);
+        node.removeEventListener('blur', handleBlur);
+      }
+    };
+  }
+
   // Polar coordinate conversions
   function toPolar(real, imag) {
     const magnitude = Math.sqrt(real * real + imag * imag);
@@ -138,11 +208,9 @@
   // Emphasis color for points, mean, and energy circle
   const emphasisColor = 'var(--primary-color, #C8102E)';
 
-  // Format number for display: add trailing space for negative numbers
-  // Positive numbers are perfectly centered, negative numbers have digits aligned with the minus extending left
+  // Format number for display: simply format with fixed decimals, centered as text
   function formatForCenter(value, decimals = 4) {
-    const formatted = value.toFixed(decimals);
-    return value < 0 ? formatted + ' ' : formatted;
+    return value.toFixed(decimals);
   }
 
   // Helper to notify parent of changes (called manually to avoid infinite loops)
@@ -195,7 +263,7 @@
   }
 
   function addPoint() {
-    if (points.length >= 100) return;
+    if (points.length >= 99) return;
     const newIndex = points.length;
     points = [...points, { real: 0, imag: 0, prob: 1.0 / (points.length + 1) }];
     notifyChange();
@@ -220,8 +288,8 @@
   function selectPoint(index) {
     if (isDragging) return;
     selectedPointIndex = index;
-    // Scroll to make the selected point visible in the table
-    if (tableScrollElement && points.length > 5) {
+    // Scroll to make the selected point visible in the table (skip during transitions)
+    if (tableScrollElement && points.length > 5 && !isTransitioning) {
       const rows = tableScrollElement.querySelectorAll('tbody tr');
       if (rows[index]) {
         const row = rows[index];
@@ -412,17 +480,36 @@
   }
 
   function handlePointInput(index, field, value) {
-    let numValue = parseFloat(value) || 0;
-    // Clamp real/imag to [-1000, 1000]
-    if (field === 'real' || field === 'imag') {
-      numValue = Math.max(-1000, Math.min(1000, numValue));
+    // Allow typing partial negative numbers like "-" or "-0." or "-.5"
+    // Don't update if user is in the middle of typing a negative number
+    if (value === '' || value === '-' || value === '.' || value === '-.' || value === '-0' || value === '-0.') {
+      return; // Let user continue typing
     }
-    points = points.map((p, i) => i === index ? { ...p, [field]: numValue } : p);
+
+    const numValue = parseFloat(value);
+
+    // Only update if it's a valid number
+    if (isNaN(numValue)) {
+      return;
+    }
+
+    // Clamp real/imag to [-1000, 1000]
+    let clampedValue = numValue;
+    if (field === 'real' || field === 'imag') {
+      clampedValue = Math.max(-1000, Math.min(1000, numValue));
+    }
+
+    points = points.map((p, i) => i === index ? { ...p, [field]: clampedValue } : p);
     notifyChange();
   }
 
   // Handle polar coordinate input (magnitude and phase in degrees)
   function handlePolarInput(index, field, value) {
+    // Allow typing partial negative numbers for phase
+    if (value === '' || value === '-' || value === '.' || value === '-.' || value === '-0' || value === '-0.') {
+      return; // Let user continue typing
+    }
+
     const point = points[index];
     const currentPolar = toPolar(point.real, point.imag);
 
@@ -430,7 +517,9 @@
     let phase = currentPolar.phase;
 
     if (field === 'magnitude') {
-      magnitude = Math.max(0, Math.min(1000, parseFloat(value) || 0));
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) return;
+      magnitude = Math.max(0, Math.min(1000, numValue));
     } else if (field === 'phase') {
       // Parse degrees input and convert to radians
       phase = parsePhase(value);
@@ -530,6 +619,40 @@
   function fromSvgY(svgY) {
     return -(svgY - margin - plotSize / 2) / scale; // Flip Y axis back
   }
+
+  // Compute label positions to avoid overlaps
+  // Returns array of {above: boolean} for each point
+  $: labelPositions = (() => {
+    const positions = [];
+    const labelWidth = 25;  // Approximate width of "P99"
+    const labelHeight = 14; // Approximate height
+    const aboveOffset = -12;
+    const belowOffset = 24;
+
+    for (let i = 0; i < points.length; i++) {
+      const x = toSvgX(points[i].real);
+      const yAbove = toSvgY(points[i].imag) + aboveOffset;
+      const yBelow = toSvgY(points[i].imag) + belowOffset;
+
+      // Check if "above" position overlaps with any previous label
+      let useAbove = true;
+      for (let j = 0; j < i; j++) {
+        const prevX = toSvgX(points[j].real);
+        const prevY = toSvgY(points[j].imag) + (positions[j].above ? aboveOffset : belowOffset);
+
+        const dx = Math.abs(x - prevX);
+        const dy = Math.abs(yAbove - prevY);
+
+        if (dx < labelWidth && dy < labelHeight) {
+          useAbove = false;
+          break;
+        }
+      }
+
+      positions.push({ above: useAbove });
+    }
+    return positions;
+  })();
 
   // Continuous expansion when pushing against edge (pressure-sensitive)
   function expandWhileAtEdge() {
@@ -793,28 +916,20 @@
     </div>
   {/if}
 
-  <div class="content-layout" class:table-hidden={!showTable}>
+  <div class="content-layout" class:table-hidden={!showTable} class:plot-hidden={!showPlot}>
     <!-- SVG Visualization -->
+    {#if showPlot}
     <div class="visualization-wrapper">
     <div class="visualization">
       <div class="plot-overlay-top-right">
         <button
           type="button"
-          class="mode-btn-small"
-          class:active={plotMode === 'cartesian'}
-          on:click={() => plotMode = 'cartesian'}
-          title={$_('constellation.cartesianModeInfo') || 'Cartesian: Real (I) and Imaginary (Q) components'}
-        >
-          Re/Im
-        </button>
-        <button
-          type="button"
-          class="mode-btn-small"
+          class="polar-toggle"
           class:active={plotMode === 'polar'}
-          on:click={() => plotMode = 'polar'}
-          title={$_('constellation.polarModeInfo') || 'Polar: Magnitude |z| and Phase θ in degrees'}
+          on:click={() => plotMode = plotMode === 'polar' ? 'cartesian' : 'polar'}
+          title={plotMode === 'polar' ? ($_('constellation.cartesianModeInfo') || 'Switch to Cartesian (Re/Im)') : ($_('constellation.polarModeInfo') || 'Switch to Polar (|z|/θ)')}
         >
-          |z|/θ
+          Polar
         </button>
       </div>
       <div class="plot-overlay-top-left">
@@ -842,6 +957,7 @@
         width={svgSize}
         height={svgSize}
         viewBox="0 0 {svgSize} {svgSize}"
+        class="constellation-svg"
       >
         <!-- Background -->
         <rect width={svgSize} height={svgSize} fill={svgColors.background}/>
@@ -1015,7 +1131,7 @@
               y1={toSvgY(meanImag) - 5}
               x2={toSvgX(meanReal) + 5}
               y2={toSvgY(meanImag) + 5}
-              stroke={emphasisColor}
+              stroke={svgColors.axis}
               stroke-width="2.5"
               stroke-linecap="round"
             />
@@ -1024,7 +1140,7 @@
               y1={toSvgY(meanImag) - 5}
               x2={toSvgX(meanReal) - 5}
               y2={toSvgY(meanImag) + 5}
-              stroke={emphasisColor}
+              stroke={svgColors.axis}
               stroke-width="2.5"
               stroke-linecap="round"
             />
@@ -1077,26 +1193,28 @@
             />
             <!-- "+" symbol for constellation point -->
             <line
-              x1={toSvgX(point.real) - 6}
+              x1={toSvgX(point.real) - (selectedPointIndex === i ? 8 : 6)}
               y1={toSvgY(point.imag)}
-              x2={toSvgX(point.real) + 6}
+              x2={toSvgX(point.real) + (selectedPointIndex === i ? 8 : 6)}
               y2={toSvgY(point.imag)}
               stroke={emphasisColor}
-              stroke-width="2.5"
+              stroke-width={selectedPointIndex === i ? 3 : 2.5}
               stroke-linecap="round"
+              style="transition: all 0.15s ease;"
             />
             <line
               x1={toSvgX(point.real)}
-              y1={toSvgY(point.imag) - 6}
+              y1={toSvgY(point.imag) - (selectedPointIndex === i ? 8 : 6)}
               x2={toSvgX(point.real)}
-              y2={toSvgY(point.imag) + 6}
+              y2={toSvgY(point.imag) + (selectedPointIndex === i ? 8 : 6)}
               stroke={emphasisColor}
-              stroke-width="2.5"
+              stroke-width={selectedPointIndex === i ? 3 : 2.5}
               stroke-linecap="round"
+              style="transition: all 0.15s ease;"
             />
             <text
               x={toSvgX(point.real)}
-              y={toSvgY(point.imag) - 12}
+              y={toSvgY(point.imag) + (labelPositions[i]?.above ? -12 : 24)}
               font-size="11"
               fill={svgColors.labelPrimary}
               text-anchor="middle"
@@ -1106,9 +1224,27 @@
             >
               P{i+1}
             </text>
+          </g>
+        {/each}
+
+        <!-- Coordinate tooltips layer (rendered on top of all point labels) -->
+        {#each points as point, i}
+          <g class="coordinate-tooltip">
+            <!-- Background pill for coordinates -->
+            <rect
+              x={toSvgX(point.real) - 45}
+              y={toSvgY(point.imag) + (labelPositions[i]?.above ? 12 : -28)}
+              width="90"
+              height="14"
+              rx="4"
+              ry="4"
+              fill={svgColors.background}
+              fill-opacity="0.9"
+              style="opacity: {selectedPointIndex === i ? 1 : 0}; transition: opacity 0.3s ease-out; pointer-events: none;"
+            />
             <text
               x={toSvgX(point.real)}
-              y={toSvgY(point.imag) + 20}
+              y={toSvgY(point.imag) + (labelPositions[i]?.above ? 20 : -20)}
               font-size="10"
               fill={svgColors.labelSecondary}
               text-anchor="middle"
@@ -1126,15 +1262,72 @@
         {/each}
       </svg>
     </div>
+    <!-- Arrow overlay when table is hidden -->
+    {#if !showTable}
+      <div class="nav-divider nav-divider-edge nav-divider-right">
+        <button
+          type="button"
+          class="nav-arrow"
+          on:click={() => showTable = true}
+          title={$_('constellation.showTable') || 'Show table'}
+        >
+          <svg viewBox="0 0 10 24" fill="currentColor">
+            <path d="M2 2 L8 12 L2 22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    {/if}
     </div>
+    {/if}
+
+    <!-- Navigation Arrows (center divider when both visible) -->
+    {#if showPlot && showTable}
+    <div class="nav-divider">
+      <button
+        type="button"
+        class="nav-arrow nav-arrow-left"
+        on:click={() => showPlot = false}
+        title={$_('constellation.hidePlot') || 'Hide plot'}
+      >
+        <svg viewBox="0 0 10 24" fill="currentColor">
+          <path d="M8 2 L2 12 L8 22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="nav-arrow nav-arrow-right"
+        on:click={() => showTable = false}
+        title={$_('constellation.hideTable') || 'Hide table'}
+      >
+        <svg viewBox="0 0 10 24" fill="currentColor">
+          <path d="M2 2 L8 12 L2 22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    {/if}
 
     <!-- Points Table -->
     {#if showTable}
       <div class="points-table-container" class:few-points={points.length <= 5}>
+        <!-- Arrow overlay when plot is hidden -->
+        {#if !showPlot}
+          <div class="nav-divider nav-divider-edge nav-divider-left">
+            <button
+              type="button"
+              class="nav-arrow"
+              on:click={() => showPlot = true}
+              title={$_('constellation.showPlot') || 'Show plot'}
+            >
+              <svg viewBox="0 0 10 24" fill="currentColor">
+                <path d="M8 2 L2 12 L8 22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        {/if}
         <table class="points-table points-table-header">
           <thead>
             <tr>
-              <th>{$_('constellation.point')}</th>
+              <th></th>
               {#if plotMode === 'cartesian'}
                 <th>{$_('constellation.real')}</th>
                 <th>{$_('constellation.imaginary')}</th>
@@ -1143,7 +1336,7 @@
                 <th>{$_('constellation.phase')}</th>
               {/if}
               <th>{$_('constellation.probability')}</th>
-              <th>{$_('constellation.actions')}</th>
+              <th></th>
             </tr>
           </thead>
         </table>
@@ -1152,25 +1345,31 @@
           <tbody>
             {#each points as point, i}
               {@const polar = toPolar(point.real, point.imag)}
-              <tr class:selected={selectedPointIndex === i}>
+              <tr
+                class:selected={selectedPointIndex === i}
+                on:mouseenter={() => selectedPointIndex = i}
+                on:mouseleave={() => selectedPointIndex = -1}
+              >
                 <td class="point-label">P{i+1}</td>
                 {#if plotMode === 'cartesian'}
                   <td>
                     <input
                       type="text"
                       inputmode="decimal"
-                      value={formatForCenter(point.real)}
+                      use:editableValue={{ value: formatForCenter(point.real), index: i, field: 'real' }}
                       title={`Full precision: ${point.real}`}
-                      on:input={(e) => handlePointInput(i, 'real', e.target.value)}
+                      on:blur={(e) => handleInputBlur(e, i, 'real')}
+                      on:keydown={handleInputKeydown}
                     />
                   </td>
                   <td>
                     <input
                       type="text"
                       inputmode="decimal"
-                      value={formatForCenter(point.imag)}
+                      use:editableValue={{ value: formatForCenter(point.imag), index: i, field: 'imag' }}
                       title={`Full precision: ${point.imag}`}
-                      on:input={(e) => handlePointInput(i, 'imag', e.target.value)}
+                      on:blur={(e) => handleInputBlur(e, i, 'imag')}
+                      on:keydown={handleInputKeydown}
                     />
                   </td>
                 {:else}
@@ -1178,18 +1377,20 @@
                     <input
                       type="text"
                       inputmode="decimal"
-                      value={formatForCenter(polar.magnitude)}
+                      use:editableValue={{ value: formatForCenter(polar.magnitude), index: i, field: 'magnitude' }}
                       title={`Full precision: ${polar.magnitude}`}
-                      on:input={(e) => handlePolarInput(i, 'magnitude', e.target.value)}
+                      on:blur={(e) => handlePolarBlur(e, i, 'magnitude')}
+                      on:keydown={handleInputKeydown}
                     />
                   </td>
                   <td>
                     <input
                       type="text"
                       inputmode="decimal"
-                      value={(polar.phase * 180 / Math.PI).toFixed(1)}
+                      use:editableValue={{ value: formatForCenter(polar.phase * 180 / Math.PI, 1), index: i, field: 'phase' }}
                       title={`Full precision: ${polar.phase * 180 / Math.PI}°`}
-                      on:input={(e) => handlePolarInput(i, 'phase', e.target.value)}
+                      on:blur={(e) => handlePolarBlur(e, i, 'phase')}
+                      on:keydown={handleInputKeydown}
                     />
                   </td>
                 {/if}
@@ -1197,9 +1398,10 @@
                   <input
                     type="text"
                     inputmode="decimal"
-                    value={formatForCenter(point.prob)}
+                    use:editableValue={{ value: formatForCenter(point.prob), index: i, field: 'prob' }}
                     title={`Full precision: ${point.prob}`}
-                    on:input={(e) => handlePointInput(i, 'prob', e.target.value)}
+                    on:blur={(e) => handleInputBlur(e, i, 'prob')}
+                    on:keydown={handleInputKeydown}
                   />
                 </td>
                 <td>
@@ -1223,11 +1425,11 @@
               type="button"
               class="button-secondary"
               on:click={addPoint}
-              disabled={points.length >= 100}
+              disabled={points.length >= 99}
             >
               + {$_('constellation.addPoint')}
             </button>
-            {#if points.length >= 100}
+            {#if points.length >= 99}
               <span class="max-points-msg">{$_('constellation.maxPoints')}</span>
             {/if}
           </div>
@@ -1246,7 +1448,7 @@
     border: 1px solid var(--border-color, #e5e7eb);
     text-align: left;
     width: fit-content;
-    overflow-x: hidden;
+    overflow: visible;
   }
 
   .header {
@@ -1358,17 +1560,95 @@
   }
 
   .content-layout {
+    display: grid;
+    grid-template-columns: 340px auto 340px;
+    gap: 0;
+    align-items: start;
+    max-width: 720px;
+    overflow: visible;
+  }
+
+  .content-layout.table-hidden {
+    grid-template-columns: 340px;
+    max-width: 360px;
+  }
+
+  .content-layout.plot-hidden {
+    grid-template-columns: 340px;
+    max-width: 360px;
+  }
+
+  /* Navigation Divider with Arrows */
+  .nav-divider {
     display: flex;
-    gap: var(--spacing-md, 12px);
-    align-items: flex-start;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    gap: 4px;
+    width: 20px;
+    height: 340px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .content-layout:hover .nav-divider {
+    opacity: 1;
+  }
+
+  .nav-divider-edge {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 100px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-divider-right {
+    right: -12px;
+  }
+
+  .nav-divider-left {
+    left: -12px;
+  }
+
+  .nav-arrow {
+    background: transparent;
+    border: none;
+    padding: 4px 2px;
+    cursor: pointer;
+    color: var(--text-color-secondary);
+    opacity: 0.5;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    box-shadow: none;
+  }
+
+  .nav-arrow:hover {
+    opacity: 1;
+    color: var(--primary-color);
+    background: var(--hover-background);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .nav-arrow svg {
+    width: 12px;
+    height: 80px;
   }
 
   .visualization-wrapper {
     display: flex;
     flex-shrink: 0;
     flex-grow: 0;
-    width: fit-content;
+    width: 340px;
+    position: relative;
   }
 
   .visualization {
@@ -1385,6 +1665,11 @@
     border: 1px solid var(--border-color);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+  }
+
+  .constellation-svg text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
   }
 
   .plot-overlay-top-right {
@@ -1407,25 +1692,25 @@
     z-index: 10;
   }
 
-  .mode-btn-small {
+  .polar-toggle {
     background: var(--card-background);
     border: 1px solid var(--border-color);
-    border-radius: 3px;
+    border-radius: 4px;
     color: var(--text-color-secondary);
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 500;
-    padding: 2px 6px;
+    padding: 4px 10px;
     cursor: pointer;
     transition: all 0.2s ease;
-    opacity: 0.8;
+    opacity: 0.85;
   }
 
-  .mode-btn-small:hover {
+  .polar-toggle:hover {
     opacity: 1;
     background: var(--hover-background);
   }
 
-  .mode-btn-small.active {
+  .polar-toggle.active {
     background: var(--primary-color);
     border-color: var(--primary-color);
     color: white;
@@ -1435,15 +1720,20 @@
   .undo-btn-small {
     background: var(--card-background);
     border: 1px solid var(--border-color);
-    border-radius: 3px;
+    border-radius: 4px;
     color: var(--text-color-secondary);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
-    padding: 2px 6px;
+    padding: 4px 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    opacity: 0.8;
+    opacity: 0.85;
     line-height: 1;
+    min-width: 28px;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .undo-btn-small:hover:not(:disabled) {
@@ -1463,15 +1753,18 @@
     border: 1px solid var(--border-color);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     height: 340px;
+    width: 340px;
     display: flex;
     flex-direction: column;
+    overflow: visible;
+    position: relative;
   }
 
   .points-table-scroll {
     flex: 1;
     overflow-y: scroll;
+    overflow-x: hidden;
     min-height: 0;
-    padding-bottom: 4px;
   }
 
   /* Center table rows vertically when 5 or fewer points */
@@ -1490,11 +1783,14 @@
   .points-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-family: var(--font-family, 'Inter', Arial, sans-serif);
+    font-size: var(--font-size-base, 1em);
+    table-layout: fixed;
   }
 
   .points-table-header {
     flex-shrink: 0;
+    padding-right: 8px; /* Account for scrollbar width in body table */
   }
 
   .points-table th {
@@ -1502,14 +1798,18 @@
     padding: 8px;
     text-align: center;
     font-weight: 600;
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base, 1em);
     color: var(--text-color);
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
   }
 
   .points-table th:nth-child(1),
   .points-table td:nth-child(1) {
-    width: 60px;
+    width: 40px;
+    min-width: 40px;
+    padding: 6px 4px 6px 8px;
+    white-space: nowrap;
+    text-align: center;
   }
 
   .points-table th:nth-child(2),
@@ -1518,18 +1818,26 @@
   .points-table td:nth-child(2),
   .points-table td:nth-child(3),
   .points-table td:nth-child(4) {
-    min-width: 100px;
+    width: auto;
+    padding: 6px 4px;
   }
 
   .points-table th:nth-child(5),
   .points-table td:nth-child(5) {
-    width: 70px;
+    width: 34px;
+    padding: 6px 8px 6px 4px;
+    white-space: nowrap;
   }
 
   .points-table td {
-    padding: 8px;
+    padding: 6px 8px;
     border-bottom: 1px solid var(--border-color);
     text-align: center;
+    font-size: var(--font-size-base, 1em);
+  }
+
+  .points-table tbody tr:last-child td {
+    border-bottom: none;
   }
 
   .points-table tr:hover {
@@ -1542,20 +1850,24 @@
 
   .point-label {
     font-weight: 600;
+    font-family: var(--font-family, 'Inter', Arial, sans-serif);
     color: var(--text-color-secondary);
+    text-align: right;
   }
 
   .points-table input {
     width: 100%;
-    padding: 4px 8px;
+    padding: 5px 6px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    font-size: 13px;
-    font-family: 'Courier New', 'Consolas', monospace;
-    min-width: 80px;
+    font-size: var(--font-size-base, 1em);
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    min-width: 70px;
     background: var(--input-background);
     color: var(--text-color);
     text-align: center;
+    box-sizing: border-box;
   }
 
   .points-table input:focus {
@@ -1576,23 +1888,41 @@
   }
 
   .button-danger-small {
-    background: var(--primary-color, #C8102E);
-    color: white;
+    background: transparent;
+    color: var(--text-color);
     border: none;
     border-radius: 4px;
-    padding: 4px 8px;
+    width: 22px;
+    height: 22px;
+    padding: 0;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.3;
+    transition: opacity 0.15s ease;
+    box-shadow: none;
+    outline: none;
   }
 
   .button-danger-small:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--primary-color) 85%, black);
+    opacity: 0.8;
   }
 
   .button-danger-small:disabled {
-    opacity: 0.5;
+    opacity: 0.15;
     cursor: not-allowed;
+  }
+
+  .points-table tr:hover .button-danger-small {
+    opacity: 0.5;
+  }
+
+  .points-table tr:hover .button-danger-small:hover:not(:disabled) {
+    opacity: 1;
   }
 
   .table-actions {
@@ -1641,6 +1971,16 @@
   @media (max-width: 768px) {
     .content-layout {
       grid-template-columns: 1fr;
+      max-width: 400px;
+    }
+
+    .content-layout.table-hidden {
+      max-width: 400px;
+    }
+
+    .points-table-container {
+      min-width: unset;
+      width: 100%;
     }
 
     .validation-metrics {

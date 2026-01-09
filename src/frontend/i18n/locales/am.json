@@ -165,7 +165,12 @@
       "name": "የመቀራረብ ገደብ",
       "desc": "የρ ማመቻቸት ትክክለኛነት",
       "range": "ብዙውን ጊዜ 10⁻⁶ እስከ 10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "ብጁ ኮከብ ስብስብ",
@@ -197,7 +202,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ውሂብ አስገባ",

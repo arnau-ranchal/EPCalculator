@@ -177,7 +177,12 @@
     "custom": "Tilpasset",
     "editParams": "Rediger Parametere",
     "sweepingOver": "Sveiper over",
-    "and": "og"
+    "and": "og",
+    "constellationParams": "Konstellasjon",
+    "codeParams": "Kanal og kode",
+    "advancedParams": "Avansert",
+    "shapingBeta": "β (forming)",
+    "editConstellation": "Rediger konstellasjon"
   },
   "constellation": {
     "title": "Tilpasset Konstellasjon",
@@ -212,7 +217,8 @@
     "magnitude": "Beløp",
     "phase": "Fase (°)",
     "cartesianMode": "Kartesiske koordinater (Reell/Imaginær)",
-    "polarMode": "Polarkoordinater (Beløp/Fase)"
+    "polarMode": "Polarkoordinater (Beløp/Fase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Importer Data",

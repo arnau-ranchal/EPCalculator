@@ -177,7 +177,12 @@
     "custom": "Anpassad",
     "editParams": "Redigera Parametrar",
     "sweepingOver": "Sveper över",
-    "and": "och"
+    "and": "och",
+    "constellationParams": "Konstellation",
+    "codeParams": "Kanal & Kod",
+    "advancedParams": "Avancerat",
+    "shapingBeta": "β (formning)",
+    "editConstellation": "Redigera konstellation"
   },
   "constellation": {
     "title": "Anpassad Konstellation",
@@ -212,7 +217,8 @@
     "magnitude": "Belopp",
     "phase": "Fas (°)",
     "cartesianMode": "Kartesiska koordinater (Reell/Imaginär)",
-    "polarMode": "Polära koordinater (Belopp/Fas)"
+    "polarMode": "Polära koordinater (Belopp/Fas)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Importera Data",

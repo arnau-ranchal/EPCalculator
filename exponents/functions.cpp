@@ -84,10 +84,11 @@ static double current_beta = 0.0;
 // preventing discontinuities at the transition boundary
 static bool force_log_space_mode = false;
 
-// Global variables to store mutual information and cutoff rate from interpolation
+// Global variables to store mutual information, cutoff rate, and critical rate from interpolation
 // These are computed during GD_co and exposed via getter functions
 static double g_mutual_information = 0.0;  // E0'(0) = I(X;Y)
 static double g_cutoff_rate = 0.0;         // E0(1) = R0
+static double g_critical_rate = 0.0;       // E0'(1) = R_crit
 
 vector<complex<double>> X;
 //vector<complex<double>> X;
@@ -939,10 +940,14 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         // Clamp negative E0 to 0 (can't have negative error exponent)
         // This can happen at very low SNR where channel capacity approaches 0,
         // OR at very high SNR where numerical issues cause incorrect results
+        // NOTE: We do NOT zero grad_rho here! The gradient was computed correctly
+        // and represents valid derivative information. Specifically, grad_rho at rho=0
+        // is the mutual information I(X;Y), which should remain valid even when E0
+        // needs clamping due to numerical precision issues at high SNR.
         if (E0 < 0) {
             std::cerr << "WARNING: Negative E0=" << E0 << " (SNR=" << SNR << ", rho=" << rho << ") - clamping to 0.\n";
             E0 = 0.0;
-            grad_rho = 0.0;
+            // grad_rho intentionally NOT zeroed - it contains valid derivative info
         }
 
         return E0;
@@ -975,6 +980,14 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         // This is more robust than analytical gradient in extreme overflow case
         double delta_rho = 1e-6;
         double rho_plus = rho + delta_rho;
+        double s_plus = 1.0 / (1.0 + rho_plus);
+
+        // Recompute logqg2 for rho_plus (it depends on s = 1/(1+rho))
+        Eigen::VectorXd logqg2_plus(cols);
+        for (int j = 0; j < cols; j++) {
+            Eigen::VectorXd log_terms_plus = Q_mat.array().log() - s_plus * D_mat.col(j).array();
+            logqg2_plus(j) = log_sum_exp(log_terms_plus);
+        }
 
         // Compute E0 at rho + delta
         Eigen::VectorXd log_m_components_plus(cols);
@@ -983,7 +996,7 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         for (int j = 0; j < cols; j++) {
             Eigen::VectorXd inner_log_terms_plus = Q_mat.array().log() + log_pig1_mat_plus.col(j).array();
             double log_inner_sum_plus = log_sum_exp(inner_log_terms_plus);
-            log_m_components_plus(j) = log_inner_sum_plus + rho_plus * logqg2(j);
+            log_m_components_plus(j) = log_inner_sum_plus + rho_plus * logqg2_plus(j);
         }
         double log_m_plus = log_sum_exp(log_m_components_plus);
         double E0_plus = -(log_m_plus / std::log(2)) + log2_PI;
@@ -1937,9 +1950,10 @@ double GD_co(double &r, double &rho, double &rho_interpolated, int num_iteration
     E_0_co(R, 1, grad_rho, e0);
     double E0_1 = e0, E0_prime_1 = grad_rho;
 
-    // Store mutual information and cutoff rate in global variables for external access
+    // Store mutual information, cutoff rate, and critical rate in global variables for external access
     g_mutual_information = E0_prime_0;  // I(X;Y) = E0'(0)
     g_cutoff_rate = E0_1;               // R0 = E0(1)
+    g_critical_rate = E0_prime_1;       // R_crit = E0'(1)
 
     double max_g;
     rho = initial_guess(R, E0_0, E0_1, E0_prime_0, E0_prime_1, max_g);
@@ -2351,9 +2365,10 @@ double NAG_co(double &r, double &rho, double learning_rate, int num_iterations, 
     double E0_1 = e0;
     double E0_prime_1 = grad_rho;
 
-    // Store mutual information and cutoff rate in global variables for external access
+    // Store mutual information, cutoff rate, and critical rate in global variables for external access
     g_mutual_information = E0_prime_0;  // I(X;Y) = E0'(0)
     g_cutoff_rate = E0_1;               // R0 = E0(1)
+    g_critical_rate = E0_prime_1;       // R_crit = E0'(1)
 
     //if(E0_prime_1 )
     double max_g;
@@ -2507,7 +2522,7 @@ double NAG_cc(double &r, double &rho, double learning_rate, int num_iterations, 
     return out;
 }
 
-// Getter functions for mutual information and cutoff rate
+// Getter functions for mutual information, cutoff rate, and critical rate
 // These values are computed during GD_co/GD_iid and stored in global variables
 double getMutualInformation() {
     return g_mutual_information;
@@ -2515,6 +2530,10 @@ double getMutualInformation() {
 
 double getCutoffRate() {
     return g_cutoff_rate;
+}
+
+double getCriticalRate() {
+    return g_critical_rate;
 }
 
 #endif //TFG_FUNCTIONS_H

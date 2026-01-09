@@ -177,7 +177,12 @@
     "custom": "مخصص",
     "editParams": "تعديل المعلمات",
     "sweepingOver": "المسح عبر",
-    "and": "و"
+    "and": "و",
+    "constellationParams": "الكوكبة",
+    "codeParams": "القناة والرمز",
+    "advancedParams": "متقدم",
+    "shapingBeta": "β (التشكيل)",
+    "editConstellation": "تحرير الكوكبة"
   },
   "constellation": {
     "title": "مخطط الكوكبة المخصص",
@@ -212,7 +217,8 @@
     "magnitude": "المقدار",
     "phase": "الطور (°)",
     "cartesianMode": "إحداثيات ديكارتية (حقيقي/تخيلي)",
-    "polarMode": "إحداثيات قطبية (المقدار/الطور)"
+    "polarMode": "إحداثيات قطبية (المقدار/الطور)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "استيراد البيانات",

@@ -54,6 +54,7 @@ extern "C" {
         results[2] = rho_gd;
         results[3] = getMutualInformation();  // I(X;Y) = E0'(0)
         results[4] = getCutoffRate();         // R0 = E0(1)
+        results[5] = getCriticalRate();       // R_crit = E0'(1)
 
         return results;
     }
@@ -114,6 +115,7 @@ extern "C" {
         results[2] = rho_gd;                  // Optimal rho
         results[3] = getMutualInformation();  // I(X;Y) = E0'(0)
         results[4] = getCutoffRate();         // R0 = E0(1)
+        results[5] = getCriticalRate();       // R_crit = E0'(1)
 
         return results;
     }

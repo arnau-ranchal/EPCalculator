@@ -39,11 +39,15 @@
 <svelte:window on:keydown={handleKeydown} />
 
 {#if show}
-  <div class="modal-backdrop" on:click={handleBackdropClick}>
-    <div class="modal-content">
+  <div class="modal-backdrop" on:click={handleBackdropClick} role="dialog" aria-modal="true">
+    <div class="modal-container">
       <div class="modal-header">
         <h3>{$_('plotting.mergeOrNewTitle') || 'Compatible Plot Detected'}</h3>
-        <button class="close-btn" on:click={handleCancel}>×</button>
+        <button class="close-button" on:click={handleCancel} aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 1l12 12M13 1L1 13"/>
+          </svg>
+        </button>
       </div>
 
       <div class="modal-body">
@@ -73,10 +77,10 @@
         <button class="btn btn-secondary" on:click={handleCancel}>
           {$_('common.cancel') || 'Cancel'}
         </button>
-        <button class="btn btn-primary" on:click={handleNewFigure}>
+        <button class="btn btn-secondary" on:click={handleNewFigure}>
           {$_('plotting.newFigure') || 'New Figure'}
         </button>
-        <button class="btn btn-success" on:click={handleMerge}>
+        <button class="btn btn-primary" on:click={handleMerge}>
           {$_('plotting.mergePlots') || 'Merge'}
         </button>
       </div>
@@ -96,106 +100,133 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    backdrop-filter: blur(2px);
   }
 
-  .modal-content {
-    background: var(--bg-primary, white);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    max-width: 450px;
+  .modal-container {
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    max-width: 480px;
     width: 90%;
     overflow: hidden;
+    border: 1px solid var(--border-color);
   }
 
   .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border-color, #e0e0e0);
-    background: var(--bg-secondary, #f5f5f5);
+    padding: var(--spacing-lg);
+    background: var(--surface-color);
   }
 
   .modal-header h3 {
     margin: 0;
-    font-size: 1.1rem;
-    color: var(--text-primary, #333);
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.25rem;
   }
 
-  .close-btn {
+  .close-button {
     background: none;
-    border: none;
-    font-size: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 8px;
     cursor: pointer;
-    color: var(--text-secondary, #666);
-    padding: 0;
-    line-height: 1;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    color: var(--text-color);
   }
 
-  .close-btn:hover {
-    color: var(--text-primary, #333);
+  .close-button:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
   }
 
   .modal-body {
-    padding: 20px;
+    padding: var(--spacing-lg);
   }
 
   .description {
-    margin: 0 0 16px 0;
-    color: var(--text-primary, #333);
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-color);
     line-height: 1.5;
+    font-size: 0.95rem;
   }
 
   .plot-info {
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin-bottom: 8px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 10px;
     font-size: 0.9rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
   }
 
   .plot-info.existing {
-    background: var(--info-bg, #e3f2fd);
-    border: 1px solid var(--info-border, #90caf9);
+    background: var(--primary-color-light);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 30%, transparent);
+  }
+
+  /* Force dark text in existing plot info since background is always light */
+  .plot-info.existing .label {
+    color: #555;
+  }
+
+  .plot-info.existing .value {
+    color: #222;
+  }
+
+  .plot-info.existing .series-count {
+    color: #666;
   }
 
   .plot-info.new {
-    background: var(--success-bg, #e8f5e9);
-    border: 1px solid var(--success-border, #a5d6a7);
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
   }
 
   .plot-info .label {
     font-weight: 600;
-    color: var(--text-secondary, #666);
-    margin-right: 6px;
+    color: var(--text-color-secondary);
   }
 
   .plot-info .value {
-    color: var(--text-primary, #333);
+    color: var(--text-color);
+    font-weight: 500;
   }
 
   .plot-info .series-count {
-    color: var(--text-secondary, #666);
+    color: var(--text-color-secondary);
     font-size: 0.85rem;
-    margin-left: 6px;
   }
 
   .modal-footer {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    padding: 16px 20px;
-    border-top: 1px solid var(--border-color, #e0e0e0);
-    background: var(--bg-secondary, #f5f5f5);
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+    background: var(--surface-color);
   }
 
   .btn {
-    padding: 8px 16px;
+    padding: 10px 18px;
     border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    transition: background 0.2s, transform 0.1s;
+    transition: all 0.2s;
+    font-family: inherit;
   }
 
   .btn:hover {
@@ -207,29 +238,24 @@
   }
 
   .btn-secondary {
-    background: var(--btn-secondary-bg, #e0e0e0);
-    color: var(--btn-secondary-text, #333);
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
   }
 
   .btn-secondary:hover {
-    background: var(--btn-secondary-hover, #d0d0d0);
+    background: var(--hover-background);
+    border-color: var(--text-color-secondary);
   }
 
   .btn-primary {
-    background: var(--btn-primary-bg, #1976d2);
+    background: var(--primary-color);
     color: white;
+    border: 1px solid var(--primary-color);
   }
 
   .btn-primary:hover {
-    background: var(--btn-primary-hover, #1565c0);
-  }
-
-  .btn-success {
-    background: var(--btn-success-bg, #388e3c);
-    color: white;
-  }
-
-  .btn-success:hover {
-    background: var(--btn-success-hover, #2e7d32);
+    background: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
   }
 </style>

@@ -165,7 +165,12 @@
       "name": "Iyakar Haɗuwa",
       "desc": "Daidaiton ingantawa na ρ",
       "range": "Yawanci 10⁻⁶ zuwa 10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "Tsarin Taurari na Musamman",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Shigo da Bayanai",

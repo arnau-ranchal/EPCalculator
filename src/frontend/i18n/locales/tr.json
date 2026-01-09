@@ -177,7 +177,12 @@
     "custom": "Özel",
     "editParams": "Parametreleri Düzenle",
     "sweepingOver": "Tarama yapılıyor",
-    "and": "ve"
+    "and": "ve",
+    "constellationParams": "Takımyıldızı",
+    "codeParams": "Kanal ve Kod",
+    "advancedParams": "Gelişmiş",
+    "shapingBeta": "β (şekillendirme)",
+    "editConstellation": "Takımyıldızını düzenle"
   },
   "constellation": {
     "title": "Özel Takımyıldız Diyagramı",
@@ -212,7 +217,8 @@
     "magnitude": "Genlik",
     "phase": "Faz (°)",
     "cartesianMode": "Kartezyen koordinatlar (Gerçek/Sanal)",
-    "polarMode": "Kutupsal koordinatlar (Genlik/Faz)"
+    "polarMode": "Kutupsal koordinatlar (Genlik/Faz)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Veri İçe Aktar",

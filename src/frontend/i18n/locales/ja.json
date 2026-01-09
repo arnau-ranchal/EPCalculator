@@ -177,7 +177,12 @@
     "custom": "カスタム",
     "editParams": "パラメータを編集",
     "sweepingOver": "スイープ対象",
-    "and": "と"
+    "and": "と",
+    "constellationParams": "コンステレーション",
+    "codeParams": "チャネルとコード",
+    "advancedParams": "詳細",
+    "shapingBeta": "β (シェーピング)",
+    "editConstellation": "コンステレーションを編集"
   },
   "constellation": {
     "title": "カスタムコンスタレーション",
@@ -212,7 +217,8 @@
     "magnitude": "振幅",
     "phase": "位相 (°)",
     "cartesianMode": "直交座標 (実部/虚部)",
-    "polarMode": "極座標 (振幅/位相)"
+    "polarMode": "極座標 (振幅/位相)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "データをインポート",

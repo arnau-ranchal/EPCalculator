@@ -165,7 +165,12 @@
       "name": "Umkhawulo Wokuhlangana",
       "desc": "Ubunembe bokwenza ngcono i-ρ",
       "range": "Ngokuvamile 10⁻⁶ kuya ku-10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "Umkhanyakude Owenziwe Ngezifiso",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Ngenisa Idatha",

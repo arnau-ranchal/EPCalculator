@@ -35,8 +35,11 @@
         class:active={$activeTabStore === index}
         on:click={() => selectTab(index)}
       >
+        {#if tab.decoration}
+          <span class="tab-decoration" aria-hidden="true">{@html tab.decoration}</span>
+        {/if}
         {#if tab.icon}
-          <span class="tab-icon">{tab.icon}</span>
+          <span class="tab-icon">{@html tab.icon}</span>
         {/if}
         <span class="tab-label">{tab.label}</span>
       </button>
@@ -61,7 +64,6 @@
   .tab-nav {
     display: flex;
     background: var(--surface-color);
-    border-bottom: 2px solid var(--border-color);
   }
 
   .tab-button {
@@ -82,6 +84,7 @@
     gap: 8px;
     box-shadow: none;
     transform: none;
+    overflow: hidden; /* Contain the decoration SVG */
   }
 
   .tab-button:hover {
@@ -105,6 +108,50 @@
   .tab-icon {
     font-size: 1.3em;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* SVG icon styling */
+  .tab-icon :global(svg) {
+    display: block;
+    stroke: currentColor;
+  }
+
+  /* Decorative background art - only visible on hover */
+  .tab-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    color: var(--text-color-secondary);
+    transition: opacity var(--transition-fast), color var(--transition-fast);
+  }
+
+  .tab-decoration :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .tab-button:hover .tab-decoration {
+    opacity: 0.8;
+    color: var(--text-color);
+  }
+
+  .tab-button.active:hover .tab-decoration {
+    color: var(--primary-color);
+  }
+
+  /* Ensure icon and label are above decoration */
+  .tab-icon,
+  .tab-label {
+    position: relative;
+    z-index: 1;
   }
 
   .tab-label {

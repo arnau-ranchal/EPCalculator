@@ -177,7 +177,12 @@
     "custom": "کسٹم",
     "editParams": "پیرامیٹرز میں ترمیم کریں",
     "sweepingOver": "سویپ ہو رہا ہے",
-    "and": "اور"
+    "and": "اور",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "کسٹم برج",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ڈیٹا درآمد کریں",

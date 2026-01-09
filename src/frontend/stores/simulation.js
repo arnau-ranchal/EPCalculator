@@ -32,8 +32,61 @@ export const customConstellation = writable({
     { real: -1, imag: 0, prob: 0.25 },
     { real: 0, imag: -1, prob: 0.25 }
   ],
-  isValid: true
+  isValid: true,
+  name: null, // User-defined name for custom constellations (null = not named)
+  id: null // Unique ID if saved to the collection
 });
+
+// Counter for generating unique default constellation names
+export const customConstellationCounter = writable(0);
+
+// Collection of all saved custom constellations
+// Each entry: { id: string, name: string, points: array, createdAt: timestamp }
+export const savedCustomConstellations = writable([]);
+
+// Helper to generate unique ID
+function generateConstellationId() {
+  return `custom_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Save a custom constellation to the collection
+export function saveCustomConstellation(name, points) {
+  const id = generateConstellationId();
+  const constellation = {
+    id,
+    name,
+    points: JSON.parse(JSON.stringify(points)), // Deep copy
+    createdAt: Date.now()
+  };
+
+  savedCustomConstellations.update(list => [...list, constellation]);
+  return id;
+}
+
+// Load a saved constellation by ID
+export function loadSavedConstellation(id) {
+  let found = null;
+  savedCustomConstellations.subscribe(list => {
+    found = list.find(c => c.id === id);
+  })();
+
+  if (found) {
+    customConstellation.set({
+      points: JSON.parse(JSON.stringify(found.points)),
+      isValid: true,
+      name: found.name,
+      id: found.id
+    });
+    useCustomConstellation.set(true);
+    return true;
+  }
+  return false;
+}
+
+// Delete a saved constellation
+export function deleteSavedConstellation(id) {
+  savedCustomConstellations.update(list => list.filter(c => c.id !== id));
+}
 
 // Parameter validation
 export const paramValidation = derived(
@@ -148,4 +201,52 @@ export function getSNRLinear(params) {
     return dbToLinear(params.SNR);
   }
   return params.SNR;
+}
+
+// Generate standard constellation points
+export function generateStandardConstellation(M, type) {
+  const points = [];
+  const prob = 1 / M;
+
+  if (type === 'PAM') {
+    // PAM: M points on real axis, centered at 0
+    for (let i = 0; i < M; i++) {
+      const real = (2 * i - M + 1);
+      points.push({ real, imag: 0, prob });
+    }
+  } else if (type === 'PSK') {
+    // PSK: M points on unit circle
+    for (let i = 0; i < M; i++) {
+      const angle = (2 * Math.PI * i) / M;
+      points.push({
+        real: Math.cos(angle),
+        imag: Math.sin(angle),
+        prob
+      });
+    }
+  } else if (type === 'QAM') {
+    // QAM: Square grid
+    const side = Math.sqrt(M);
+    if (side !== Math.floor(side)) {
+      // Fallback to PSK if M is not a perfect square
+      return generateStandardConstellation(M, 'PSK');
+    }
+    for (let i = 0; i < side; i++) {
+      for (let j = 0; j < side; j++) {
+        const real = (2 * i - side + 1);
+        const imag = (2 * j - side + 1);
+        points.push({ real, imag, prob });
+      }
+    }
+  }
+
+  // Normalize energy to 1
+  const totalEnergy = points.reduce((sum, p) => sum + p.prob * (p.real * p.real + p.imag * p.imag), 0);
+  const scale = totalEnergy > 0 ? Math.sqrt(1 / totalEnergy) : 1;
+
+  return points.map(p => ({
+    real: Math.round(p.real * scale * 1000) / 1000,
+    imag: Math.round(p.imag * scale * 1000) / 1000,
+    prob: p.prob
+  }));
 }

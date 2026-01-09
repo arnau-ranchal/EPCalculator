@@ -177,7 +177,12 @@
     "custom": "מותאם אישית",
     "editParams": "ערוך פרמטרים",
     "sweepingOver": "סורק על",
-    "and": "ו"
+    "and": "ו",
+    "constellationParams": "קונסטלציה",
+    "codeParams": "ערוץ וקוד",
+    "advancedParams": "מתקדם",
+    "shapingBeta": "β (עיצוב)",
+    "editConstellation": "ערוך קונסטלציה"
   },
   "constellation": {
     "title": "קונסטלציה מותאמת אישית",
@@ -212,7 +217,8 @@
     "magnitude": "גודל",
     "phase": "פאזה (°)",
     "cartesianMode": "קואורדינטות קרטזיות (ממשי/מדומה)",
-    "polarMode": "קואורדינטות קוטביות (גודל/פאזה)"
+    "polarMode": "קואורדינטות קוטביות (גודל/פאזה)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ייבוא נתונים",
