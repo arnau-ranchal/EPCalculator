@@ -177,7 +177,12 @@
     "custom": "Prilagojena",
     "editParams": "Uredi Parametre",
     "sweepingOver": "Prehajanje preko",
-    "and": "in"
+    "and": "in",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "Prilagojena Konstelacija",
@@ -212,7 +217,8 @@
     "magnitude": "Modul",
     "phase": "Faza (°)",
     "cartesianMode": "Kartezične koordinate (Realni/Imaginarni)",
-    "polarMode": "Polarne koordinate (Modul/Faza)"
+    "polarMode": "Polarne koordinate (Modul/Faza)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Uvoz Podatkov",

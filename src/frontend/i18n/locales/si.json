@@ -165,7 +165,12 @@
       "name": "අභිසාරී සීමාව",
       "desc": "ρ ප්‍රශස්තකරණ නිරවද්‍යතාව",
       "range": "සාමාන්‍යයෙන් 10⁻⁶ සිට 10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "අභිරුචි තාරකා රටාව",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "දත්ත ආයාත කරන්න",

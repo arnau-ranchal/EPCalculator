@@ -177,7 +177,12 @@
     "custom": "Kustom",
     "editParams": "Edit Parameter",
     "sweepingOver": "Menyapu",
-    "and": "dan"
+    "and": "dan",
+    "constellationParams": "Konstelasi",
+    "codeParams": "Saluran & Kode",
+    "advancedParams": "Lanjutan",
+    "shapingBeta": "β (pembentukan)",
+    "editConstellation": "Edit konstelasi"
   },
   "constellation": {
     "title": "Konstelasi Kustom",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitudo",
     "phase": "Fase (°)",
     "cartesianMode": "Koordinat Kartesius (Nyata/Imajiner)",
-    "polarMode": "Koordinat polar (Magnitudo/Fase)"
+    "polarMode": "Koordinat polar (Magnitudo/Fase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Impor Data",

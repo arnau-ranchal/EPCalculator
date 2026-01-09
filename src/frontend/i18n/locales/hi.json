@@ -177,7 +177,12 @@
     "custom": "कस्टम",
     "editParams": "पैरामीटर संपादित करें",
     "sweepingOver": "स्वीपिंग ओवर",
-    "and": "और"
+    "and": "और",
+    "constellationParams": "नक्षत्र",
+    "codeParams": "चैनल और कोड",
+    "advancedParams": "उन्नत",
+    "shapingBeta": "β (आकार)",
+    "editConstellation": "नक्षत्र संपादित करें"
   },
   "constellation": {
     "title": "कस्टम नक्षत्र आरेख",
@@ -212,7 +217,8 @@
     "magnitude": "परिमाण",
     "phase": "कला (°)",
     "cartesianMode": "कार्तीय निर्देशांक (वास्तविक/काल्पनिक)",
-    "polarMode": "ध्रुवीय निर्देशांक (परिमाण/कला)"
+    "polarMode": "ध्रुवीय निर्देशांक (परिमाण/कला)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "डेटा आयात करें",

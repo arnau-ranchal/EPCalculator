@@ -177,7 +177,12 @@
     "custom": "Personalizat",
     "editParams": "Editează Parametri",
     "sweepingOver": "Baleiaj peste",
-    "and": "și"
+    "and": "și",
+    "constellationParams": "Constelație",
+    "codeParams": "Canal și Cod",
+    "advancedParams": "Avansat",
+    "shapingBeta": "β (modelare)",
+    "editConstellation": "Editează constelația"
   },
   "constellation": {
     "title": "Constelație Personalizată",
@@ -212,7 +217,8 @@
     "magnitude": "Modul",
     "phase": "Fază (°)",
     "cartesianMode": "Coordonate carteziene (Real/Imaginar)",
-    "polarMode": "Coordonate polare (Modul/Fază)"
+    "polarMode": "Coordonate polare (Modul/Fază)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Importă Date",

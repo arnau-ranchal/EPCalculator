@@ -177,7 +177,12 @@
     "custom": "กำหนดเอง",
     "editParams": "แก้ไขพารามิเตอร์",
     "sweepingOver": "กำลังสแกน",
-    "and": "และ"
+    "and": "และ",
+    "constellationParams": "กลุ่มดาว",
+    "codeParams": "ช่องสัญญาณและรหัส",
+    "advancedParams": "ขั้นสูง",
+    "shapingBeta": "β (การปรับรูปร่าง)",
+    "editConstellation": "แก้ไขกลุ่มดาว"
   },
   "constellation": {
     "title": "แผนภาพกลุ่มดาวที่กำหนดเอง",
@@ -212,7 +217,8 @@
     "magnitude": "ขนาด",
     "phase": "เฟส (°)",
     "cartesianMode": "พิกัดคาร์ทีเซียน (จริง/จินตภาพ)",
-    "polarMode": "พิกัดเชิงขั้ว (ขนาด/เฟส)"
+    "polarMode": "พิกัดเชิงขั้ว (ขนาด/เฟส)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "นำเข้าข้อมูล",

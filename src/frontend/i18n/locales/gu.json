@@ -165,7 +165,12 @@
       "name": "કન્વર્જન્સ થ્રેશોલ્ડ",
       "desc": "ρ ઓપ્ટિમાઈઝેશન ચોકસાઈ",
       "range": "સામાન્ય રીતે 10⁻⁶ થી 10⁻¹⁰"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "કસ્ટમ નક્ષત્ર",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ડેટા આયાત કરો",

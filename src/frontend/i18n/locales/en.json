@@ -81,12 +81,14 @@
     "comparisonPlot": "Comparison plot",
     "benchmarkPlot": "Benchmark plot",
     "removePlot": "Remove plot",
-    "removeThisSeries": "Remove this series"
+    "removeThisSeries": "Remove this series",
+    "copyParameters": "Copy parameters"
   },
   "plotting": {
     "title": "Plotting Controls",
     "reset": "Reset",
-    "outputType": "Output Type",
+    "unit": "Unit",
+    "outputType": "Output",
     "type": "Type",
     "linePlot": "Line Plot",
     "contourPlot": "Contour Plot",
@@ -101,8 +103,9 @@
     "optimalRho": "Optimal ρ",
     "mutualInformation": "Mutual Information",
     "cutoffRate": "Cutoff Rate (R₀)",
+    "criticalRate": "Critical Rate (R_crit)",
     "modulationSize": "Modulation Size (M)",
-    "snr": "Signal-to-Noise Ratio (SNR)",
+    "snr": "SNR",
     "rate": "Rate (R)",
     "quadrature": "Quadrature (N)",
     "codeLength": "Code Length (n)",
@@ -177,9 +180,16 @@
     "cancel": "Cancel"
   },
   "paramRef": {
-    "title": "Current Base Parameters",
+    "title": "Base Parameters",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
     "modulation": "Modulation",
     "custom": "Custom",
+    "newCustom": "+ New Custom...",
+    "savedConstellations": "Saved Constellations",
+    "editConstellation": "Edit constellation",
     "editParams": "Edit Parameters",
     "sweepingOver": "Sweeping over",
     "and": "and"
@@ -203,6 +213,7 @@
     "mean": "Mean",
     "energyMean": "Energy",
     "useConstellation": "Use Constellation",
+    "use": "Use",
     "valid": "valid",
     "constellationValid": "Constellation valid",
     "loadPreset": "Load Preset...",
@@ -225,7 +236,10 @@
     "luckyOptions": "Random options",
     "randomNumPoints": "Random number of points",
     "randomMean": "Random mean position",
-    "randomPositions": "Random point positions"
+    "randomPositions": "Random point positions",
+    "nameTitle": "Name Your Constellation",
+    "nameDescription": "This constellation doesn't match any standard type (PAM, PSK, QAM). Give it a name for easy identification.",
+    "namePlaceholder": "e.g., My Custom 8-QAM"
   },
   "dataImport": {
     "title": "Import Data",
@@ -292,7 +306,8 @@
     "errorExponent": "Error Exponent",
     "optimalRho": "Optimal ρ",
     "mutualInformation": "Mutual Information",
-    "cutoffRate": "Cutoff Rate (R₀)"
+    "cutoffRate": "Cutoff Rate (R₀)",
+    "criticalRate": "Critical Rate (R_crit)"
   },
   "plotLegend": {
     "series": "Series",
@@ -344,7 +359,9 @@
     "dbY": "dB Y",
     "dbZ": "dB Z",
     "showFrame": "Show frame",
-    "hideFrame": "Hide frame"
+    "hideFrame": "Hide frame",
+    "fullscreen": "View fullscreen",
+    "exitFullscreen": "Exit fullscreen"
   },
   "footer": {
     "title": "EPCalculator v2",
@@ -364,8 +381,16 @@
     "apiReference": "API Reference",
     "sourceCode": "Source Code",
     "examples": "Examples",
+    "preferences": "Preferences",
     "copyright": "EPCalculator. Built with modern web technologies.",
     "version": "Version"
+  },
+  "preferences": {
+    "title": "Preferences",
+    "plotSettings": "Plot Settings",
+    "hideFrameByDefault": "Hide frame",
+    "hideFrameDesc": "Hide frame/border on all plots",
+    "close": "Close"
   },
   "language": {
     "select": "Language",

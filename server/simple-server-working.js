@@ -10,6 +10,41 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // ============================================================
+// Validation Helper Functions
+// ============================================================
+
+/**
+ * Validate custom constellation points
+ * Returns { valid: boolean, error?: string }
+ */
+function validateCustomConstellation(points) {
+  if (!points || !Array.isArray(points)) {
+    return { valid: false, error: 'Custom constellation points must be an array' }
+  }
+  if (points.length === 0) {
+    return { valid: false, error: 'Custom constellation must have at least one point' }
+  }
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i]
+    if (typeof p.real !== 'number' || typeof p.imag !== 'number' || typeof p.prob !== 'number') {
+      return { valid: false, error: `Point ${i} is missing required fields (real, imag, prob)` }
+    }
+    if (isNaN(p.real) || isNaN(p.imag) || isNaN(p.prob)) {
+      return { valid: false, error: `Point ${i} has NaN values` }
+    }
+    if (p.prob < 0) {
+      return { valid: false, error: `Point ${i} has negative probability` }
+    }
+  }
+  // Check total probability sums to approximately 1
+  const totalProb = points.reduce((sum, p) => sum + p.prob, 0)
+  if (Math.abs(totalProb - 1.0) > 0.01) {
+    return { valid: false, error: `Probabilities sum to ${totalProb.toFixed(4)}, should be 1.0` }
+  }
+  return { valid: true }
+}
+
+// ============================================================
 // Mutual Information and Cutoff Rate Computation Functions
 // ============================================================
 
@@ -249,6 +284,18 @@ fastify.post('/api/compute', async (request, reply) => {
     if (body.customConstellation && Array.isArray(body.customConstellation.points)) {
       // Custom constellation computation
       const points = body.customConstellation.points
+
+      // Validate custom constellation
+      const validation = validateCustomConstellation(points)
+      if (!validation.valid) {
+        reply.status(400)
+        return {
+          error: 'Invalid Custom Constellation',
+          message: validation.error,
+          statusCode: 400
+        }
+      }
+
       const SNR = parseFloat(body.SNR ?? '5.0')
       const R = parseFloat(body.R ?? '0.5')
       const N = parseFloat(body.N ?? '15')
@@ -265,6 +312,7 @@ fastify.post('/api/compute', async (request, reply) => {
         optimal_rho: result.optimal_rho,
         mutual_information: result.mutual_information,
         cutoff_rate: result.cutoff_rate,
+        critical_rate: result.critical_rate,
         computation_time_ms: computationTime,
         cached: false,
         parameters: {
@@ -295,6 +343,7 @@ fastify.post('/api/compute', async (request, reply) => {
         optimal_rho: result.optimal_rho,
         mutual_information: result.mutual_information,
         cutoff_rate: result.cutoff_rate,
+        critical_rate: result.critical_rate,
         computation_time_ms: computationTime,
         cached: false,
         parameters: {
@@ -361,6 +410,23 @@ fastify.post('/api/plot', async (request, reply) => {
     const n = parseFloat(body.n || '100')
     const threshold = parseFloat(body.th || '1e-6')
 
+    // Check if using custom constellation
+    const isCustomConstellation = typeM === 'Custom' && body.customConstellation && Array.isArray(body.customConstellation.points)
+    const customPoints = isCustomConstellation ? body.customConstellation.points : null
+
+    // Validate custom constellation if being used
+    if (isCustomConstellation) {
+      const validation = validateCustomConstellation(customPoints)
+      if (!validation.valid) {
+        reply.status(400)
+        return {
+          error: 'Invalid Custom Constellation',
+          message: validation.error,
+          statusCode: 400
+        }
+      }
+    }
+
     // Generate data points
     const xValues = []
     const yValues = []
@@ -411,17 +477,31 @@ fastify.post('/api/plot', async (request, reply) => {
       }
 
       // Compute for this parameter set
-      const result = epCalculator.compute(
-        params.M,
-        params.typeModulation,
-        params.SNR,
-        params.R,
-        params.N,
-        params.n,
-        params.threshold,
-        params.distribution,
-        params.shaping_param
-      )
+      let result
+      if (isCustomConstellation && customPoints) {
+        // Use custom constellation computation
+        result = epCalculator.computeCustom(
+          customPoints,
+          params.SNR,
+          params.R,
+          params.N,
+          params.n,
+          params.threshold
+        )
+      } else {
+        // Use standard modulation computation
+        result = epCalculator.compute(
+          params.M,
+          params.typeModulation,
+          params.SNR,
+          params.R,
+          params.N,
+          params.n,
+          params.threshold,
+          params.distribution,
+          params.shaping_param
+        )
+      }
 
       // Extract the requested y variable
       // Note: mutual_information and cutoff_rate are now computed directly by C++
@@ -431,6 +511,7 @@ fastify.post('/api/plot', async (request, reply) => {
       else if (yVar === 'rho') yVal = result.optimal_rho
       else if (yVar === 'mutual_information') yVal = result.mutual_information
       else if (yVar === 'cutoff_rate') yVal = result.cutoff_rate
+      else if (yVar === 'critical_rate') yVal = result.critical_rate
 
       yValues.push(yVal)
     }
@@ -482,6 +563,23 @@ fastify.post('/api/plot_contour', async (request, reply) => {
     const N = parseFloat(body.N || '20')
     const n = parseFloat(body.n || '100')
     const threshold = parseFloat(body.th || '1e-6')
+
+    // Check if using custom constellation
+    const isCustomConstellation = typeM === 'Custom' && body.customConstellation && Array.isArray(body.customConstellation.points)
+    const customPoints = isCustomConstellation ? body.customConstellation.points : null
+
+    // Validate custom constellation if being used
+    if (isCustomConstellation) {
+      const validation = validateCustomConstellation(customPoints)
+      if (!validation.valid) {
+        reply.status(400)
+        return {
+          error: 'Invalid Custom Constellation',
+          message: validation.error,
+          statusCode: 400
+        }
+      }
+    }
 
     // Generate meshgrid
     const x1Values = []
@@ -541,17 +639,31 @@ fastify.post('/api/plot_contour', async (request, reply) => {
         params[x2Var] = x2Val
 
         // Compute for this parameter set
-        const result = epCalculator.compute(
-          params.M,
-          params.typeModulation,
-          params.SNR,
-          params.R,
-          params.N,
-          params.n,
-          params.threshold,
-          params.distribution,
-          params.shaping_param
-        )
+        let result
+        if (isCustomConstellation && customPoints) {
+          // Use custom constellation computation
+          result = epCalculator.computeCustom(
+            customPoints,
+            params.SNR,
+            params.R,
+            params.N,
+            params.n,
+            params.threshold
+          )
+        } else {
+          // Use standard modulation computation
+          result = epCalculator.compute(
+            params.M,
+            params.typeModulation,
+            params.SNR,
+            params.R,
+            params.N,
+            params.n,
+            params.threshold,
+            params.distribution,
+            params.shaping_param
+          )
+        }
 
         // Extract the requested z variable
         // Note: mutual_information and cutoff_rate are now computed directly by C++
@@ -560,6 +672,7 @@ fastify.post('/api/plot_contour', async (request, reply) => {
         else if (yVar === 'rho') zVal = result.optimal_rho
         else if (yVar === 'mutual_information') zVal = result.mutual_information
         else if (yVar === 'cutoff_rate') zVal = result.cutoff_rate
+        else if (yVar === 'critical_rate') zVal = result.critical_rate
 
         zRow.push(zVal)
       }

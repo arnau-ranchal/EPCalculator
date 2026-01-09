@@ -177,7 +177,12 @@
     "custom": "စိတ်ကြိုက်",
     "editParams": "ပါရာမီတာများ တည်းဖြတ်ရန်",
     "sweepingOver": "ဖြတ်သန်းရှာဖွေနေသည်",
-    "and": "နှင့်"
+    "and": "နှင့်",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "စိတ်ကြိုက် ကြယ်စုတန်း",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ဒေတာ တင်သွင်းရန်",

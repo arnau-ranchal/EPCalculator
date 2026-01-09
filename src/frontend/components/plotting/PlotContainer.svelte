@@ -4,7 +4,7 @@
   import { onMount, afterUpdate, onDestroy } from 'svelte';
   import { _, locale } from 'svelte-i18n';
   import { plotScales, plotScalesZ, updatePlotScale, updatePlotScaleZ, initPlotScale, plotSnrUnits, updatePlotSnrUnit, initPlotSnrUnit, transposePlot } from '../../stores/plotting.js';
-  import { theme } from '../../stores/theme.js';
+  import { theme, currentColorTheme } from '../../stores/theme.js';
   import PlotExporter from './PlotExporter.svelte';
 
   // Theme-aware plot colors
@@ -37,7 +37,8 @@
     error_exponent: $_('plotAxis.errorExponent'),
     rho: $_('plotAxis.optimalRho'),
     mutual_information: $_('plotAxis.mutualInformation'),
-    cutoff_rate: $_('plotAxis.cutoffRate')
+    cutoff_rate: $_('plotAxis.cutoffRate'),
+    critical_rate: $_('plotAxis.criticalRate')
   };
 
   // Translated legend labels - reactive to language changes
@@ -68,12 +69,100 @@
     return axisLabels[varName] || varName;
   }
 
-  // Helper to resolve 'emphasis' color to the actual CSS variable value
-  function resolveColor(color) {
+  // Reactive emphasis color from theme store - triggers re-render on theme change
+  $: emphasisColor = $currentColorTheme?.primary || '#C8102E';
+
+  // Helper to resolve 'emphasis' color to the current theme's primary color
+  function resolveColor(color, emphasisColorValue = emphasisColor) {
     if (color === 'emphasis') {
-      return getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#C8102E';
+      return emphasisColorValue;
     }
     return color;
+  }
+
+  // Convert hex color to HSL for perceptual comparison
+  function hexToHsl(hex) {
+    // Handle named colors by using a canvas to get RGB
+    let r, g, b;
+    if (hex.startsWith('#')) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (result) {
+        r = parseInt(result[1], 16) / 255;
+        g = parseInt(result[2], 16) / 255;
+        b = parseInt(result[3], 16) / 255;
+      } else {
+        return { h: 0, s: 0, l: 0.5 }; // Default for invalid colors
+      }
+    } else {
+      // Named color - use approximate hue mapping for common colors
+      const namedColorHues = {
+        'black': { h: 0, s: 0, l: 0 },
+        'steelblue': { h: 207, s: 0.44, l: 0.49 },
+        'purple': { h: 300, s: 1, l: 0.25 },
+        'seagreen': { h: 146, s: 0.5, l: 0.36 },
+        'goldenrod': { h: 43, s: 0.74, l: 0.49 },
+        'royalblue': { h: 225, s: 0.73, l: 0.57 },
+        'orchid': { h: 302, s: 0.59, l: 0.65 },
+        'darkcyan': { h: 180, s: 1, l: 0.27 },
+        'tomato': { h: 9, s: 1, l: 0.64 },
+        'teal': { h: 180, s: 1, l: 0.25 },
+        'navy': { h: 240, s: 1, l: 0.25 },
+        'forestgreen': { h: 120, s: 0.61, l: 0.34 },
+        'darkorange': { h: 33, s: 1, l: 0.5 },
+        'mediumvioletred': { h: 322, s: 0.81, l: 0.43 },
+        'chocolate': { h: 25, s: 0.75, l: 0.47 },
+        'darkslateblue': { h: 248, s: 0.39, l: 0.39 },
+        'olive': { h: 60, s: 1, l: 0.25 }
+      };
+      return namedColorHues[hex.toLowerCase()] || { h: 0, s: 0, l: 0.5 };
+    }
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+      h *= 360;
+    }
+    return { h, s, l };
+  }
+
+  // Check if two colors are perceptually similar (within hue threshold)
+  function areColorsSimilar(color1, color2, hueThreshold = 35) {
+    const hsl1 = hexToHsl(color1);
+    const hsl2 = hexToHsl(color2);
+
+    // For very dark or desaturated colors, they're similar if both are dark/gray
+    if ((hsl1.l < 0.15 || hsl1.s < 0.1) && (hsl2.l < 0.15 || hsl2.s < 0.1)) {
+      return true;
+    }
+
+    // Calculate circular hue distance
+    let hueDiff = Math.abs(hsl1.h - hsl2.h);
+    if (hueDiff > 180) hueDiff = 360 - hueDiff;
+
+    return hueDiff < hueThreshold;
+  }
+
+  // Base color palette - all possible fallback colors
+  const basePalette = [
+    "black", "steelblue", "#FF8C00", "purple", "seagreen", "goldenrod",
+    "royalblue", "orchid", "darkcyan", "teal", "navy", "forestgreen",
+    "darkorange", "chocolate", "darkslateblue", "olive"
+  ];
+
+  // Generate a fallback color palette that excludes colors similar to the emphasis color
+  function getFilteredPalette(emphasisColorValue) {
+    return basePalette.filter(color => !areColorsSimilar(color, emphasisColorValue));
   }
 
   export let data = [];
@@ -85,6 +174,7 @@
   export let showFrame = true; // Show frame/box around plot
   export let onParamsExtracted = null; // Callback to pass global params to parent
   export let onPlotElementReady = null; // Callback to pass plot element to parent
+  export let fullscreen = false; // Fullscreen mode - adapts to container size
 
   let container;
   let plotElement;
@@ -125,8 +215,35 @@
     onParamsExtracted(globalParams);
   }
 
-  // Include $locale, axisLabels, and showFrame as dependencies to re-render when they change
-  $: plotOptions = createPlotOptions(data, metadata, currentScale, currentSnrUnit, series, isMultiSeries, hoveredSeriesIndex, plotColors, $locale, axisLabels, showFrame);
+  // Include $locale, axisLabels, showFrame, emphasisColor, and fullscreen as dependencies to re-render when they change
+  $: plotOptions = createPlotOptions(data, metadata, currentScale, currentSnrUnit, series, isMultiSeries, hoveredSeriesIndex, plotColors, $locale, axisLabels, showFrame, emphasisColor, fullscreen);
+
+  // Calculate Y-axis domain with minimum relative padding to prevent floating-point noise from appearing as oscillations
+  // When data has very small relative variation (< minRelativeSpan), expand the axis range
+  function calculatePaddedYDomain(yValues, minRelativeSpan = 0.01) {
+    if (!yValues || yValues.length === 0) return null;
+
+    const validValues = yValues.filter(v => v !== null && v !== undefined && isFinite(v));
+    if (validValues.length === 0) return null;
+
+    const yMin = Math.min(...validValues);
+    const yMax = Math.max(...validValues);
+    const range = yMax - yMin;
+    const center = (yMax + yMin) / 2;
+
+    // If the value is near zero, use absolute minimum span
+    const absCenter = Math.abs(center);
+    const effectiveMinSpan = absCenter > 1e-10 ? absCenter * minRelativeSpan : minRelativeSpan;
+
+    // If the range is too small relative to the center value, expand it
+    if (range < effectiveMinSpan) {
+      const padding = effectiveMinSpan / 2;
+      return [center - padding, center + padding];
+    }
+
+    // Otherwise, return null to let Observable Plot use its default nice scaling
+    return null;
+  }
 
   // Custom tick formatter for base-10 exponential notation with caret notation
   function formatBase10Tick(value) {
@@ -171,8 +288,8 @@
     return [];
   }
 
-  function createPlotOptions(plotData, meta, scale, snrUnit, seriesData, multiSeries, hoveredIndex, colors, currentLocale, translatedLabels, frameVisible) {
-    // currentLocale, translatedLabels, and frameVisible are passed to trigger reactivity on change
+  function createPlotOptions(plotData, meta, scale, snrUnit, seriesData, multiSeries, hoveredIndex, colors, currentLocale, translatedLabels, frameVisible, emphasisColorValue, isFullscreen) {
+    // currentLocale, translatedLabels, frameVisible, and emphasisColorValue are passed to trigger reactivity on change
     if ((!plotData || plotData.length === 0) && (!multiSeries || !seriesData)) {
       return createEmptyPlot(colors);
     }
@@ -270,23 +387,39 @@
       }
     }
 
+    // Fullscreen uses fixed larger dimensions - constant regardless of window size
+    const plotWidth = isFullscreen ? 1200 : 600;
+    const plotHeight = isFullscreen ? 800 : 400;
+
+    // Fixed font sizes for fullscreen mode - these should NOT change on resize
+    const baseFontSize = isFullscreen ? '16px' : '12px';
+    const axisLabelFontSize = isFullscreen ? 16 : 12;
+    const tickLabelFontSize = isFullscreen ? 14 : 12;
+    const arrowFontSize = isFullscreen ? 20 : 16;
+
     const options = {
       // Title removed - will be shown separately outside plot
-      width: 600,
-      height: 400,
-      marginLeft: 80,
-      marginRight: 40,
-      marginTop: 40,  // Reduced since no title
-      marginBottom: 64,
+      width: plotWidth,
+      height: plotHeight,
+      marginLeft: isFullscreen ? 100 : 80,
+      marginRight: isFullscreen ? 60 : 40,
+      marginTop: isFullscreen ? 60 : 40,  // Reduced since no title
+      marginBottom: isFullscreen ? 80 : 64,
       grid: true,
       style: {
         background: colors.background,
-        fontSize: '12px',
+        fontSize: baseFontSize,
         fontFamily: "'Inter', Arial, sans-serif",
         color: colors.text
       },
       // Pass colors for tooltips and other elements
-      colors: colors
+      colors: colors,
+      // Store font sizes for use in label replacement
+      _fontSizes: {
+        tick: tickLabelFontSize,
+        axis: axisLabelFontSize,
+        arrow: arrowFontSize
+      }
     };
 
     // Configure X axis based on scale type
@@ -335,9 +468,9 @@
       const zLabel = getTranslatedAxisLabel(zVar, snrUnit);
       return createContourPlot(plotData, meta, options, xLabel, yLabel, zLabel, frameVisible);
     } else if (multiSeries && seriesData) {
-      return createMultiSeriesLinePlot(seriesData, meta, options, hoveredIndex, frameVisible);
+      return createMultiSeriesLinePlot(seriesData, meta, options, hoveredIndex, frameVisible, emphasisColorValue);
     } else {
-      return createLinePlot(plotData, meta, options, frameVisible);
+      return createLinePlot(plotData, meta, options, frameVisible, emphasisColorValue);
     }
   }
 
@@ -519,7 +652,8 @@
         th.errorProbability || 'Error Probability',
         th.optimalRho || 'Optimal ρ',
         th.mutualInformation || 'Mutual Information',
-        th.cutoffRate || 'Cutoff Rate (R₀)'
+        th.cutoffRate || 'Cutoff Rate (R₀)',
+        th.criticalRate || 'Critical Rate (R_crit)'
       ];
     } else {
       // Legacy single-Y mode
@@ -604,6 +738,12 @@
         td6.style.cssText = `padding: 8px 12px; border: 1px solid ${borderColor}; text-align: right; font-family: "Courier New", monospace; color: #374151;`;
         row.appendChild(td6);
 
+        // Critical Rate R_crit = E0'(1)
+        const td7 = document.createElement('td');
+        td7.textContent = formatNumber(point.critical_rate);
+        td7.style.cssText = `padding: 8px 12px; border: 1px solid ${borderColor}; text-align: right; font-family: "Courier New", monospace; color: #374151;`;
+        row.appendChild(td7);
+
         tbody.appendChild(row);
       });
     } else {
@@ -654,7 +794,7 @@
     return container;
   }
 
-  function createLinePlot(plotData, meta, baseOptions, frameVisible) {
+  function createLinePlot(plotData, meta, baseOptions, frameVisible, emphasisColorValue) {
     const marks = [];
 
     // Add frame (box around plot area) for scientific paper style
@@ -667,7 +807,7 @@
       Plot.line(plotData, {
         x: 'x',
         y: 'y',
-        stroke: resolveColor(meta.lineColor) || 'steelblue',
+        stroke: resolveColor(meta.lineColor, emphasisColorValue) || 'steelblue',
         strokeWidth: 2,
         strokeDasharray: meta.lineType === 'dashed' ? '5,5' : null
       })
@@ -678,7 +818,7 @@
       Plot.dot(plotData, {
         x: 'x',
         y: 'y',
-        fill: resolveColor(meta.lineColor) || 'steelblue',
+        fill: resolveColor(meta.lineColor, emphasisColorValue) || 'steelblue',
         r: 3,
         opacity: 0.7
       })
@@ -700,17 +840,29 @@
       }))
     );
 
+    // Calculate Y-axis domain with minimum padding to prevent floating-point noise from appearing as oscillations
+    const yValues = plotData.map(d => d.y);
+    const paddedYDomain = calculatePaddedYDomain(yValues);
+
     // Global parameters removed - will be shown separately outside plot
     const plotOptions = {
       ...baseOptions,
       marks
     };
 
+    // Apply padded Y domain if needed (overrides the nice: true behavior for nearly-flat data)
+    if (paddedYDomain) {
+      plotOptions.y = {
+        ...baseOptions.y,
+        domain: paddedYDomain
+      };
+    }
+
     // No subtitle - parameters displayed externally
     return plotOptions;
   }
 
-  function createMultiSeriesLinePlot(seriesData, meta, baseOptions, hoveredIndex, frameVisible) {
+  function createMultiSeriesLinePlot(seriesData, meta, baseOptions, hoveredIndex, frameVisible, emphasisColorValue) {
     const marks = [];
 
     // Add frame (box around plot area) for scientific paper style
@@ -718,9 +870,8 @@
       marks.push(Plot.frame({ stroke: baseOptions.colors?.text || 'currentColor', strokeOpacity: 0.3, strokeWidth: 1.5 }));
     }
 
-    // Use the original EPCalculator color scheme with more distinct colors
-    const defaultColors = ["black", "#C8102E", "steelblue", "#FF8C00", "purple", "seagreen", "goldenrod",
-      "#FF1493", "royalblue", "orchid", "darkcyan", "tomato"];
+    // Use a filtered color palette that excludes colors similar to the emphasis color
+    const defaultColors = getFilteredPalette(emphasisColorValue);
 
     // Generate intelligent series labels and global parameters
     const xVar = meta.xVar || seriesData[0]?.plotParams?.xVar || 'x';
@@ -733,7 +884,7 @@
 
     // Create marks for each series
     seriesData.forEach((series, index) => {
-      const color = resolveColor(series.metadata?.lineColor) || defaultColors[index % defaultColors.length];
+      const color = resolveColor(series.metadata?.lineColor, emphasisColorValue) || defaultColors[index % defaultColors.length];
       const lineType = series.metadata?.lineType || 'solid';
       const seriesLabelText = seriesLabels[index] || `${seriesLabel} ${index + 1}`;
 
@@ -793,6 +944,10 @@
       }))
     );
 
+    // Calculate Y-axis domain with minimum padding to prevent floating-point noise from appearing as oscillations
+    const allYValues = plotDataWithLabels.map(d => d.y);
+    const paddedYDomain = calculatePaddedYDomain(allYValues);
+
     // Legend and global parameters removed - will be shown separately outside plot
     const plotOptions = {
       ...baseOptions,
@@ -801,17 +956,25 @@
         legend: false,  // Legend shown in series list, not in plot
         domain: seriesLabels,
         range: seriesLabels.map((_, index) =>
-          resolveColor(seriesData[index]?.metadata?.lineColor) || defaultColors[index % defaultColors.length]
+          resolveColor(seriesData[index]?.metadata?.lineColor, emphasisColorValue) || defaultColors[index % defaultColors.length]
         )
       }
     };
+
+    // Apply padded Y domain if needed (overrides the nice: true behavior for nearly-flat data)
+    if (paddedYDomain) {
+      plotOptions.y = {
+        ...baseOptions.y,
+        domain: paddedYDomain
+      };
+    }
 
     // No subtitle - parameters displayed externally
 
     // Create color scale for legend
     const colorScale = {};
     seriesLabels.forEach((label, index) => {
-      const color = resolveColor(seriesData[index]?.metadata?.lineColor) || defaultColors[index % defaultColors.length];
+      const color = resolveColor(seriesData[index]?.metadata?.lineColor, emphasisColorValue) || defaultColors[index % defaultColors.length];
       colorScale[label] = color;
     });
 
@@ -1309,7 +1472,9 @@
           const svg = plotElement.tagName === 'svg' ? plotElement : plotElement.querySelector('svg');
           console.log('[PlotContainer] plotElement tag:', plotElement.tagName, 'Found SVG:', !!svg);
           if (svg) {
-            replaceAxisLabelsWithHtml(plotElement, svg);
+            // Pass font sizes from plotOptions for consistent sizing
+            const fontSizes = plotOptions._fontSizes || { tick: 12, axis: 12, arrow: 16 };
+            replaceAxisLabelsWithHtml(plotElement, svg, fontSizes);
           } else {
             console.log('[PlotContainer] No SVG found. plotElement innerHTML preview:', plotElement.innerHTML?.substring(0, 200));
           }
@@ -1628,16 +1793,58 @@
     }
   }
 
+  // ResizeObserver to handle container size changes and update label positions
+  let resizeObserver;
+  let resizeTimeout;
+  let lastContainerWidth = 0;
+  let lastContainerHeight = 0;
+
+  function setupResizeObserver() {
+    if (!container || resizeObserver) return;
+
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        // Only trigger if size actually changed significantly (>5px)
+        if (Math.abs(width - lastContainerWidth) > 5 || Math.abs(height - lastContainerHeight) > 5) {
+          lastContainerWidth = width;
+          lastContainerHeight = height;
+          // Debounce the update
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            updatePlot();
+          }, 100);
+        }
+      }
+    });
+
+    resizeObserver.observe(container);
+  }
+
+  // Re-render when fullscreen mode changes
+  let prevFullscreen = fullscreen;
+  $: if (fullscreen !== prevFullscreen) {
+    prevFullscreen = fullscreen;
+    // Small delay to let the DOM update before re-rendering
+    setTimeout(() => updatePlot(), 50);
+  }
+
   onDestroy(() => {
     // Clean up Plotly
     if (plotlyContainer) {
       Plotly.purge(plotlyContainer);
     }
+    // Clean up resize observer
+    if (resizeObserver) {
+      resizeObserver.disconnect();
+    }
+    clearTimeout(resizeTimeout);
   });
 
   // Replace SVG axis tick labels with HTML elements for consistent font rendering
-  function replaceAxisLabelsWithHtml(plotElement, svg) {
-    console.log('[PlotContainer] replaceAxisLabelsWithHtml called');
+  // fontSizes: { tick: number, axis: number, arrow: number }
+  function replaceAxisLabelsWithHtml(plotElement, svg, fontSizes = { tick: 12, axis: 12, arrow: 16 }) {
+    console.log('[PlotContainer] replaceAxisLabelsWithHtml called with fontSizes:', fontSizes);
 
     // Find the parent container where we'll append the HTML labels
     const parentContainer = svg.parentElement || plotElement.parentElement;
@@ -1691,13 +1898,14 @@
         translateX = '0';
       }
 
+      // Use fixed font size from fontSizes parameter
       label.style.cssText = `
         position: absolute;
         left: ${x}px;
         top: ${y}px;
         transform: translate(${translateX}, -50%);
         font-family: 'Inter', Arial, sans-serif;
-        font-size: 12px;
+        font-size: ${fontSizes.tick}px;
         font-weight: 300;
         color: var(--text-color, black);
         white-space: nowrap;
@@ -1713,10 +1921,38 @@
     parentContainer.style.position = 'relative';
     parentContainer.appendChild(labelsContainer);
     console.log('[PlotContainer] Created', labelsContainer.children.length, 'HTML labels, appended to:', parentContainer.tagName);
+
+    // Style axis labels (text like "Error Exponent ↑", "SNR (dB) →") with fixed sizes
+    const axisLabels = searchRoot.querySelectorAll('g[aria-label*="axis label"] text');
+    axisLabels.forEach(textEl => {
+      const originalText = textEl.textContent || '';
+
+      // Set base font size for axis labels
+      textEl.setAttribute('style', `font-size: ${fontSizes.axis}px; font-family: 'Inter', Arial, sans-serif;`);
+
+      // Check if it contains arrows
+      if (originalText.includes('↑') || originalText.includes('→')) {
+        // Clear the text element and rebuild with tspans
+        textEl.textContent = '';
+
+        // Split by arrows and rebuild
+        const parts = originalText.split(/(↑|→)/);
+        parts.forEach(part => {
+          const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+          tspan.textContent = part;
+          if (part === '↑' || part === '→') {
+            // Make arrows larger using fixed arrow font size
+            tspan.setAttribute('style', `font-size: ${fontSizes.arrow}px;`);
+          }
+          textEl.appendChild(tspan);
+        });
+      }
+    });
   }
 
   onMount(() => {
     updatePlot();
+    setupResizeObserver();
   });
 
   afterUpdate(() => {
@@ -1835,6 +2071,13 @@
     text-align: center !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+
+  /* Axis labels: Use Arial for consistent arrow rendering (↑ →) */
+  :global(.plot-content svg g[aria-label="x-axis label"] text),
+  :global(.plot-content svg g[aria-label="y-axis label"] text) {
+    font-family: Arial, sans-serif !important;
+    font-size: 12px !important;
   }
 
   /* Legend container: centered, proper spacing */

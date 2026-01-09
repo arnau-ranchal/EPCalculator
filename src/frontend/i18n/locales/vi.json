@@ -177,7 +177,12 @@
     "custom": "Tùy Chỉnh",
     "editParams": "Chỉnh Sửa Tham Số",
     "sweepingOver": "Quét qua",
-    "and": "và"
+    "and": "và",
+    "constellationParams": "Chòm sao",
+    "codeParams": "Kênh & Mã",
+    "advancedParams": "Nâng cao",
+    "shapingBeta": "β (định hình)",
+    "editConstellation": "Chỉnh sửa chòm sao"
   },
   "constellation": {
     "title": "Chòm Sao Tùy Chỉnh",
@@ -212,7 +217,8 @@
     "magnitude": "Mô-đun",
     "phase": "Pha (°)",
     "cartesianMode": "Tọa độ Descartes (Thực/Ảo)",
-    "polarMode": "Tọa độ cực (Mô-đun/Pha)"
+    "polarMode": "Tọa độ cực (Mô-đun/Pha)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Nhập Dữ Liệu",

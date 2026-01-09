@@ -165,7 +165,12 @@
       "name": "കൺവേർജൻസ് ത്രെഷോൾഡ്",
       "desc": "ρ ഒപ്റ്റിമൈസേഷൻ കൃത്യത",
       "range": "സാധാരണയായി 10⁻⁶ മുതൽ 10⁻¹⁰ വരെ"
-    }
+    },
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "ഇഷ്ടാനുസൃത നക്ഷത്രസമൂഹം",
@@ -196,7 +201,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ഡാറ്റ ഇമ്പോർട്ട് ചെയ്യുക",

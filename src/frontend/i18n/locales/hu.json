@@ -177,7 +177,12 @@
     "custom": "Egyéni",
     "editParams": "Paraméterek Szerkesztése",
     "sweepingOver": "Végigpásztázás",
-    "and": "és"
+    "and": "és",
+    "constellationParams": "Konstelláció",
+    "codeParams": "Csatorna és kód",
+    "advancedParams": "Haladó",
+    "shapingBeta": "β (alakítás)",
+    "editConstellation": "Konstelláció szerkesztése"
   },
   "constellation": {
     "title": "Egyéni Konstelláció",
@@ -212,7 +217,8 @@
     "magnitude": "Abszolútérték",
     "phase": "Fázis (°)",
     "cartesianMode": "Derékszögű koordináták (Valós/Képzetes)",
-    "polarMode": "Polárkoordináták (Abszolútérték/Fázis)"
+    "polarMode": "Polárkoordináták (Abszolútérték/Fázis)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Adatok Importálása",

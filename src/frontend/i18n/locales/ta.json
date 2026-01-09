@@ -177,7 +177,12 @@
     "custom": "தனிப்பயன்",
     "editParams": "அளவுருக்களை திருத்து",
     "sweepingOver": "துடைப்பது",
-    "and": "மற்றும்"
+    "and": "மற்றும்",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "தனிப்பயன் விண்மீன் தொகுப்பு",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "தரவை இறக்குமதி செய்",

@@ -180,7 +180,12 @@
     "custom": "自定义",
     "editParams": "编辑参数",
     "sweepingOver": "扫描范围",
-    "and": "和"
+    "and": "和",
+    "constellationParams": "星座",
+    "codeParams": "信道与编码",
+    "advancedParams": "高级",
+    "shapingBeta": "β (整形)",
+    "editConstellation": "编辑星座"
   },
   "constellation": {
     "title": "自定义星座图",
@@ -215,7 +220,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "导入数据",

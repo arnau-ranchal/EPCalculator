@@ -177,7 +177,12 @@
     "custom": "Пользовательская",
     "editParams": "Изменить параметры",
     "sweepingOver": "Развёртка по",
-    "and": "и"
+    "and": "и",
+    "constellationParams": "Созвездие",
+    "codeParams": "Канал и код",
+    "advancedParams": "Расширенные",
+    "shapingBeta": "β (формирование)",
+    "editConstellation": "Редактировать созвездие"
   },
   "constellation": {
     "title": "Пользовательское созвездие",
@@ -212,7 +217,8 @@
     "magnitude": "Модуль",
     "phase": "Фаза (°)",
     "cartesianMode": "Декартовы координаты (Реальная/Мнимая)",
-    "polarMode": "Полярные координаты (Модуль/Фаза)"
+    "polarMode": "Полярные координаты (Модуль/Фаза)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Импорт данных",

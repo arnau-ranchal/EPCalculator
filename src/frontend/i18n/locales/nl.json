@@ -177,7 +177,12 @@
     "custom": "Aangepast",
     "editParams": "Parameters Bewerken",
     "sweepingOver": "Variërend over",
-    "and": "en"
+    "and": "en",
+    "constellationParams": "Constellatie",
+    "codeParams": "Kanaal & Code",
+    "advancedParams": "Geavanceerd",
+    "shapingBeta": "β (vorming)",
+    "editConstellation": "Constellatie bewerken"
   },
   "constellation": {
     "title": "Aangepaste Constellatie",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Fase (°)",
     "cartesianMode": "Cartesiaanse coördinaten (Reëel/Imaginair)",
-    "polarMode": "Poolcoördinaten (Magnitude/Fase)"
+    "polarMode": "Poolcoördinaten (Magnitude/Fase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Gegevens Importeren",

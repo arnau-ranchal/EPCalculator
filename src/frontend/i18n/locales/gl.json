@@ -177,7 +177,12 @@
     "custom": "Personalizado",
     "editParams": "Editar Parámetros",
     "sweepingOver": "Barrendo sobre",
-    "and": "e"
+    "and": "e",
+    "constellationParams": "Constelación",
+    "codeParams": "Canle e Código",
+    "advancedParams": "Avanzado",
+    "shapingBeta": "β (conformado)",
+    "editConstellation": "Editar constelación"
   },
   "constellation": {
     "title": "Constelación Personalizada",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Importar Datos",

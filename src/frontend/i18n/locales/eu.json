@@ -177,7 +177,12 @@
     "custom": "Pertsonalizatua",
     "editParams": "Editatu Parametroak",
     "sweepingOver": "Barruti honen gainean",
-    "and": "eta"
+    "and": "eta",
+    "constellationParams": "Konstelazioa",
+    "codeParams": "Kanala eta Kodea",
+    "advancedParams": "Aurreratua",
+    "shapingBeta": "β (moldaketa)",
+    "editConstellation": "Editatu konstelazioa"
   },
   "constellation": {
     "title": "Konstelazioa Pertsonalizatua",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "Inportatu Datuak",

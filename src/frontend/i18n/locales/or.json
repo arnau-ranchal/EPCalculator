@@ -177,7 +177,12 @@
     "custom": "କଷ୍ଟମ୍",
     "editParams": "ପାରାମିଟର ସମ୍ପାଦନ କରନ୍ତୁ",
     "sweepingOver": "ସ୍ୱିପ୍ ହେଉଛି",
-    "and": "ଏବଂ"
+    "and": "ଏବଂ",
+    "constellationParams": "Constellation",
+    "codeParams": "Channel & Code",
+    "advancedParams": "Advanced",
+    "shapingBeta": "β (shaping)",
+    "editConstellation": "Edit constellation"
   },
   "constellation": {
     "title": "କଷ୍ଟମ୍ ତାରାମଣ୍ଡଳ",
@@ -212,7 +217,8 @@
     "magnitude": "Magnitude",
     "phase": "Phase (°)",
     "cartesianMode": "Cartesian coordinates (Real/Imaginary)",
-    "polarMode": "Polar coordinates (Magnitude/Phase)"
+    "polarMode": "Polar coordinates (Magnitude/Phase)",
+    "use": "Use"
   },
   "dataImport": {
     "title": "ଡାଟା ଆମଦାନୀ କରନ୍ତୁ",
