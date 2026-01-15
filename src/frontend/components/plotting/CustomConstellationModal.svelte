@@ -313,7 +313,7 @@
     const targetElement = event.currentTarget;
     docHoverTimeout = setTimeout(() => {
       if (targetElement) {
-        showDocumentation(docKey, targetElement, 'bottom');
+        showDocumentation(docKey, targetElement, 'top');
       }
     }, DOC_HOVER_DELAY);
   }
@@ -326,6 +326,11 @@
   }
 
   function handleLuckyClick() {
+    // Cancel any pending documentation hover
+    if (docHoverTimeout) {
+      clearTimeout(docHoverTimeout);
+      docHoverTimeout = null;
+    }
     constellationComponent?.doGenerateRandom({
       ...luckyOptions,
       fixedNumPoints,
@@ -336,6 +341,11 @@
 
   function toggleLuckyDropdown(event) {
     event.stopPropagation();
+    // Cancel any pending documentation hover
+    if (docHoverTimeout) {
+      clearTimeout(docHoverTimeout);
+      docHoverTimeout = null;
+    }
     showLuckyDropdown = !showLuckyDropdown;
   }
 
@@ -393,6 +403,8 @@
               type="button"
               class="button-secondary lucky-btn"
               on:click={handleLuckyClick}
+              on:mouseenter={(e) => handleDocHover('constellation-lucky', e)}
+              on:mouseleave={handleDocLeave}
             >
               <span class="lucky-text">
                 {$_('constellation.feelingLucky')}

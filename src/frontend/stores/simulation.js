@@ -88,6 +88,93 @@ export function deleteSavedConstellation(id) {
   savedCustomConstellations.update(list => list.filter(c => c.id !== id));
 }
 
+// Export a constellation to JSON file
+export function exportConstellation(id) {
+  let constellation = null;
+  savedCustomConstellations.subscribe(list => {
+    constellation = list.find(c => c.id === id);
+  })();
+
+  if (!constellation) {
+    console.error('Constellation not found:', id);
+    return false;
+  }
+
+  const exportData = {
+    name: constellation.name,
+    points: constellation.points,
+    version: '1.0',
+    exportedAt: new Date().toISOString()
+  };
+
+  const jsonString = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  // Create download link and trigger download
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${constellation.name.replace(/[^a-z0-9]/gi, '_')}.constellation.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  return true;
+}
+
+// Import a constellation from JSON file
+export function importConstellation(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+
+        // Validate the imported data
+        if (!data.name || typeof data.name !== 'string') {
+          reject(new Error('Invalid constellation file: missing or invalid name'));
+          return;
+        }
+
+        if (!Array.isArray(data.points) || data.points.length < 2) {
+          reject(new Error('Invalid constellation file: must have at least 2 points'));
+          return;
+        }
+
+        // Validate each point
+        for (const point of data.points) {
+          if (typeof point.real !== 'number' || typeof point.imag !== 'number' || typeof point.prob !== 'number') {
+            reject(new Error('Invalid constellation file: points must have real, imag, and prob as numbers'));
+            return;
+          }
+        }
+
+        // Validate probabilities sum to ~1
+        const probSum = data.points.reduce((sum, p) => sum + p.prob, 0);
+        if (Math.abs(probSum - 1) > 0.01) {
+          reject(new Error(`Invalid constellation file: probabilities sum to ${probSum.toFixed(4)}, should be 1`));
+          return;
+        }
+
+        // Save the imported constellation
+        const id = saveCustomConstellation(data.name, data.points);
+
+        resolve({ id, name: data.name, pointCount: data.points.length });
+      } catch (error) {
+        reject(new Error('Invalid constellation file: ' + error.message));
+      }
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+
+    reader.readAsText(file);
+  });
+}
+
 // Parameter validation
 export const paramValidation = derived(
   [simulationParams, useCustomConstellation, customConstellation],

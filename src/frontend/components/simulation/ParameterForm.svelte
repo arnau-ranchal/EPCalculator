@@ -115,22 +115,8 @@
     <div class="form-section">
       <h4>{$_('params.basic')}</h4>
 
-      <!-- Custom Constellation Toggle -->
-      <div class="form-row">
-        <div class="form-group constellation-toggle-group">
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              checked={$useCustomConstellation}
-              on:change={toggleCustomConstellation}
-            />
-            <span>{$_('params.useCustomConstellation')}</span>
-          </label>
-          <small class="help-text">
-            {$_('params.customConstellationHelp')}
-          </small>
-        </div>
-      </div>
+      <!-- Custom Constellation Toggle - Hidden from Single Point Computation, available in Plotting panel -->
+      <!-- Use the Plotting panel's "Type" dropdown to select Custom constellation -->
 
       {#if !$useCustomConstellation}
         <div class="form-row">

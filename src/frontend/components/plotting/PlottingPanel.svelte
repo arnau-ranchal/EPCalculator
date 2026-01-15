@@ -29,8 +29,12 @@
     rho: $_('plotAxis.optimalRho'),
     mutual_information: $_('plotAxis.mutualInformation'),
     cutoff_rate: $_('plotAxis.cutoffRate'),
-    critical_rate: $_('plotAxis.criticalRate')
+    critical_rate: $_('plotAxis.criticalRate'),
+    information_rate: $_('plotAxis.informationRate')
   };
+
+  // Info-theoretic Y variables that can be merged together on the same plot
+  const INFO_THEORETIC_Y_VARS = ['mutual_information', 'cutoff_rate', 'critical_rate'];
 
   // Helper function to get translated axis label (accepts labels param for reactivity)
   function getTranslatedAxisLabel(varName, snrUnit = 'dB', labels = axisLabels) {
@@ -51,9 +55,27 @@
       const x2Var = plot.metadata.xVar2 || plot.metadata.x2Var || plot.plotParams?.xVar2;
       return `${getTranslatedAxisLabel(zVar, snrUnit, labels)} vs ${getTranslatedAxisLabel(x1Var, snrUnit, labels)} vs ${getTranslatedAxisLabel(x2Var, snrUnit, labels)}`;
     } else {
-      const yVar = plot.metadata.yVar || plot.plotParams?.yVar;
       const xVar = plot.metadata.xVar || plot.plotParams?.xVar;
-      return `${getTranslatedAxisLabel(yVar, snrUnit, labels)} vs ${getTranslatedAxisLabel(xVar, snrUnit, labels)}`;
+
+      // Check if multi-series with varying info-theoretic Y vars
+      let yLabel;
+      if (plot.isMultiSeries && plot.series && plot.series.length > 1) {
+        const yVars = plot.series.map(s =>
+          s.plotParams?.yVar || s.metadata?.yVar || plot.metadata?.yVar
+        );
+        const uniqueYVars = [...new Set(yVars)];
+
+        // Only use combined label if Y vars differ AND all are info-theoretic
+        if (uniqueYVars.length > 1 && uniqueYVars.every(v => INFO_THEORETIC_Y_VARS.includes(v))) {
+          yLabel = labels.information_rate || 'Information Rate (bits)';
+        } else {
+          yLabel = getTranslatedAxisLabel(plot.metadata.yVar || plot.plotParams?.yVar, snrUnit, labels);
+        }
+      } else {
+        yLabel = getTranslatedAxisLabel(plot.metadata.yVar || plot.plotParams?.yVar, snrUnit, labels);
+      }
+
+      return `${yLabel} vs ${getTranslatedAxisLabel(xVar, snrUnit, labels)}`;
     }
   }
 
@@ -202,7 +224,8 @@
     const yAxis = plotData.plotParams?.yVar || plotData.metadata?.yVar || 'Y';
     const title = plotData.metadata?.title || `${yAxis} vs ${xAxis}`;
     const seriesCount = plotData.series?.length || 1;
-    return { title, xAxis, yAxis, seriesCount };
+    const type = plotData.type || plotData.metadata?.type;
+    return { title, xAxis, yAxis, seriesCount, type };
   }
 
   // Handle merge modal decisions
@@ -271,16 +294,16 @@
   }
 
   // Generate Table data with all 3 Y variables
-  async function getTableData(plotParams, simulationParams) {
+  async function getTableData(plotParams, simulationParams, customConstellationData = null) {
     const [xMin, xMax] = plotParams.xRange;
     const numPoints = plotParams.points;
     const xVar = plotParams.xVar;
 
     // Generate X values
     const xValues = [];
-    const step = (xMax - xMin) / (numPoints - 1);
+    const step = numPoints > 1 ? (xMax - xMin) / (numPoints - 1) : 0;
     for (let i = 0; i < numPoints; i++) {
-      let xVal = xMin + i * step;
+      let xVal = numPoints === 1 ? xMin : xMin + i * step;
       // Round to integer if n (code length) is on X axis
       if (xVar === 'n') {
         xVal = Math.round(xVal);
@@ -305,6 +328,13 @@
         distribution: plotParams.distribution || 'uniform',
         shaping_param: plotParams.shaping_param || 0
       };
+
+      // Include custom constellation if provided
+      if (customConstellationData && customConstellationData.points && customConstellationData.points.length > 0) {
+        params.customConstellation = {
+          points: customConstellationData.points
+        };
+      }
 
       // Override the X variable with the current value
       if (xVar === 'SNR') {
@@ -351,9 +381,9 @@
 
     // Generate points equispaced in dB
     const dbValues = [];
-    const step = (maxDB - minDB) / (numPoints - 1);
+    const step = numPoints > 1 ? (maxDB - minDB) / (numPoints - 1) : 0;
     for (let i = 0; i < numPoints; i++) {
-      dbValues.push(minDB + i * step);
+      dbValues.push(numPoints === 1 ? minDB : minDB + i * step);
     }
 
     // Convert dB to linear for API calls
@@ -455,7 +485,8 @@
       let rawData, formattedData;
 
       if (plotParams.plotType === 'contour' || plotParams.plotType === 'surface') {
-        const mappedParams = mapPlotParams(plotParams, simulationParams);
+        const constellationData = $useCustomConstellation ? $customConstellation : null;
+        const mappedParams = mapPlotParams(plotParams, simulationParams, constellationData);
         rawData = await getContourData(mappedParams);
         // Set contourMode based on plotType: 'contour' = 2D, 'surface' = 3D
         const contourMode = plotParams.plotType === 'surface' ? '3d' : '2d';
@@ -468,7 +499,8 @@
         });
       } else if (plotParams.plotType === 'rawData') {
         // Table mode - fetch all 3 Y variables
-        const tableData = await getTableData(plotParams, simulationParams);
+        const constellationData = $useCustomConstellation ? $customConstellation : null;
+        const tableData = await getTableData(plotParams, simulationParams, constellationData);
 
         // Get X label based on xVar
         const xLabels = {
@@ -502,7 +534,8 @@
         rawData = { tableData };  // Store as tableData for later conversion
       } else {
         // Standard line plot - backend handles SNR spacing based on snrUnit
-        const mappedParams = mapPlotParams(plotParams, simulationParams);
+        const constellationData = $useCustomConstellation ? $customConstellation : null;
+        const mappedParams = mapPlotParams(plotParams, simulationParams, constellationData);
         rawData = await getPlotData(mappedParams);
 
         formattedData = formatPlotData(rawData, {
@@ -793,6 +826,20 @@
   function getGlobalParams(plot) {
     if (!plot) return [];
 
+    // For benchmark plots, use pre-computed common params
+    if (plot.metadata?.comparisonType === 'benchmark' && plot.metadata?.benchmarkCommonParams) {
+      const parts = [...plot.metadata.benchmarkCommonParams];
+      parts.push($_('plottingPanel.benchmarkPlot'));
+      return parts;
+    }
+
+    // For comparison plots, use pre-computed common params (same as benchmark)
+    if (plot.metadata?.comparisonType === 'comparison' && plot.metadata?.comparisonCommonParams) {
+      const parts = [...plot.metadata.comparisonCommonParams];
+      parts.push($_('plottingPanel.comparisonPlot') || 'Comparison');
+      return parts;
+    }
+
     const parts = [];
     // For contour plots, exclude all three axes (X1, X2, and Z/Y)
     const excludedParams = new Set([
@@ -950,15 +997,33 @@
   function getSeriesLabel(seriesData, index, xVar, yVar) {
     if (!seriesData || seriesData.length === 0) return `${$_('plotItem.series')} ${index + 1}`;
 
+    // Check if Y variables differ between series (for merged info-theoretic plots)
+    const INFO_THEORETIC_Y_VARS = ['mutual_information', 'cutoff_rate', 'critical_rate'];
+    const yVars = seriesData.map(series =>
+      series.plotParams?.yVar || series.metadata?.yVar || yVar
+    );
+    const uniqueYVars = [...new Set(yVars)];
+    const hasVaryingYVar = uniqueYVars.length > 1;
+
     const basicSimulationParams = ['M', 'typeModulation', 'SNR', 'R', 'n'];
     const basicPlotParams = ['distribution', 'shaping_param', 'snrUnit'];
-    const excludedParams = new Set([xVar, yVar]);
+
+    // Only exclude X axis; exclude Y only if not varying
+    const excludedParams = new Set([xVar]);
+    if (!hasVaryingYVar) {
+      excludedParams.add(yVar);
+    }
 
     const availableSimParams = basicSimulationParams.filter(key => !excludedParams.has(key));
     const availablePlotParams = basicPlotParams.filter(key => !excludedParams.has(key));
 
     // Find parameters that vary
     const varyingParams = [];
+
+    // If Y variable varies, add it first (most important distinguishing factor)
+    if (hasVaryingYVar) {
+      varyingParams.push({ source: 'yVar', key: 'yVar' });
+    }
 
     // Special handling for SNR: check if SNR value OR SNRUnit varies
     // If either varies, we need to show SNR with unit in legend
@@ -1052,7 +1117,11 @@
     const paramDisplayNames = {
       M: 'M', typeModulation: 'Type', SNR: 'SNR', R: 'Rate', n: 'n',
       N: 'N', threshold: 'Threshold', distribution: 'Dist',
-      shaping_param: 'β', snrUnit: 'SNR Unit'
+      shaping_param: 'β', snrUnit: 'SNR Unit',
+      // Y variable short labels for info-theoretic metrics
+      mutual_information: $_('plotLegend.mutualInformation'),
+      cutoff_rate: $_('plotLegend.cutoffRate'),
+      critical_rate: $_('plotLegend.criticalRate')
     };
 
     if (varyingParams.length > 0) {
@@ -1062,6 +1131,14 @@
 
       for (const param of varyingParams) {
         if (param.key === 'shaping_param' && seriesDistribution === 'uniform') {
+          continue;
+        }
+
+        // Special handling for Y variable: show translated label directly (no "Y=" prefix)
+        if (param.source === 'yVar') {
+          const seriesYVar = series.plotParams?.yVar || series.metadata?.yVar || yVar;
+          const yLabel = paramDisplayNames[seriesYVar] || seriesYVar;
+          labelParts.push(yLabel);
           continue;
         }
 
@@ -1126,7 +1203,126 @@
   // Comparison Functions (migrated from ComparisonPanel)
   // ============================================================================
 
-  // Get plot title for comparison
+  // Compute common and differing parameters for benchmark plots
+  function computeBenchmarkParams(plots) {
+    if (!plots || plots.length === 0) return { common: [], differing: [] };
+
+    const paramKeys = ['M', 'typeModulation', 'R', 'n', 'SNR', 'N', 'threshold'];
+
+    // Extract values for each param from all plots
+    const paramValues = {};
+    paramKeys.forEach(key => {
+      paramValues[key] = plots.map(p => p.simulationParams?.[key]);
+    });
+
+    // Also check constellation names for Custom type
+    const constellationNames = plots.map(p =>
+      p.simulationParams?.typeModulation === 'Custom'
+        ? (p.constellationInfo?.constellationName || 'Custom')
+        : null
+    );
+
+    // Find common params (same value across all plots)
+    const common = [];
+    const varyingKeys = new Set();
+
+    paramKeys.forEach(key => {
+      const values = paramValues[key];
+      const uniqueValues = [...new Set(values.filter(v => v !== undefined))];
+
+      if (uniqueValues.length === 1 && values.every(v => v === uniqueValues[0])) {
+        // Common param - same across all plots
+        if (key === 'typeModulation') {
+          const type = uniqueValues[0];
+          // Check if constellation names vary for Custom type
+          if (type === 'Custom') {
+            const uniqueConstellations = [...new Set(constellationNames.filter(n => n))];
+            if (uniqueConstellations.length === 1) {
+              common.push({ key, value: uniqueConstellations[0], isConstellation: true });
+            } else {
+              varyingKeys.add(key);
+            }
+          } else {
+            common.push({ key, value: type });
+          }
+        } else {
+          common.push({ key, value: uniqueValues[0] });
+        }
+      } else if (uniqueValues.length > 1 || values.some(v => v !== values[0])) {
+        // Varying param
+        varyingKeys.add(key);
+      }
+    });
+
+    // Build differing params for each plot
+    const differing = plots.map((plot, idx) => {
+      const parts = [];
+
+      varyingKeys.forEach(key => {
+        const value = plot.simulationParams?.[key];
+        if (value !== undefined) {
+          if (key === 'M' && varyingKeys.has('typeModulation')) {
+            // Will be combined with typeModulation
+          } else if (key === 'typeModulation') {
+            const type = value;
+            const M = plot.simulationParams?.M;
+            if (type === 'Custom') {
+              const name = plot.constellationInfo?.constellationName || 'Custom';
+              parts.push(M ? `${M}-${name}` : name);
+            } else {
+              parts.push(M && varyingKeys.has('M') ? `${M}-${type}` : type);
+            }
+          } else if (key === 'R') {
+            parts.push(`R=${value}`);
+          } else if (key === 'n') {
+            parts.push(`n=${value}`);
+          } else if (key === 'SNR') {
+            const unit = plot.simulationParams?.SNRUnit || 'dB';
+            parts.push(`SNR=${value}${unit === 'dB' ? 'dB' : ''}`);
+          } else if (key === 'M' && !varyingKeys.has('typeModulation')) {
+            parts.push(`M=${value}`);
+          }
+        }
+      });
+
+      return parts.join(', ');
+    });
+
+    return { common, differing };
+  }
+
+  // Format common params for subtitle display
+  function formatCommonParams(commonParams) {
+    const parts = [];
+
+    // Find M and typeModulation to combine them
+    const M = commonParams.find(p => p.key === 'M');
+    const type = commonParams.find(p => p.key === 'typeModulation');
+
+    if (M && type) {
+      if (type.isConstellation) {
+        parts.push(type.value);
+      } else {
+        parts.push(`${M.value}-${type.value}`);
+      }
+    } else if (type) {
+      parts.push(type.isConstellation ? type.value : type.value);
+    } else if (M) {
+      parts.push(`M=${M.value}`);
+    }
+
+    // Add other params
+    commonParams.forEach(p => {
+      if (p.key === 'M' || p.key === 'typeModulation') return;
+      if (p.key === 'R') parts.push(`R=${p.value}`);
+      if (p.key === 'n') parts.push(`n=${p.value}`);
+      if (p.key === 'SNR') parts.push(`SNR=${p.value}`);
+    });
+
+    return parts;
+  }
+
+  // Get plot title for comparison (legacy - for non-benchmark)
   function getComparisonPlotTitle(plot) {
     const yLabel = plot.metadata.yLabel || plot.metadata.zLabel || 'Y';
     const x1Label = plot.metadata.x1Label || 'X1';
@@ -1147,22 +1343,33 @@
     return `${yLabel} vs ${x1Label} vs ${x2Label}${paramStr}`;
   }
 
-  // Check if two plots are compatible for comparison
+  // Check if two plots are compatible for comparison (all 3 axes must match: x1, x2, z/y)
   function arePlotsCompatible(plot1, plot2) {
     if (!plot1 || !plot2) return false;
 
+    // Check X1 axis
     const p1x1 = plot1.metadata.xVar || plot1.plotParams?.xVar;
-    const p1x2 = plot1.metadata.xVar2 || plot1.metadata.x2Var || plot1.plotParams?.xVar2;
     const p2x1 = plot2.metadata.xVar || plot2.plotParams?.xVar;
+
+    // Check X2 axis
+    const p1x2 = plot1.metadata.xVar2 || plot1.metadata.x2Var || plot1.plotParams?.xVar2;
     const p2x2 = plot2.metadata.xVar2 || plot2.metadata.x2Var || plot2.plotParams?.xVar2;
 
-    return p1x1 === p2x1 && p1x2 === p2x2;
+    // Check Z/Y axis (the output variable)
+    const p1z = plot1.metadata.zVar || plot1.metadata.yVar || plot1.plotParams?.yVar;
+    const p2z = plot2.metadata.zVar || plot2.metadata.yVar || plot2.plotParams?.yVar;
+
+    return p1x1 === p2x1 && p1x2 === p2x2 && p1z === p2z;
   }
 
   // Compute 2D difference comparison between two plots
   function computeDifferenceComparison(plot1, plot2) {
     const data1 = plot1.data;
     const data2 = plot2.data;
+
+    // Use the same algorithm as benchmark to compute common/differing params
+    const plots = [plot1, plot2];
+    const { common, differing } = computeBenchmarkParams(plots);
 
     // Build lookup maps for fast access
     const map1 = new Map();
@@ -1197,19 +1404,32 @@
       }
     });
 
+    // Create zLabel showing differing params as "Difference (param1 vs param2)"
+    const differingLabel = differing[0] && differing[1]
+      ? `Difference (${differing[0]} vs ${differing[1]})`
+      : 'Difference';
+
     const metadata = {
       type: 'contour',
       x1Label: plot1.metadata.x1Label || 'X1',
       x2Label: plot1.metadata.x2Label || 'X2',
-      zLabel: `Difference (${plot1.metadata.yLabel || 'Plot 1'} - ${plot2.metadata.yLabel || 'Plot 2'})`,
-      xVar: plot1.metadata.xVar,
-      xVar2: plot1.metadata.xVar2 || plot1.metadata.x2Var,
-      yVar: 'difference',
-      plot1Title: getComparisonPlotTitle(plot1),
-      plot2Title: getComparisonPlotTitle(plot2),
+      zLabel: differingLabel,
+      // Fix xVar naming: contour plots use x1Var, not xVar
+      xVar: plot1.metadata.x1Var || plot1.metadata.xVar,
+      x1Var: plot1.metadata.x1Var || plot1.metadata.xVar,
+      xVar2: plot1.metadata.x2Var || plot1.metadata.xVar2,
+      x2Var: plot1.metadata.x2Var || plot1.metadata.xVar2,
+      yVar: plot1.metadata.yVar,  // Keep actual Y var for title generation
+      zVar: plot1.metadata.yVar,  // zVar alias for title
+      // Inherit SNR unit from source plot for toggle functionality
+      snrUnit: plot1.metadata.snrUnit || plot1.plotParams?.snrUnit || 'dB',
+      plot1Title: differing[0] || 'Plot 1',
+      plot2Title: differing[1] || 'Plot 2',
       contourMode: plot1.metadata.contourMode || plot1.plotParams?.contourMode || '2d',
       isDivergingColorScheme: true,
-      comparisonType: 'comparison' // Mark as comparison plot
+      comparisonType: 'comparison', // Mark as comparison plot
+      // Store common params for subtitle (same as benchmark)
+      comparisonCommonParams: formatCommonParams(common)
     };
 
     return { data: comparisonPoints, metadata };
@@ -1228,6 +1448,9 @@
 
   // 2-plot benchmark
   function computeDualSurfaceBenchmark(plot1, plot2) {
+    const plots = [plot1, plot2];
+    const { common, differing } = computeBenchmarkParams(plots);
+
     const overlayData = [
       ...plot1.data.map(point => ({ ...point, plotSource: 'plot1' })),
       ...plot2.data.map(point => ({ ...point, plotSource: 'plot2' }))
@@ -1238,16 +1461,22 @@
       x1Label: plot1.metadata.x1Label || 'X1',
       x2Label: plot1.metadata.x2Label || 'X2',
       zLabel: plot1.metadata.yLabel || plot1.metadata.zLabel || 'Z',
-      xVar: plot1.metadata.xVar,
-      xVar2: plot1.metadata.xVar2 || plot1.metadata.x2Var,
+      xVar: plot1.metadata.x1Var || plot1.metadata.xVar,
+      x1Var: plot1.metadata.x1Var || plot1.metadata.xVar,
+      xVar2: plot1.metadata.x2Var || plot1.metadata.xVar2,
+      x2Var: plot1.metadata.x2Var || plot1.metadata.xVar2,
       yVar: plot1.metadata.yVar,
-      plot1Title: getComparisonPlotTitle(plot1),
-      plot2Title: getComparisonPlotTitle(plot2),
+      zVar: plot1.metadata.yVar,
+      // Use only differing params for colorbar titles (gradient labels)
+      plot1Title: differing[0] || 'Plot 1',
+      plot2Title: differing[1] || 'Plot 2',
       contourMode: '3d',
       isOverlayComparison: true,
       plot1Data: plot1.data,
       plot2Data: plot2.data,
-      comparisonType: 'benchmark' // Mark as benchmark plot
+      comparisonType: 'benchmark',
+      // Store common params for subtitle
+      benchmarkCommonParams: formatCommonParams(common)
     };
 
     return { data: overlayData, metadata };
@@ -1255,13 +1484,16 @@
 
   // 3+ plot benchmark
   function computeMultiSurfaceBenchmark(plots) {
+    const { common, differing } = computeBenchmarkParams(plots);
+
     const overlayData = [];
     const plotDataArrays = {};
 
     plots.forEach((plot, index) => {
       const sourceId = `plot${index + 1}`;
       plotDataArrays[`${sourceId}Data`] = plot.data;
-      plotDataArrays[`${sourceId}Title`] = getComparisonPlotTitle(plot);
+      // Use only differing params for colorbar title
+      plotDataArrays[`${sourceId}Title`] = differing[index] || `Plot ${index + 1}`;
 
       overlayData.push(...plot.data.map(point => ({
         ...point,
@@ -1275,15 +1507,20 @@
       x1Label: firstPlot.metadata.x1Label || 'X1',
       x2Label: firstPlot.metadata.x2Label || 'X2',
       zLabel: firstPlot.metadata.yLabel || firstPlot.metadata.zLabel || 'Z',
-      xVar: firstPlot.metadata.xVar,
-      xVar2: firstPlot.metadata.xVar2 || firstPlot.metadata.x2Var,
+      xVar: firstPlot.metadata.x1Var || firstPlot.metadata.xVar,
+      x1Var: firstPlot.metadata.x1Var || firstPlot.metadata.xVar,
+      xVar2: firstPlot.metadata.x2Var || firstPlot.metadata.xVar2,
+      x2Var: firstPlot.metadata.x2Var || firstPlot.metadata.xVar2,
       yVar: firstPlot.metadata.yVar,
+      zVar: firstPlot.metadata.yVar,
       contourMode: '3d',
       isOverlayComparison: true,
-      isMultiSurfaceBenchmark: true, // Flag for 3+ surfaces
+      isMultiSurfaceBenchmark: true,
       plotCount: plots.length,
-      ...plotDataArrays, // plot1Data, plot1Title, plot2Data, plot2Title, etc.
-      comparisonType: 'benchmark'
+      ...plotDataArrays,
+      comparisonType: 'benchmark',
+      // Store common params for subtitle
+      benchmarkCommonParams: formatCommonParams(common)
     };
 
     return { data: overlayData, metadata };
@@ -1895,7 +2132,7 @@
                   </div>
                 </div>
 
-                {#if plot.isMultiSeries && plot.series}
+                {#if plot.isMultiSeries && plot.series && plot.type !== 'rawData'}
                   <div class="series-list">
                     <div class="series-items">
                       {#each plot.series as series, index (series.plotId)}

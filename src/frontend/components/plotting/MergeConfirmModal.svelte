@@ -3,8 +3,11 @@
   import { createEventDispatcher } from 'svelte';
 
   export let show = false;
-  export let existingPlotInfo = null; // { title, xAxis, yAxis, seriesCount }
-  export let newPlotInfo = null;      // { title, xAxis, yAxis }
+  export let existingPlotInfo = null; // { title, xAxis, yAxis, seriesCount, type }
+  export let newPlotInfo = null;      // { title, xAxis, yAxis, type }
+
+  // Determine if this is a table merge based on plot type
+  $: isTableMerge = existingPlotInfo?.type === 'rawData' || newPlotInfo?.type === 'rawData';
 
   const dispatch = createEventDispatcher();
 
@@ -42,7 +45,9 @@
   <div class="modal-backdrop" on:click={handleBackdropClick} role="dialog" aria-modal="true">
     <div class="modal-container">
       <div class="modal-header">
-        <h3>{$_('plotting.mergeOrNewTitle') || 'Compatible Plot Detected'}</h3>
+        <h3>{isTableMerge
+          ? ($_('plotting.mergeOrNewTitleTable') || 'Compatible Table Detected')
+          : ($_('plotting.mergeOrNewTitle') || 'Compatible Plot Detected')}</h3>
         <button class="close-button" on:click={handleCancel} aria-label="Close">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M1 1l12 12M13 1L1 13"/>
@@ -52,7 +57,9 @@
 
       <div class="modal-body">
         <p class="description">
-          {$_('plotting.mergeOrNewDescription') || 'A plot with the same axes already exists. Would you like to merge the new data or create a separate figure?'}
+          {isTableMerge
+            ? ($_('plotting.mergeOrNewDescriptionTable') || 'A table with the same X axis already exists. Would you like to merge the new data or create a separate table?')
+            : ($_('plotting.mergeOrNewDescription') || 'A plot with the same axes already exists. Would you like to merge the new data or create a separate figure?')}
         </p>
 
         {#if existingPlotInfo}

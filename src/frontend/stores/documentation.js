@@ -214,11 +214,18 @@ export const documentationContent = {
   },
   // Custom Constellation buttons
   'constellation-lucky': {
-    title: 'Random Constellation',
-    category: 'Generation',
-    description: 'Generates a random valid constellation with normalized probabilities and unit energy.',
-    theory: 'Creates random points in the complex plane, assigns random probabilities, then normalizes so probabilities sum to 1 and average energy equals 1.',
-    behavior: 'Click to replace current constellation with a new random one.'
+    title: "I'm Feeling Lucky",
+    category: 'Random Generation',
+    description: 'Generates interesting random constellation patterns inspired by real modulation schemes.',
+    theory: 'Creates diverse patterns probabilistically: Ring (PSK-like, ~35%), Grid (QAM-like, ~20% if square count), Multi-Ring (APSK-like, ~15%), Clustered (~15%), and Scattered (~15%). All constellations are automatically normalized to unit energy and probability sum = 1.',
+    patterns: [
+      { name: 'Ring/PSK', desc: 'Points evenly distributed on a circle with random rotation' },
+      { name: 'Grid/QAM', desc: 'Rectangular arrangement with optional rotation (requires square point count)' },
+      { name: 'Multi-Ring/APSK', desc: 'Concentric rings with different radii, like 16-APSK' },
+      { name: 'Clustered', desc: 'Points grouped into 2-4 clusters around a ring' },
+      { name: 'Scattered', desc: 'Uniformly random positions using polar coordinates for better coverage' }
+    ],
+    behavior: 'Click to generate a new random constellation. Each click produces a different pattern type with random parameters (rotation, spacing, perturbation). The result is always valid and ready for simulation.'
   },
   'constellation-hide-table': {
     title: 'Toggle Table View',

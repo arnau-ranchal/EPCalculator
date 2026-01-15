@@ -122,7 +122,7 @@ export function mapSimulationParams(params, customConstellation = null) {
   };
 }
 
-export function mapPlotParams(plotParams, simulationParams) {
+export function mapPlotParams(plotParams, simulationParams, customConstellation = null) {
   let xVar = plotParams.xVar;
   let xVar2 = plotParams.xVar2;
 
@@ -173,6 +173,13 @@ export function mapPlotParams(plotParams, simulationParams) {
     distribution: plotParams.distribution || 'uniform',
     shaping_param: plotParams.shaping_param || 0
   };
+
+  // Include custom constellation data if provided
+  if (customConstellation && customConstellation.points && customConstellation.points.length > 0) {
+    baseParams.customConstellation = {
+      points: customConstellation.points
+    };
+  }
 
   // Add contour/surface-specific parameters
   if (plotParams.plotType === 'contour' || plotParams.plotType === 'surface') {

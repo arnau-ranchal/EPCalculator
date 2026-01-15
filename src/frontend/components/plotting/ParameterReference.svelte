@@ -1,7 +1,7 @@
 <script>
   import { _ } from 'svelte-i18n';
   import { createEventDispatcher } from 'svelte';
-  import { simulationParams, updateParam, showAdvancedParams, useCustomConstellation as useCustomConstellationStore, customConstellation, generateStandardConstellation, savedCustomConstellations, loadSavedConstellation } from '../../stores/simulation.js';
+  import { simulationParams, updateParam, showAdvancedParams, useCustomConstellation as useCustomConstellationStore, customConstellation, generateStandardConstellation, savedCustomConstellations, loadSavedConstellation, deleteSavedConstellation, exportConstellation, importConstellation } from '../../stores/simulation.js';
   import { docHover } from '../../actions/documentation.js';
   import CustomConstellationModal from './CustomConstellationModal.svelte';
 
@@ -22,6 +22,12 @@
 
   // Track if user was in custom mode before opening modal (for cancel handling)
   let wasCustomBeforeModal = false;
+
+  // File input reference for importing constellations
+  let fileInput;
+
+  // Check if current selection is a saved constellation
+  $: isSelectedSavedConstellation = useCustomConstellation && $customConstellation.id && $customConstellation.id.startsWith('custom_');
 
   // Computed select value - reactive to store changes
   // Show the actual typeModulation value (PAM/PSK/QAM/Custom)
@@ -152,7 +158,13 @@
   function handleModulationTypeChange(event) {
     const value = event.target.value;
 
-    if (value === 'Custom') {
+    if (value === '__upload__') {
+      // Trigger file input for uploading constellation
+      fileInput?.click();
+      // Reset dropdown to previous value (don't actually select __upload__)
+      event.target.value = selectDropdownValue;
+      return;
+    } else if (value === 'Custom') {
       // Track current state before opening modal
       wasCustomBeforeModal = useCustomConstellation;
       // Set custom mode immediately so edit button appears
@@ -221,6 +233,50 @@
     showAdvancedParams.update(show => !show);
   }
 
+  // Download the currently selected constellation
+  function handleDownloadConstellation() {
+    if ($customConstellation.id) {
+      exportConstellation($customConstellation.id);
+    }
+  }
+
+  // Delete the currently selected constellation
+  function handleDeleteConstellation() {
+    if ($customConstellation.id) {
+      const name = $customConstellation.name || 'this constellation';
+      if (confirm($_('paramRef.confirmDelete', { values: { name } }) || `Delete "${name}"?`)) {
+        deleteSavedConstellation($customConstellation.id);
+        // Switch back to PAM
+        useCustomConstellationStore.set(false);
+        updateParam('typeModulation', 'PAM');
+      }
+    }
+  }
+
+  // Trigger file input for import
+  function handleImportClick() {
+    fileInput?.click();
+  }
+
+  // Handle file selection for import
+  async function handleFileSelect(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const result = await importConstellation(file);
+      // Load the newly imported constellation
+      loadSavedConstellation(result.id);
+      updateParam('M', result.pointCount);
+      updateParam('typeModulation', 'Custom');
+    } catch (error) {
+      alert(error.message);
+    }
+
+    // Clear the input so the same file can be selected again
+    event.target.value = '';
+  }
+
   // Format threshold value - use scientific notation for small values
   function formatThreshold(value) {
     if (value < 0.001) {
@@ -246,21 +302,32 @@
   <div class="param-block">
     <div class="param-block-title">{$_('paramRef.constellationParams')}</div>
 
-    {#if shouldShow('M') && !useCustomConstellation}
+    {#if shouldShow('M')}
       <div class="param-row" use:docHover={{ key: 'param-M', position: 'bottom' }}>
         <label for="ref-M">{$_('params.modulationSize')}:</label>
-        {#key $simulationParams.typeModulation}
-          <select
+        {#if useCustomConstellation}
+          <input
+            type="text"
             id="ref-M"
-            name="M"
-            value={$simulationParams.M}
-            on:change={handleInputChange}
-          >
-            {#each validMValues as mVal (mVal)}
-              <option value={mVal}>{mVal}</option>
-            {/each}
-          </select>
-        {/key}
+            value={$customConstellation.points?.length || $simulationParams.M}
+            disabled
+            class="disabled-input"
+            title={$_('paramRef.mFromConstellation') || 'M is determined by constellation points'}
+          />
+        {:else}
+          {#key $simulationParams.typeModulation}
+            <select
+              id="ref-M"
+              name="M"
+              value={$simulationParams.M}
+              on:change={handleInputChange}
+            >
+              {#each validMValues as mVal (mVal)}
+                <option value={mVal}>{mVal}</option>
+              {/each}
+            </select>
+          {/key}
+        {/if}
       </div>
     {/if}
 
@@ -281,12 +348,13 @@
           {#if $savedCustomConstellations.length > 0}
             <optgroup label={$_('paramRef.savedConstellations') || 'Saved Constellations'}>
               {#each $savedCustomConstellations as saved (saved.id)}
-                <option value={saved.id}>{saved.name} ({saved.points.length})</option>
+                <option value={saved.id}>{saved.name}</option>
               {/each}
             </optgroup>
           {/if}
-          <option value="Custom">{$_('paramRef.newCustom') || '+ New Custom...'}</option>
+          <option value="__upload__">{$_('paramRef.uploadConstellation') || '↑ Upload Constellation...'}</option>
         </select>
+        <!-- Edit button -->
         <button
           type="button"
           class="edit-constellation-btn"
@@ -297,6 +365,27 @@
             <path d="M14.166 2.5L17.5 5.833L6.25 17.083H2.917V13.75L14.166 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
+        <!-- Download button (only for saved constellations) -->
+        {#if isSelectedSavedConstellation}
+          <button
+            type="button"
+            class="constellation-action-btn download-btn"
+            on:click={handleDownloadConstellation}
+            title={$_('paramRef.downloadConstellation') || 'Download constellation'}
+          >
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 3v10m0 0l-4-4m4 4l4-4M3 17h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        {/if}
+        <!-- Hidden file input for import -->
+        <input
+          type="file"
+          accept=".json,.constellation.json"
+          bind:this={fileInput}
+          on:change={handleFileSelect}
+          style="display: none;"
+        />
       </div>
     </div>
 
@@ -492,7 +581,7 @@
   /* Parameter rows - matching .form-group.inline style */
   .param-row {
     display: grid;
-    grid-template-columns: 70px 1fr;
+    grid-template-columns: var(--label-width, 70px) 1fr;
     align-items: center;
     gap: 8px;
     margin-bottom: var(--spacing-sm);
@@ -532,6 +621,13 @@
     box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.1);
   }
 
+  .param-row input.disabled-input {
+    background: var(--surface-color, #f5f5f5);
+    color: var(--text-color-secondary);
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+
   /* Modulation type row with edit button */
   .modulation-with-edit {
     display: flex;
@@ -561,6 +657,40 @@
     background: var(--primary-color);
     border-color: var(--primary-color);
     color: white;
+  }
+
+  /* Constellation action buttons (download, delete, import) */
+  .constellation-action-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 7px 8px;
+    cursor: pointer;
+    color: var(--text-color-secondary);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .constellation-action-btn:hover {
+    color: white;
+  }
+
+  .download-btn:hover {
+    background: var(--success-color, #28a745);
+    border-color: var(--success-color, #28a745);
+  }
+
+  .delete-btn:hover {
+    background: var(--danger-color, #dc3545);
+    border-color: var(--danger-color, #dc3545);
+  }
+
+  .import-btn:hover {
+    background: var(--info-color, #17a2b8);
+    border-color: var(--info-color, #17a2b8);
   }
 
   /* SNR with unit selector */

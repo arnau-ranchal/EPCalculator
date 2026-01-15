@@ -79,6 +79,7 @@
           targetRect.top + targetRect.height / 2 - panelHeight / 2,
           viewportHeight - panelHeight - margin
         ));
+        panelStyle = `left: ${left}px; top: ${top}px;`;
         break;
       case 'left':
         left = targetRect.left - panelWidth - margin;
@@ -86,6 +87,7 @@
           targetRect.top + targetRect.height / 2 - panelHeight / 2,
           viewportHeight - panelHeight - margin
         ));
+        panelStyle = `left: ${left}px; top: ${top}px;`;
         break;
       case 'bottom':
         left = Math.max(margin, Math.min(
@@ -93,17 +95,18 @@
           viewportWidth - panelWidth - margin
         ));
         top = targetRect.bottom + margin;
+        panelStyle = `left: ${left}px; top: ${top}px;`;
         break;
       case 'top':
+        // Use bottom positioning so panel grows upward and bottom edge stays above button
         left = Math.max(margin, Math.min(
           targetRect.left + targetRect.width / 2 - panelWidth / 2,
           viewportWidth - panelWidth - margin
         ));
-        top = targetRect.top - panelHeight - margin;
+        const bottom = viewportHeight - targetRect.top + margin;
+        panelStyle = `left: ${left}px; bottom: ${bottom}px;`;
         break;
     }
-
-    panelStyle = `left: ${left}px; top: ${top}px;`;
   }
 
   function handleKeydown(event) {
@@ -166,6 +169,17 @@
             <ul class="doc-formats">
               {#each content.formats as format}
                 <li><strong>{format.name}</strong>: {format.desc}</li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+
+        {#if content.patterns}
+          <div class="doc-section">
+            <h4>Pattern Types</h4>
+            <ul class="doc-patterns">
+              {#each content.patterns as pattern}
+                <li><strong>{pattern.name}</strong>: {pattern.desc}</li>
               {/each}
             </ul>
           </div>
@@ -352,18 +366,21 @@
     color: var(--text-color);
   }
 
-  .doc-formats {
+  .doc-formats,
+  .doc-patterns {
     margin: 0;
     padding-left: var(--spacing-md);
     font-size: var(--font-size-sm);
     color: var(--text-color-secondary);
   }
 
-  .doc-formats li {
+  .doc-formats li,
+  .doc-patterns li {
     margin-bottom: 4px;
   }
 
-  .doc-formats strong {
+  .doc-formats strong,
+  .doc-patterns strong {
     color: var(--text-color);
   }
 

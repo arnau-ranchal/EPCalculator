@@ -401,9 +401,29 @@ function analyzeRangeRelationship(existingRange, newRange) {
   }
 }
 
+// Information-theoretic Y variables that can be merged together on the same plot
+// These are all derived from E0(rho) and represent related channel capacity metrics:
+// - mutual_information = E0'(0) = I(X;Y) - channel capacity
+// - cutoff_rate = E0(1) = R0 - maximum rate for zero-error exponent
+// - critical_rate = E0'(1) = R_crit - rate where exponent slope changes
+const INFO_THEORETIC_Y_VARS = ['mutual_information', 'cutoff_rate', 'critical_rate'];
+
+// Check if two Y variables are compatible for merging on the same plot
+// Returns true if they are the same, or both are info-theoretic variables
+function areYVarsCompatible(yVar1, yVar2) {
+  if (yVar1 === yVar2) return true;
+
+  // Info-theoretic Y variables can be merged together since they share the same scale
+  if (INFO_THEORETIC_Y_VARS.includes(yVar1) && INFO_THEORETIC_Y_VARS.includes(yVar2)) {
+    return true;
+  }
+
+  return false;
+}
+
 // Find a plot with identical params except xRange (for range extension)
 function findRangeExtensionPlot(plots, newPlotData) {
-  if (newPlotData.type !== 'line') return null;
+  if (newPlotData.type !== 'line' && newPlotData.type !== 'rawData') return null;
 
   const newParams = newPlotData.plotParams || {};
   const newSimParams = newPlotData.simulationParams || {};
@@ -415,8 +435,9 @@ function findRangeExtensionPlot(plots, newPlotData) {
     // Skip multi-series plots
     if (plot.isMultiSeries) continue;
 
-    // Only consider line plots
-    if (plot.type !== 'line') continue;
+    // Only consider line plots and tables, and must match type
+    if (plot.type !== 'line' && plot.type !== 'rawData') continue;
+    if (plot.type !== newPlotData.type) continue;
 
     // Check if all params match except xRange
     const plotParams = plot.plotParams || {};
@@ -525,8 +546,9 @@ function findExactMatchPlot(plots, newPlotData) {
     // Skip multi-series plots for exact matching
     if (plot.isMultiSeries) continue;
 
-    // Only consider line plots
-    if (plot.type !== 'line') continue;
+    // Only consider line plots and tables, and must match type
+    if (plot.type !== 'line' && plot.type !== 'rawData') continue;
+    if (plot.type !== newPlotData.type) continue;
 
     const plotParams = plot.plotParams || {};
     const plotSimParams = plot.simulationParams || {};
@@ -912,8 +934,8 @@ export function addPlot(plotData) {
   let currentPlots = [];
   activePlots.subscribe(p => currentPlots = p)();
 
-  // For line plots, check if there's a compatible plot and prompt user
-  if (plotData.type === 'line') {
+  // For line plots and tables, check if there's a compatible plot and prompt user
+  if (plotData.type === 'line' || plotData.type === 'rawData') {
     // FIRST: Check for exact parameter match
     const exactMatch = findExactMatchPlot(currentPlots, plotData);
     if (exactMatch) {
@@ -1027,7 +1049,105 @@ export function confirmMerge() {
 
         return updatedPlot;
       } else if (mergeType === 'compatibleAxes') {
-        // Add as new series
+        // For tables (rawData), handle differently - use parameter columns instead of series legend
+        if (plot.type === 'rawData') {
+          // Find differing parameters between existing and new data
+          const existingSeriesForComparison = plot.series ? plot.series[0] : plot;
+          const differingParams = findDifferingParams(existingSeriesForComparison, newPlotData);
+
+          // Create series array (for storing multiple data sets)
+          const existingSeries = plot.series || [{
+            ...plot,
+            plotId: `series_${plot.plotId}_0`,
+            timestamp: plot.timestamp,
+            data: plot.data,
+            metadata: { ...plot.metadata },
+            plotParams: plot.plotParams,
+            simulationParams: plot.simulationParams,
+            constellationInfo: plot.constellationInfo
+          }];
+
+          const newSeriesData = {
+            ...newPlotData,
+            plotId: `plot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: Date.now(),
+            metadata: { ...newPlotData.metadata }
+          };
+
+          console.log(`Adding table data with parameter columns:`, differingParams);
+
+          // Build differingParams that includes ALL series
+          // We need to rebuild it to include all series, not just comparison of two
+          const allSeries = [...existingSeries, newSeriesData];
+          const allDifferingParams = {};
+
+          // For each parameter, check if it varies across all series
+          const simParamKeys = ['M', 'typeModulation', 'SNR', 'R', 'n', 'N', 'threshold'];
+          const xVar = plot.plotParams?.xVar || plot.metadata?.xVar;
+
+          for (const key of simParamKeys) {
+            if (key === xVar) continue;
+
+            if (key === 'typeModulation') {
+              // Special handling: treat different custom constellations as different types
+              // Use constellation name/ID as the effective value when typeModulation is 'Custom'
+              const effectiveValues = allSeries.map(s => {
+                const type = s.simulationParams?.typeModulation;
+                if (type === 'Custom') {
+                  // Use constellation name or ID to distinguish different custom constellations
+                  return `Custom:${s.constellationInfo?.constellationName || s.constellationInfo?.constellationId || 'unknown'}`;
+                }
+                return type;
+              });
+              const uniqueValues = [...new Set(effectiveValues)];
+              if (uniqueValues.length > 1) {
+                allDifferingParams[key] = true;
+              }
+            } else {
+              const values = allSeries.map(s => s.simulationParams?.[key]);
+              const uniqueValues = [...new Set(values)];
+              if (uniqueValues.length > 1) {
+                allDifferingParams[key] = true;
+              }
+            }
+          }
+
+          // Check distribution
+          const distributions = allSeries.map(s => {
+            const dist = s.plotParams?.distribution || 'uniform';
+            const beta = s.plotParams?.shaping_param || 0;
+            return (dist === 'maxwell-boltzmann' && beta === 0) ? 'uniform' : dist;
+          });
+          if ([...new Set(distributions)].length > 1) {
+            allDifferingParams.distribution = true;
+          }
+
+          // Check shaping_param (for MB distributions)
+          const betas = allSeries.map(s => s.plotParams?.shaping_param || 0);
+          if ([...new Set(betas)].length > 1 && distributions.some(d => d === 'maxwell-boltzmann')) {
+            allDifferingParams.shaping_param = true;
+          }
+
+          // Note: We don't add a separate 'constellation' column because when typeModulation
+          // is 'Custom', the Type column already shows the constellation name via formatParamValue
+
+          const multiSeriesTable = {
+            ...plot,
+            series: allSeries,
+            isMultiSeries: true,
+            metadata: {
+              ...plot.metadata,
+              differingParams: allDifferingParams  // Store which params differ across series
+            }
+          };
+
+          return {
+            ...multiSeriesTable,
+            timestamp: Date.now()
+          };
+        }
+
+        // For line plots, use the existing series/legend approach
         // For multi-series, don't pre-assign colors - let PlotContainer resolve them
         // based on series index and current theme color (to avoid color collisions)
         // IMPORTANT: First series must have a DIFFERENT plotId than the container
@@ -1109,12 +1229,62 @@ export function cancelPendingMerge() {
   pendingMerge.set(null);
 }
 
+// Find differing parameters between two plots (for table merging)
+// Returns an object with parameter names as keys and their differing values
+function findDifferingParams(plot1, plot2) {
+  const differing = {};
+  const sim1 = plot1.simulationParams || {};
+  const sim2 = plot2.simulationParams || {};
+  const plot1Params = plot1.plotParams || {};
+  const plot2Params = plot2.plotParams || {};
+
+  // Skip the X variable from comparison (it's what we're iterating over)
+  const xVar = plot1Params.xVar || plot1.metadata?.xVar;
+
+  // Simulation parameters to check
+  const simParamKeys = ['M', 'typeModulation', 'SNR', 'R', 'n', 'N', 'threshold'];
+  for (const key of simParamKeys) {
+    // Skip the X variable
+    if (key === xVar) continue;
+    if (sim1[key] !== sim2[key]) {
+      differing[key] = { val1: sim1[key], val2: sim2[key] };
+    }
+  }
+
+  // Also check SNR unit (special case)
+  if (sim1.SNRUnit !== sim2.SNRUnit && xVar !== 'SNR') {
+    differing.SNRUnit = { val1: sim1.SNRUnit, val2: sim2.SNRUnit };
+  }
+
+  // Check distribution and shaping_param
+  const dist1 = plot1Params.distribution || 'uniform';
+  const dist2 = plot2Params.distribution || 'uniform';
+  const beta1 = plot1Params.shaping_param || 0;
+  const beta2 = plot2Params.shaping_param || 0;
+
+  // Normalize: MB with beta=0 is same as uniform
+  const normDist1 = (dist1 === 'maxwell-boltzmann' && beta1 === 0) ? 'uniform' : dist1;
+  const normDist2 = (dist2 === 'maxwell-boltzmann' && beta2 === 0) ? 'uniform' : dist2;
+
+  if (normDist1 !== normDist2) {
+    differing.distribution = { val1: dist1, val2: dist2 };
+  }
+  if (normDist1 === 'maxwell-boltzmann' && normDist2 === 'maxwell-boltzmann' && beta1 !== beta2) {
+    differing.shaping_param = { val1: beta1, val2: beta2 };
+  }
+
+  // Note: We don't check constellation separately - it's shown via typeModulation='Custom'
+
+  return differing;
+}
+
 function findCompatiblePlot(plots, newPlotData) {
-  if (newPlotData.type !== 'line') return null;
+  if (newPlotData.type !== 'line' && newPlotData.type !== 'rawData') return null;
 
   return plots.find(plot => {
-    // Only line plots can be combined
-    if (plot.type !== 'line') return false;
+    // Only line plots and tables can be combined, and must match type
+    if (plot.type !== 'line' && plot.type !== 'rawData') return false;
+    if (plot.type !== newPlotData.type) return false;
 
     // Check if axes match (x and y variables)
     const existingXVar = plot.plotParams?.xVar || plot.metadata?.xVar;
@@ -1122,9 +1292,16 @@ function findCompatiblePlot(plots, newPlotData) {
     const newXVar = newPlotData.plotParams?.xVar || newPlotData.metadata?.xVar;
     const newYVar = newPlotData.plotParams?.yVar || newPlotData.metadata?.yVar;
 
-    // Group plots with same X and Y variables (including SNR plots with different units)
-    // The backend returns LINEAR SNR for both dB and linear units, so they can be plotted together
-    return existingXVar === newXVar && existingYVar === newYVar;
+    // For tables (rawData), only xVar needs to match (tables show all Y variables)
+    if (newPlotData.type === 'rawData') {
+      return existingXVar === newXVar;
+    }
+
+    // Group plots with same X variable and compatible Y variables
+    // Y variables are compatible if they are the same, or both are info-theoretic metrics
+    // (mutual_information, cutoff_rate, critical_rate can be plotted together)
+    // SNR plots with different units (dB/linear) can also merge since backend returns linear values
+    return existingXVar === newXVar && areYVarsCompatible(existingYVar, newYVar);
   });
 }
 

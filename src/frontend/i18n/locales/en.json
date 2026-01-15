@@ -88,12 +88,12 @@
     "title": "Plotting Controls",
     "reset": "Reset",
     "unit": "Unit",
-    "outputType": "Output",
+    "outputType": "Visualization",
     "type": "Type",
     "linePlot": "Line Plot",
     "contourPlot": "Contour Plot",
     "rawData": "Table",
-    "variables": "Variables",
+    "variables": "Axes & Sweep",
     "yAxis": "Y",
     "xAxis": "X",
     "x1Axis": "X1",
@@ -141,7 +141,7 @@
     "mode": "Mode",
     "contour2d": "2D Contour",
     "surface3d": "3D Surface",
-    "styling": "Styling",
+    "styling": "Line Style",
     "color": "Color",
     "lineType": "Type",
     "solid": "Solid",
@@ -170,6 +170,8 @@
     "downloadCSV": "Download CSV",
     "mergeOrNewTitle": "Compatible Plot Detected",
     "mergeOrNewDescription": "A plot with the same axes already exists. Would you like to merge the new data or create a separate figure?",
+    "mergeOrNewTitleTable": "Compatible Table Detected",
+    "mergeOrNewDescriptionTable": "A table with the same X axis already exists. Would you like to merge the new data or create a separate table?",
     "existingPlot": "Existing plot",
     "newData": "New data",
     "series": "series",
@@ -180,9 +182,9 @@
     "cancel": "Cancel"
   },
   "paramRef": {
-    "title": "Base Parameters",
+    "title": "System Model",
     "constellationParams": "Constellation",
-    "codeParams": "Channel & Code",
+    "codeParams": "Code",
     "advancedParams": "Advanced",
     "shapingBeta": "β (shaping)",
     "modulation": "Modulation",
@@ -190,6 +192,13 @@
     "newCustom": "+ New Custom...",
     "savedConstellations": "Saved Constellations",
     "editConstellation": "Edit constellation",
+    "downloadConstellation": "Download constellation",
+    "deleteConstellation": "Delete constellation",
+    "importConstellation": "Import constellation",
+    "uploadConstellation": "↑ Upload Constellation...",
+    "remove": "remove",
+    "confirmDelete": "Delete \"{name}\"?",
+    "mFromConstellation": "M is determined by constellation points",
     "editParams": "Edit Parameters",
     "sweepingOver": "Sweeping over",
     "and": "and"
@@ -307,7 +316,8 @@
     "optimalRho": "Optimal ρ",
     "mutualInformation": "Mutual Information",
     "cutoffRate": "Cutoff Rate (R₀)",
-    "criticalRate": "Critical Rate (R_crit)"
+    "criticalRate": "Critical Rate (R_crit)",
+    "informationRate": "Information Rate (bits)"
   },
   "plotLegend": {
     "series": "Series",
@@ -322,7 +332,10 @@
     "shapingParam": "β",
     "snrUnit": "SNR Unit",
     "uniform": "Uniform",
-    "maxwellBoltzmann": "MB"
+    "maxwellBoltzmann": "MB",
+    "mutualInformation": "I(X;Y)",
+    "cutoffRate": "R₀",
+    "criticalRate": "Rcrit"
   },
   "plotItem": {
     "noDataAvailable": "No data available",

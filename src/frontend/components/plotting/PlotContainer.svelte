@@ -38,8 +38,12 @@
     rho: $_('plotAxis.optimalRho'),
     mutual_information: $_('plotAxis.mutualInformation'),
     cutoff_rate: $_('plotAxis.cutoffRate'),
-    critical_rate: $_('plotAxis.criticalRate')
+    critical_rate: $_('plotAxis.criticalRate'),
+    information_rate: $_('plotAxis.informationRate')
   };
+
+  // Info-theoretic Y variables that can be merged together on the same plot
+  const INFO_THEORETIC_Y_VARS = ['mutual_information', 'cutoff_rate', 'critical_rate'];
 
   // Translated legend labels - reactive to language changes
   $: legendLabels = {
@@ -52,7 +56,10 @@
     threshold: $_('plotLegend.threshold'),
     distribution: $_('plotLegend.distribution'),
     shaping_param: $_('plotLegend.shapingParam'),
-    snrUnit: $_('plotLegend.snrUnit')
+    snrUnit: $_('plotLegend.snrUnit'),
+    mutual_information: $_('plotLegend.mutualInformation'),
+    cutoff_rate: $_('plotLegend.cutoffRate'),
+    critical_rate: $_('plotLegend.criticalRate')
   };
 
   // Translated distribution names
@@ -314,9 +321,30 @@
       let zLabel = getTranslatedAxisLabel(zVar, currentSnrUnit);
     } else {
       // For regular plots: X=xVar, Y=yVar - use translated labels
-      const yVar = meta.yVar;
       xLabel = getTranslatedAxisLabel(xVar, snrUnit);
-      yLabel = getTranslatedAxisLabel(yVar, snrUnit);
+
+      // Check if this is a multi-series plot with varying Y variables
+      // If the Y vars are all info-theoretic metrics, use combined label
+      if (multiSeries && seriesData && seriesData.length > 1) {
+        const yVars = seriesData.map(s => s.plotParams?.yVar || s.metadata?.yVar || meta.yVar);
+        const uniqueYVars = [...new Set(yVars)];
+
+        if (uniqueYVars.length > 1) {
+          // Check if all unique Y vars are info-theoretic
+          const allInfoTheoretic = uniqueYVars.every(v => INFO_THEORETIC_Y_VARS.includes(v));
+          if (allInfoTheoretic) {
+            // Use combined label for info-theoretic metrics
+            yLabel = axisLabels.information_rate;
+          } else {
+            // Mixed types - use first Y var as fallback
+            yLabel = getTranslatedAxisLabel(meta.yVar, snrUnit);
+          }
+        } else {
+          yLabel = getTranslatedAxisLabel(meta.yVar, snrUnit);
+        }
+      } else {
+        yLabel = getTranslatedAxisLabel(meta.yVar, snrUnit);
+      }
     }
 
     // Transform data from linear to dB if needed
@@ -461,11 +489,13 @@
 
     // Handle different plot types
     if (meta.type === 'rawData') {
-      return createRawDataTable(plotData, meta, xLabel, yLabel, scale);
+      return createRawDataTable(plotData, meta, xLabel, yLabel, scale, seriesData, multiSeries);
     } else if (meta.type === 'contour') {
-      // Get translated zLabel
+      // Get translated zLabel - for comparison plots, use the custom zLabel from metadata
+      // which contains "Difference (param1 vs param2)" format
       const zVar = meta.zVar || meta.yVar;
-      const zLabel = getTranslatedAxisLabel(zVar, snrUnit);
+      const isComparisonPlot = meta.comparisonType === 'comparison';
+      const zLabel = isComparisonPlot && meta.zLabel ? meta.zLabel : getTranslatedAxisLabel(zVar, snrUnit);
       return createContourPlot(plotData, meta, options, xLabel, yLabel, zLabel, frameVisible);
     } else if (multiSeries && seriesData) {
       return createMultiSeriesLinePlot(seriesData, meta, options, hoveredIndex, frameVisible, emphasisColorValue);
@@ -588,7 +618,7 @@
     return container;
   }
 
-  function createRawDataTable(plotData, meta, xLabel, yLabel, scale) {
+  function createRawDataTable(plotData, meta, xLabel, yLabel, scale, seriesData, multiSeries) {
     // Smart number formatter: use regular notation for small exponents, scientific for large
     function formatNumber(num) {
       if (typeof num !== 'number' || !isFinite(num)) return String(num);
@@ -608,8 +638,47 @@
       return num.toExponential(6);
     }
 
+    // Format parameter value for display
+    function formatParamValue(key, value, seriesItem) {
+      if (key === 'typeModulation') {
+        // For Custom constellations, show the constellation name instead of "Custom"
+        if (value === 'Custom') {
+          return seriesItem?.constellationInfo?.constellationName || 'Custom';
+        }
+        return value;
+      }
+      if (key === 'distribution') {
+        return value === 'maxwell-boltzmann' ? 'MB' : (value === 'uniform' ? 'Uni' : value);
+      }
+      if (key === 'shaping_param') {
+        return typeof value === 'number' ? value.toFixed(1) : value;
+      }
+      return value;
+    }
+
+    // Get parameter label for header
+    function getParamLabel(key) {
+      const labels = {
+        M: 'M',
+        typeModulation: 'Type',
+        SNR: 'SNR',
+        R: 'R',
+        n: 'n',
+        N: 'N',
+        threshold: 'Thr',
+        distribution: 'Dist',
+        shaping_param: 'β'
+      };
+      return labels[key] || key;
+    }
+
     // Check if this is multi-Y table mode (all 3 Y variables)
     const isMultiY = meta.isMultiY === true;
+
+    // Check if this is a multi-series table with differing parameters
+    const differingParams = meta.differingParams || {};
+    const hasMultiSeries = multiSeries && seriesData && seriesData.length > 1;
+    const hasDifferingParams = hasMultiSeries && Object.keys(differingParams).length > 0;
 
     // Get CSS variables for consistent styling
     const computedStyles = getComputedStyle(document.documentElement);
@@ -619,7 +688,7 @@
     const container = document.createElement('div');
     container.style.cssText = `
       width: 100%;
-      max-width: ${isMultiY ? '1000px' : '800px'};
+      max-width: ${isMultiY ? '1200px' : '800px'};
     `;
 
     // Create scrollable wrapper - shows ~10 rows at a time
@@ -640,21 +709,27 @@
     const headerRow = document.createElement('tr');
     headerRow.style.cssText = 'background: #fdf5f6;';
 
+    // Get list of differing param keys (in order)
+    const differingParamKeys = Object.keys(differingParams);
+
     // Define headers based on mode
     let headers;
     if (isMultiY) {
-      // Multi-Y mode: X, Error Exponent, Error Probability, Optimal ρ
-      // Use translated headers from metadata if available
+      // Multi-Y mode: X, [param columns if differing], Error Exponent, Error Probability, Optimal ρ, etc.
       const th = meta.tableHeaders || {};
-      headers = [
-        xLabel,
+      headers = [xLabel];
+      // Add parameter columns after X for differing params
+      differingParamKeys.forEach(key => {
+        headers.push(getParamLabel(key));
+      });
+      headers.push(
         th.errorExponent || 'Error Exponent',
         th.errorProbability || 'Error Probability',
         th.optimalRho || 'Optimal ρ',
         th.mutualInformation || 'Mutual Information',
         th.cutoffRate || 'Cutoff Rate (R₀)',
         th.criticalRate || 'Critical Rate (R_crit)'
-      ];
+      );
     } else {
       // Legacy single-Y mode
       const isLogX = scale === 'logX' || scale === 'logLog';
@@ -689,8 +764,29 @@
     const tbody = document.createElement('tbody');
 
     if (isMultiY) {
-      // Multi-Y mode: each row has x, error_exponent, error_probability, rho
-      plotData.forEach((point, index) => {
+      // Multi-Y mode: Combine data from all series if multi-series
+      let allRows = [];
+
+      if (hasMultiSeries) {
+        // Combine data from all series, adding series reference for param extraction
+        seriesData.forEach((seriesItem, seriesIdx) => {
+          const seriesPoints = seriesItem.data || [];
+          seriesPoints.forEach(point => {
+            allRows.push({
+              ...point,
+              _seriesIdx: seriesIdx,
+              _seriesItem: seriesItem
+            });
+          });
+        });
+        // Sort by X value for clean display
+        allRows.sort((a, b) => a.x - b.x);
+      } else {
+        // Single series - just use plotData
+        allRows = plotData.map(point => ({ ...point, _seriesIdx: 0, _seriesItem: null }));
+      }
+
+      allRows.forEach((point, index) => {
         const row = document.createElement('tr');
         const bgColor = index % 2 === 0 ? 'white' : '#fafafa';
         row.style.cssText = `background: ${bgColor}; transition: background-color 0.15s;`;
@@ -707,6 +803,23 @@
         td1.textContent = formatNumber(point.x);
         td1.style.cssText = `padding: 8px 12px; border: 1px solid ${borderColor}; text-align: right; font-family: "Courier New", monospace; color: #374151;`;
         row.appendChild(td1);
+
+        // Add parameter columns for differing params
+        const seriesItem = point._seriesItem || (seriesData && seriesData[point._seriesIdx]);
+        differingParamKeys.forEach(key => {
+          const td = document.createElement('td');
+          let paramValue;
+
+          if (key === 'distribution' || key === 'shaping_param') {
+            paramValue = seriesItem?.plotParams?.[key];
+          } else {
+            paramValue = seriesItem?.simulationParams?.[key];
+          }
+
+          td.textContent = formatParamValue(key, paramValue, seriesItem);
+          td.style.cssText = `padding: 8px 12px; border: 1px solid ${borderColor}; text-align: right; font-family: "Courier New", monospace; color: #374151;`;
+          row.appendChild(td);
+        });
 
         // Error Exponent
         const td2 = document.createElement('td');
@@ -1057,18 +1170,33 @@
       return seriesData.map((_, index) => `${seriesLabel} ${index + 1}`);
     }
 
+    // Check if Y variables differ between series (for merged info-theoretic plots)
+    const yVars = seriesData.map(series =>
+      series.plotParams?.yVar || series.metadata?.yVar || yVar
+    );
+    const uniqueYVars = [...new Set(yVars)];
+    const hasVaryingYVar = uniqueYVars.length > 1;
+
     // Define basic parameters (excluding advanced ones)
     const basicSimulationParams = ['M', 'typeModulation', 'SNR', 'R', 'n'];
     const basicPlotParams = ['distribution', 'shaping_param', 'snrUnit'];
 
-    // Exclude X and Y axis parameters from labeling
-    const excludedParams = new Set([xVar, yVar]);
+    // Exclude X axis parameter from labeling (Y excluded only if not varying)
+    const excludedParams = new Set([xVar]);
+    if (!hasVaryingYVar) {
+      excludedParams.add(yVar);
+    }
 
     const availableSimParams = basicSimulationParams.filter(key => !excludedParams.has(key));
     const availablePlotParams = basicPlotParams.filter(key => !excludedParams.has(key));
 
     // Find parameters that vary between series
     const varyingParams = [];
+
+    // If Y variable varies, add it first (most important distinguishing factor)
+    if (hasVaryingYVar) {
+      varyingParams.push({ source: 'yVar', key: 'yVar' });
+    }
 
     // Check simulation parameters
     for (const key of availableSimParams) {
@@ -1125,6 +1253,14 @@
         const seriesDistribution = series.plotParams?.distribution;
 
         for (const param of varyingParams) {
+          // Handle Y variable specially - use translated label directly (no "Y=" prefix)
+          if (param.source === 'yVar') {
+            const seriesYVar = series.plotParams?.yVar || series.metadata?.yVar || yVar;
+            const yLabel = paramDisplayNames[seriesYVar] || seriesYVar;
+            labelParts.push(yLabel);
+            continue;
+          }
+
           // Skip shaping_param for this specific series if it has uniform distribution
           if (param.key === 'shaping_param' && seriesDistribution === 'uniform') {
             continue;
@@ -1513,6 +1649,33 @@
     }
   }
 
+  // Convert a solid color to a gradient colorscale for Plotly surfaces
+  function createColorscaleFromColor(color) {
+    // Parse the color to RGB
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+
+    // Create gradient from very light to full saturation
+    const lighten = (c, factor) => Math.min(255, Math.round(c + (255 - c) * factor));
+    const darken = (c, factor) => Math.max(0, Math.round(c * factor));
+
+    const toHex = (r, g, b) => `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+    return [
+      [0, toHex(lighten(r, 0.92), lighten(g, 0.92), lighten(b, 0.92))],   // Very light
+      [0.2, toHex(lighten(r, 0.75), lighten(g, 0.75), lighten(b, 0.75))], // Light
+      [0.4, toHex(lighten(r, 0.5), lighten(g, 0.5), lighten(b, 0.5))],    // Medium-light
+      [0.6, toHex(r, g, b)],                                               // Original color
+      [0.8, toHex(darken(r, 0.8), darken(g, 0.8), darken(b, 0.8))],       // Darker
+      [1, toHex(darken(r, 0.6), darken(g, 0.6), darken(b, 0.6))]          // Darkest
+    ];
+  }
+
   function render3DPlot(plotData, meta) {
     if (!plotlyContainer) return;
 
@@ -1525,9 +1688,10 @@
     const zVar = meta.zVar || meta.yVar;
 
     // Generate dynamic translated labels based on SNR unit
-    let x1Label = getTranslatedAxisLabel(x1Var, currentSnrUnit);
-    let x2Label = getTranslatedAxisLabel(x2Var, currentSnrUnit);
-    let zLabel = getTranslatedAxisLabel(zVar, currentSnrUnit);
+    // Fall back to pre-computed labels from metadata if variables are not set
+    let x1Label = x1Var ? getTranslatedAxisLabel(x1Var, currentSnrUnit) : (meta.x1Label || 'X1');
+    let x2Label = x2Var ? getTranslatedAxisLabel(x2Var, currentSnrUnit) : (meta.x2Label || 'X2');
+    let zLabel = zVar ? getTranslatedAxisLabel(zVar, currentSnrUnit) : (meta.zLabel || meta.yLabel || 'Z');
 
     let data;
 
@@ -1591,39 +1755,11 @@
         };
       };
 
-      // Define colorscales for multiple surfaces
-      const colorScales = [
-        // Purple (Plot 1)
-        [
-          [0, '#faf5ff'], [0.2, '#f3e8ff'], [0.4, '#d8b4fe'],
-          [0.6, '#c084fc'], [0.8, '#a855f7'], [1, '#9333ea']
-        ],
-        // Yellow (Plot 2)
-        [
-          [0, '#fefce8'], [0.2, '#fef9c3'], [0.4, '#fde047'],
-          [0.6, '#facc15'], [0.8, '#eab308'], [1, '#ca8a04']
-        ],
-        // Green (Plot 3)
-        [
-          [0, '#f0fdf4'], [0.2, '#dcfce7'], [0.4, '#86efac'],
-          [0.6, '#4ade80'], [0.8, '#22c55e'], [1, '#15803d']
-        ],
-        // Orange (Plot 4)
-        [
-          [0, '#fff7ed'], [0.2, '#ffedd5'], [0.4, '#fdba74'],
-          [0.6, '#fb923c'], [0.8, '#f97316'], [1, '#c2410c']
-        ],
-        // Cyan (Plot 5)
-        [
-          [0, '#ecfeff'], [0.2, '#cffafe'], [0.4, '#67e8f9'],
-          [0.6, '#22d3ee'], [0.8, '#06b6d4'], [1, '#0e7490']
-        ],
-        // Pink (Plot 6)
-        [
-          [0, '#fdf2f8'], [0.2, '#fce7f3'], [0.4, '#f9a8d4'],
-          [0.6, '#f472b6'], [0.8, '#ec4899'], [1, '#be185d']
-        ]
-      ];
+      // Generate colorscales matching line plot colors:
+      // First surface uses emphasisColor (theme primary), rest use filtered palette
+      const filteredPalette = getFilteredPalette(emphasisColor);
+      const surfaceColors = [emphasisColor, ...filteredPalette];
+      const colorScales = surfaceColors.map(color => createColorscaleFromColor(color));
 
       if (meta.isMultiSurfaceBenchmark) {
         // Multi-surface benchmark (3+ plots)

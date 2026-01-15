@@ -1,5 +1,6 @@
 <script>
   import { _ } from 'svelte-i18n';
+  import { onMount, tick } from 'svelte';
   import { plotParams, plotValidation, updatePlotParam } from '../../stores/plotting.js';
   import { simulationParams, useCustomConstellation } from '../../stores/simulation.js';
   import { currentColorTheme } from '../../stores/theme.js';
@@ -12,6 +13,39 @@
 
   // Modal state
   let isModalOpen = false;
+
+  // Reference to the controls container for dynamic label alignment
+  let controlsContainer;
+
+  // Measure all labels and set consistent width via CSS variable
+  async function alignLabels() {
+    if (!controlsContainer) return;
+    await tick();
+
+    // Query all labels in compact sections, variable blocks, and param-reference
+    const labels = controlsContainer.querySelectorAll('.form-section.compact-section h4, .variable-block .form-group.inline > label, .param-row > label');
+
+    if (labels.length === 0) return;
+
+    // Find the widest label
+    let maxWidth = 0;
+    labels.forEach(label => {
+      const width = label.getBoundingClientRect().width;
+      if (width > maxWidth) maxWidth = width;
+    });
+
+    // Set CSS variable on container (add some padding)
+    controlsContainer.style.setProperty('--label-width', `${Math.ceil(maxWidth)}px`);
+  }
+
+  onMount(() => {
+    alignLabels();
+  });
+
+  // Re-align when plot type changes (different labels visible)
+  $: if ($plotParams.plotType && controlsContainer) {
+    alignLabels();
+  }
 
   function openModal() {
     isModalOpen = true;
@@ -135,9 +169,9 @@
 
   // Reactive variable options using translation keys
   // Code length (n) only makes sense for Error Probability plots (Pe = 2^(-n*E))
-  // M is not available when using custom constellation
+  // M is disabled (not removed) when using custom constellation to preserve dropdown indices
   $: variableOptions = [
-    ...($useCustomConstellation ? [] : [{ value: 'M', label: $_('plotting.modulationSize'), acronym: 'M' }]),
+    { value: 'M', label: $_('plotting.modulationSize'), acronym: 'M', disabled: $useCustomConstellation },
     { value: 'SNR', label: $_('plotting.snr'), acronym: 'SNR' },
     { value: 'R', label: $_('plotting.rate'), acronym: 'R' },
     { value: 'N', label: $_('plotting.quadrature'), acronym: 'N' },
@@ -215,7 +249,7 @@
   $: xVar2Acronym = getVarAcronym($plotParams.xVar2);
 </script>
 
-<div class="plotting-controls">
+<div class="plotting-controls" bind:this={controlsContainer}>
   <div class="controls-header">
     <h3>{$_('plotting.title')}</h3>
     <div class="header-actions">
@@ -276,7 +310,7 @@
             on:change={handleInputChange}
           >
             {#each variableOptions as option}
-              <option value={option.value}>{option.label}</option>
+              <option value={option.value} disabled={option.disabled}>{option.label}</option>
             {/each}
           </select>
         </div>
@@ -359,7 +393,7 @@
               on:change={handleInputChange}
             >
               {#each variableOptions as option}
-                <option value={option.value}>{option.label}</option>
+                <option value={option.value} disabled={option.disabled}>{option.label}</option>
               {/each}
             </select>
           </div>
@@ -554,15 +588,10 @@
 
   .form-section.compact-section h4 {
     margin: 0;
-    min-width: 70px;
-    width: 70px;
     flex-shrink: 0;
-    /* Allow wrapping for long translations */
-    white-space: normal;
-    word-wrap: break-word;
-    line-height: 1.3;
-    /* Align with Variables title */
-    margin-left: 0;
+    white-space: nowrap;
+    width: var(--label-width, auto);
+    min-width: var(--label-width, auto);
   }
 
   .form-section.compact-section select {
@@ -622,9 +651,9 @@
     gap: 8px;
   }
 
-  /* Within variable-block, use fixed label width, dropdown expands to fill */
+  /* Within variable-block, label uses consistent width, dropdown expands to fill */
   .variable-block .form-group.inline {
-    grid-template-columns: 70px 1fr;
+    grid-template-columns: var(--label-width, auto) 1fr;
   }
 
   /* Sub-options: indent the label text, not the whole row */

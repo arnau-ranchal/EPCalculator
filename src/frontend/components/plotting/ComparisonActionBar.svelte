@@ -70,7 +70,6 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M18 6L6 18M6 6l12 12"/>
         </svg>
-        Clear
       </button>
     </div>
   </div>
@@ -82,7 +81,7 @@
     bottom: -100px;
     left: 50%;
     transform: translateX(-50%);
-    background: white;
+    background: var(--card-background);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -119,7 +118,7 @@
 
   .selection-text {
     font-size: 14px;
-    color: #666;
+    color: var(--text-color-secondary);
     font-weight: 500;
   }
 
@@ -149,14 +148,15 @@
   }
 
   .comparison-btn {
-    background: var(--primary-color);
-    color: white;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
   }
 
   .comparison-btn:hover:not(:disabled) {
-    background: #a60d26;
+    background: var(--hover-background);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .comparison-btn:active:not(:disabled) {
@@ -164,14 +164,15 @@
   }
 
   .benchmark-btn {
-    background: #0066cc;
-    color: white;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
   }
 
   .benchmark-btn:hover:not(:disabled) {
-    background: #0052a3;
+    background: var(--hover-background);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .benchmark-btn:active:not(:disabled) {
@@ -179,14 +180,15 @@
   }
 
   .select-all-btn {
-    background: #16a34a;
-    color: white;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
   }
 
   .select-all-btn:hover {
-    background: #15803d;
+    background: var(--hover-background);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .select-all-btn:active {
@@ -194,14 +196,16 @@
   }
 
   .clear-btn {
-    background: #f5f5f5;
-    color: #666;
+    background: var(--surface-color);
+    color: var(--text-color-secondary);
     border: 1px solid var(--border-color);
+    padding: 10px;
+    aspect-ratio: 1;
   }
 
   .clear-btn:hover {
-    background: #e8e8e8;
-    color: #333;
+    background: var(--hover-background);
+    color: var(--text-color);
   }
 
   .action-btn svg {

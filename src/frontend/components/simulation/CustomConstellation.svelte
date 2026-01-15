@@ -248,7 +248,7 @@
     const targetElement = event.currentTarget; // Capture immediately before async
     docHoverTimeout = setTimeout(() => {
       if (targetElement) {
-        showDocumentation(docKey, targetElement, 'bottom');
+        showDocumentation(docKey, targetElement, 'top');
       }
     }, DOC_HOVER_DELAY);
   }
@@ -340,7 +340,29 @@
     meanImag: 0
   };
 
+  /**
+   * Generate random constellation with intelligent pattern selection.
+   *
+   * All 8 combinations of the 3 checkboxes produce meaningful results:
+   *
+   * | NumPts | Mean | Positions | Behavior |
+   * |--------|------|-----------|----------|
+   * | ✓ | ✓ | ✓ | Full Random: new count, new center, interesting pattern |
+   * | ✓ | ✓ | ✗ | Adjust & Shift: modify count, shift to new center |
+   * | ✓ | ✗ | ✓ | New Pattern at Fixed Center: random count around origin/fixed |
+   * | ✓ | ✗ | ✗ | Adjust Count: add/remove points, keep center |
+   * | ✗ | ✓ | ✓ | Fixed Count, New Pattern: same count, random positions/center |
+   * | ✗ | ✓ | ✗ | Shift Only: translate pattern to new center |
+   * | ✗ | ✗ | ✓ | Shuffle: new positions at current/fixed center |
+   * | ✗ | ✗ | ✗ | Normalize Only: just fix probabilities/energy |
+   */
   function generateRandomConstellation(options = {}) {
+    // Cancel any pending documentation hover (user clicked the button)
+    if (docHoverTimeout) {
+      clearTimeout(docHoverTimeout);
+      docHoverTimeout = null;
+    }
+
     // Merge with defaults
     const opts = {
       randomizeNumPoints: true,
@@ -354,77 +376,308 @@
       ...options
     };
 
-    // Determine number of points
+    // Step 1: Determine number of points
     let numPoints;
     if (opts.randomizeNumPoints) {
-      // Use the range from options, clamped to valid bounds
       const minPts = Math.max(2, Math.min(50, opts.numPointsMin));
       const maxPts = Math.max(minPts, Math.min(50, opts.numPointsMax));
       numPoints = Math.floor(Math.random() * (maxPts - minPts + 1)) + minPts;
       lastLuckyOptions.numPoints = numPoints;
     } else {
-      // Use fixed value from options, or fall back to current/last
-      numPoints = opts.fixedNumPoints || points.length || lastLuckyOptions.numPoints || 4;
-      numPoints = Math.max(2, Math.min(50, numPoints)); // Clamp to valid range
+      numPoints = opts.fixedNumPoints || points.length || 4;
+      numPoints = Math.max(2, Math.min(50, numPoints));
     }
 
-    // Determine mean position
-    let meanReal, meanImag;
+    // Step 2: Determine center position
+    let centerReal, centerImag;
     if (opts.randomizeMean) {
-      meanReal = (Math.random() - 0.5) * 2; // Random mean in [-1, 1]
-      meanImag = (Math.random() - 0.5) * 2;
-      lastLuckyOptions.meanReal = meanReal;
-      lastLuckyOptions.meanImag = meanImag;
+      // Random center, but not too far from origin for practical constellations
+      const maxOffset = 0.8;
+      centerReal = (Math.random() - 0.5) * 2 * maxOffset;
+      centerImag = (Math.random() - 0.5) * 2 * maxOffset;
+      lastLuckyOptions.meanReal = centerReal;
+      lastLuckyOptions.meanImag = centerImag;
     } else {
-      // Use fixed values from options
-      meanReal = opts.fixedMeanReal ?? lastLuckyOptions.meanReal ?? 0;
-      meanImag = opts.fixedMeanImag ?? lastLuckyOptions.meanImag ?? 0;
+      centerReal = opts.fixedMeanReal ?? 0;
+      centerImag = opts.fixedMeanImag ?? 0;
     }
 
-    // Generate points
+    // Step 3: Generate or modify points based on randomizePositions
     if (opts.randomizePositions) {
-      points = [];
-      for (let i = 0; i < numPoints; i++) {
-        // Random positions around the mean
-        const real = meanReal + (Math.random() - 0.5) * 3;
-        const imag = meanImag + (Math.random() - 0.5) * 3;
-        points.push({ real, imag, prob: 1 / numPoints });
-      }
+      // Generate new constellation with interesting pattern
+      points = generateInterestingPattern(numPoints, centerReal, centerImag);
     } else {
-      // Keep positions but adjust number of points and/or shift to new mean
-      if (points.length !== numPoints) {
-        // Adjust number of points
-        if (points.length < numPoints) {
-          // Add points around the mean
-          while (points.length < numPoints) {
-            const real = meanReal + (Math.random() - 0.5) * 2;
-            const imag = meanImag + (Math.random() - 0.5) * 2;
-            points.push({ real, imag, prob: 0 });
-          }
-        } else {
-          // Remove excess points
-          points = points.slice(0, numPoints);
-        }
-      }
-      // Shift existing points to new mean if mean changed
-      if (opts.randomizeMean && points.length > 0) {
-        const currentMeanReal = points.reduce((s, p) => s + p.real, 0) / points.length;
-        const currentMeanImag = points.reduce((s, p) => s + p.imag, 0) / points.length;
-        const shiftReal = meanReal - currentMeanReal;
-        const shiftImag = meanImag - currentMeanImag;
-        points = points.map(p => ({
-          ...p,
-          real: p.real + shiftReal,
-          imag: p.imag + shiftImag
-        }));
-      }
-      // Equalize probabilities
-      points = points.map(p => ({ ...p, prob: 1 / numPoints }));
+      // Preserve existing pattern but adjust count and/or shift center
+      points = modifyExistingConstellation(numPoints, centerReal, centerImag, opts.randomizeMean);
     }
 
-    // Normalize to ensure valid constellation (prob sum = 1, energy = 1)
+    // Step 4: Normalize to ensure valid constellation
     normalize();
     notifyChange();
+  }
+
+  /**
+   * Generate an interesting random pattern. Sometimes structured (ring, grid),
+   * sometimes scattered, to produce varied and useful constellations.
+   */
+  function generateInterestingPattern(numPoints, centerReal, centerImag) {
+    // Choose pattern type based on point count and randomness
+    const roll = Math.random();
+
+    // For specific counts, prefer structured patterns
+    const isPowerOf2 = (numPoints & (numPoints - 1)) === 0;
+    const isSquare = Number.isInteger(Math.sqrt(numPoints));
+
+    let newPoints;
+
+    if (numPoints <= 2) {
+      // 2 points: always BPSK-like (antipodal)
+      newPoints = generateAntipodalPattern(numPoints, centerReal, centerImag);
+    } else if (roll < 0.35) {
+      // 35% chance: Ring/PSK-like pattern
+      newPoints = generateRingPattern(numPoints, centerReal, centerImag);
+    } else if (roll < 0.55 && isSquare && numPoints >= 4) {
+      // 20% chance (if square): Grid/QAM-like pattern
+      newPoints = generateGridPattern(numPoints, centerReal, centerImag);
+    } else if (roll < 0.70 && numPoints >= 4) {
+      // 15% chance: Multi-ring pattern (like 16-APSK)
+      newPoints = generateMultiRingPattern(numPoints, centerReal, centerImag);
+    } else if (roll < 0.85) {
+      // 15% chance: Clustered pattern
+      newPoints = generateClusteredPattern(numPoints, centerReal, centerImag);
+    } else {
+      // 15% chance: Fully random scattered
+      newPoints = generateScatteredPattern(numPoints, centerReal, centerImag);
+    }
+
+    return newPoints;
+  }
+
+  /**
+   * Generate antipodal (BPSK-like) pattern for 2 points
+   */
+  function generateAntipodalPattern(numPoints, centerReal, centerImag) {
+    const angle = Math.random() * Math.PI; // Random orientation
+    const radius = 0.8 + Math.random() * 0.4; // Slightly varied radius
+    const pts = [];
+    for (let i = 0; i < numPoints; i++) {
+      const a = angle + i * Math.PI;
+      pts.push({
+        real: centerReal + radius * Math.cos(a),
+        imag: centerImag + radius * Math.sin(a),
+        prob: 1 / numPoints
+      });
+    }
+    return pts;
+  }
+
+  /**
+   * Generate ring/PSK-like pattern - points evenly distributed on a circle
+   */
+  function generateRingPattern(numPoints, centerReal, centerImag) {
+    const radius = 0.7 + Math.random() * 0.5; // Radius between 0.7 and 1.2
+    const startAngle = Math.random() * 2 * Math.PI; // Random rotation
+    const pts = [];
+    for (let i = 0; i < numPoints; i++) {
+      const angle = startAngle + (2 * Math.PI * i) / numPoints;
+      // Add tiny perturbation for more natural look
+      const perturbR = (Math.random() - 0.5) * 0.05;
+      const perturbA = (Math.random() - 0.5) * 0.1;
+      pts.push({
+        real: centerReal + (radius + perturbR) * Math.cos(angle + perturbA),
+        imag: centerImag + (radius + perturbR) * Math.sin(angle + perturbA),
+        prob: 1 / numPoints
+      });
+    }
+    return pts;
+  }
+
+  /**
+   * Generate grid/QAM-like pattern - rectangular arrangement
+   */
+  function generateGridPattern(numPoints, centerReal, centerImag) {
+    const gridSize = Math.sqrt(numPoints);
+    const spacing = 0.5 + Math.random() * 0.3; // Grid spacing
+    const rotation = Math.random() * Math.PI / 4; // Random rotation up to 45°
+    const pts = [];
+
+    for (let i = 0; i < gridSize; i++) {
+      for (let j = 0; j < gridSize; j++) {
+        // Grid coordinates centered at origin
+        const gx = (i - (gridSize - 1) / 2) * spacing;
+        const gy = (j - (gridSize - 1) / 2) * spacing;
+        // Apply rotation
+        const rx = gx * Math.cos(rotation) - gy * Math.sin(rotation);
+        const ry = gx * Math.sin(rotation) + gy * Math.cos(rotation);
+        // Add small perturbation
+        const perturbX = (Math.random() - 0.5) * 0.05;
+        const perturbY = (Math.random() - 0.5) * 0.05;
+        pts.push({
+          real: centerReal + rx + perturbX,
+          imag: centerImag + ry + perturbY,
+          prob: 1 / numPoints
+        });
+      }
+    }
+    return pts;
+  }
+
+  /**
+   * Generate multi-ring pattern (like APSK) - points on concentric rings
+   */
+  function generateMultiRingPattern(numPoints, centerReal, centerImag) {
+    // Determine number of rings based on point count
+    let rings;
+    if (numPoints <= 6) {
+      rings = [{ count: numPoints, radius: 0.8 }];
+    } else if (numPoints <= 12) {
+      const inner = Math.floor(numPoints / 3);
+      rings = [
+        { count: inner, radius: 0.4 },
+        { count: numPoints - inner, radius: 0.9 }
+      ];
+    } else {
+      const inner = Math.floor(numPoints / 4);
+      const middle = Math.floor(numPoints / 3);
+      rings = [
+        { count: inner, radius: 0.3 },
+        { count: middle, radius: 0.65 },
+        { count: numPoints - inner - middle, radius: 1.0 }
+      ];
+    }
+
+    const startAngle = Math.random() * 2 * Math.PI;
+    const pts = [];
+
+    for (const ring of rings) {
+      const ringOffset = Math.random() * Math.PI / ring.count; // Offset between rings
+      for (let i = 0; i < ring.count; i++) {
+        const angle = startAngle + ringOffset + (2 * Math.PI * i) / ring.count;
+        pts.push({
+          real: centerReal + ring.radius * Math.cos(angle),
+          imag: centerImag + ring.radius * Math.sin(angle),
+          prob: 1 / numPoints
+        });
+      }
+    }
+    return pts;
+  }
+
+  /**
+   * Generate clustered pattern - points grouped in a few clusters
+   */
+  function generateClusteredPattern(numPoints, centerReal, centerImag) {
+    const numClusters = Math.min(Math.floor(numPoints / 2), 2 + Math.floor(Math.random() * 3));
+    const pointsPerCluster = Math.floor(numPoints / numClusters);
+    const remainder = numPoints % numClusters;
+
+    // Generate cluster centers on a ring
+    const clusterRadius = 0.6 + Math.random() * 0.3;
+    const clusterSpread = 0.15 + Math.random() * 0.15;
+    const startAngle = Math.random() * 2 * Math.PI;
+
+    const pts = [];
+    let pointsAdded = 0;
+
+    for (let c = 0; c < numClusters; c++) {
+      const clusterAngle = startAngle + (2 * Math.PI * c) / numClusters;
+      const clusterCenterReal = centerReal + clusterRadius * Math.cos(clusterAngle);
+      const clusterCenterImag = centerImag + clusterRadius * Math.sin(clusterAngle);
+
+      const pointsInThisCluster = pointsPerCluster + (c < remainder ? 1 : 0);
+
+      for (let i = 0; i < pointsInThisCluster; i++) {
+        pts.push({
+          real: clusterCenterReal + (Math.random() - 0.5) * clusterSpread * 2,
+          imag: clusterCenterImag + (Math.random() - 0.5) * clusterSpread * 2,
+          prob: 1 / numPoints
+        });
+        pointsAdded++;
+      }
+    }
+
+    return pts;
+  }
+
+  /**
+   * Generate fully scattered random pattern
+   */
+  function generateScatteredPattern(numPoints, centerReal, centerImag) {
+    const spread = 0.8 + Math.random() * 0.6;
+    const pts = [];
+
+    for (let i = 0; i < numPoints; i++) {
+      // Use polar coordinates for better distribution
+      const angle = Math.random() * 2 * Math.PI;
+      const radius = Math.sqrt(Math.random()) * spread; // sqrt for uniform area distribution
+      pts.push({
+        real: centerReal + radius * Math.cos(angle),
+        imag: centerImag + radius * Math.sin(angle),
+        prob: 1 / numPoints
+      });
+    }
+    return pts;
+  }
+
+  /**
+   * Modify existing constellation - adjust count and/or shift center
+   * while preserving the relative pattern as much as possible
+   */
+  function modifyExistingConstellation(targetCount, newCenterReal, newCenterImag, shouldShift) {
+    if (points.length === 0) {
+      // No existing points - must generate new ones
+      return generateScatteredPattern(targetCount, newCenterReal, newCenterImag);
+    }
+
+    // Calculate current center
+    const currentCenterReal = points.reduce((s, p) => s + p.real, 0) / points.length;
+    const currentCenterImag = points.reduce((s, p) => s + p.imag, 0) / points.length;
+
+    // Determine the target center
+    const targetCenterReal = shouldShift ? newCenterReal : currentCenterReal;
+    const targetCenterImag = shouldShift ? newCenterImag : currentCenterImag;
+
+    // Start with current points, shifted to target center
+    const shiftReal = targetCenterReal - currentCenterReal;
+    const shiftImag = targetCenterImag - currentCenterImag;
+
+    let newPoints = points.map(p => ({
+      real: p.real + shiftReal,
+      imag: p.imag + shiftImag,
+      prob: p.prob
+    }));
+
+    // Adjust count if needed
+    if (newPoints.length < targetCount) {
+      // Need to add points - add them intelligently near existing pattern
+      const currentRadius = Math.max(
+        ...newPoints.map(p =>
+          Math.sqrt(Math.pow(p.real - targetCenterReal, 2) + Math.pow(p.imag - targetCenterImag, 2))
+        )
+      ) || 0.5;
+
+      while (newPoints.length < targetCount) {
+        // Add new points at similar radius, in gaps between existing points
+        const angle = Math.random() * 2 * Math.PI;
+        const radius = currentRadius * (0.8 + Math.random() * 0.4);
+        newPoints.push({
+          real: targetCenterReal + radius * Math.cos(angle),
+          imag: targetCenterImag + radius * Math.sin(angle),
+          prob: 0 // Will be equalized
+        });
+      }
+    } else if (newPoints.length > targetCount) {
+      // Need to remove points - remove the ones farthest from center
+      newPoints.sort((a, b) => {
+        const distA = Math.pow(a.real - targetCenterReal, 2) + Math.pow(a.imag - targetCenterImag, 2);
+        const distB = Math.pow(b.real - targetCenterReal, 2) + Math.pow(b.imag - targetCenterImag, 2);
+        return distA - distB;
+      });
+      newPoints = newPoints.slice(0, targetCount);
+    }
+
+    // Equalize probabilities
+    return newPoints.map(p => ({ ...p, prob: 1 / targetCount }));
   }
 
   function loadPreset(preset) {
@@ -1111,7 +1364,7 @@
           </g>
         {/if}
 
-        <!-- Mean point as "x" symbol (rendered before constellation points so points appear on top) -->
+        <!-- Mean point as dot (rendered before constellation points so points appear on top) -->
         {#if points.length > 0}
           <g
             class="mean-marker"
@@ -1126,23 +1379,12 @@
               fill="transparent"
               style="cursor: default;"
             />
-            <line
-              x1={toSvgX(meanReal) - 5}
-              y1={toSvgY(meanImag) - 5}
-              x2={toSvgX(meanReal) + 5}
-              y2={toSvgY(meanImag) + 5}
-              stroke={svgColors.axis}
-              stroke-width="2.5"
-              stroke-linecap="round"
-            />
-            <line
-              x1={toSvgX(meanReal) + 5}
-              y1={toSvgY(meanImag) - 5}
-              x2={toSvgX(meanReal) - 5}
-              y2={toSvgY(meanImag) + 5}
-              stroke={svgColors.axis}
-              stroke-width="2.5"
-              stroke-linecap="round"
+            <!-- Filled dot for mean marker -->
+            <circle
+              cx={toSvgX(meanReal)}
+              cy={toSvgY(meanImag)}
+              r="5"
+              fill={svgColors.axis}
             />
             {#if showMeanLabel}
               {@const meanPolar = toPolar(meanReal, meanImag)}
