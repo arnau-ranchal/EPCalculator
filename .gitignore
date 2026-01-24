@@ -76,4 +76,9 @@ __pycache__/
 *.tmp
 *.temp
 
+# Session and conversation files
+202*-*.txt
+*session*.txt
+*conversation*.txt
+
 docs/
