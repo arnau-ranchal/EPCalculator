@@ -1,0 +1,146 @@
+{
+  "generated": "2026-01-22T19:21:26.590Z",
+  "baseUrl": "/tutorial-images/",
+  "screenshots": {
+    "app/overview": {
+      "file": "app/overview.png",
+      "folder": "app",
+      "name": "overview",
+      "description": "Full application overview (light mode)",
+      "success": true
+    },
+    "app/dark-mode": {
+      "file": "app/dark-mode.png",
+      "folder": "app",
+      "name": "dark-mode",
+      "description": "Full application in dark mode",
+      "success": true
+    },
+    "app/theme-language": {
+      "file": "app/theme-language.png",
+      "folder": "app",
+      "name": "theme-language",
+      "description": "Full app with theme/language controls spotlighted",
+      "success": true
+    },
+    "parameters/form-full": {
+      "file": "parameters/form-full.png",
+      "folder": "parameters",
+      "name": "form-full",
+      "description": "Full app with parameter form spotlighted",
+      "success": true
+    },
+    "parameters/modulation-selector": {
+      "file": "parameters/modulation-selector.png",
+      "folder": "parameters",
+      "name": "modulation-selector",
+      "description": "Full app with modulation controls spotlighted",
+      "success": true
+    },
+    "parameters/modulation-qam16": {
+      "file": "parameters/modulation-qam16.png",
+      "folder": "parameters",
+      "name": "modulation-qam16",
+      "description": "16-QAM modulation selected",
+      "success": true
+    },
+    "parameters/modulation-psk8": {
+      "file": "parameters/modulation-psk8.png",
+      "folder": "parameters",
+      "name": "modulation-psk8",
+      "description": "8-PSK modulation selected",
+      "success": true
+    },
+    "parameters/snr-input": {
+      "file": "parameters/snr-input.png",
+      "folder": "parameters",
+      "name": "snr-input",
+      "description": "Full app with SNR input spotlighted",
+      "success": true
+    },
+    "parameters/snr-input-db": {
+      "file": "parameters/snr-input-db.png",
+      "folder": "parameters",
+      "name": "snr-input-db",
+      "description": "SNR input in dB mode",
+      "success": true
+    },
+    "parameters/compute-button": {
+      "file": "parameters/compute-button.png",
+      "folder": "parameters",
+      "name": "compute-button",
+      "description": "Full app with compute button spotlighted",
+      "success": true
+    },
+    "constellation/modal": {
+      "file": "constellation/modal.png",
+      "folder": "constellation",
+      "name": "modal",
+      "description": "Full app with entire constellation editor modal spotlighted",
+      "success": true
+    },
+    "constellation/add-point": {
+      "file": "constellation/add-point.png",
+      "folder": "constellation",
+      "name": "add-point",
+      "description": "Spotlight on the Add Point button",
+      "success": true
+    },
+    "constellation/polar-toggle": {
+      "file": "constellation/polar-toggle.png",
+      "folder": "constellation",
+      "name": "polar-toggle",
+      "description": "Spotlight on the Polar/Cartesian toggle",
+      "success": true
+    },
+    "constellation/undo-redo": {
+      "file": "constellation/undo-redo.png",
+      "folder": "constellation",
+      "name": "undo-redo",
+      "description": "Spotlight on the Undo/Redo buttons",
+      "success": true
+    },
+    "constellation/cancel-button": {
+      "file": "constellation/cancel-button.png",
+      "folder": "constellation",
+      "name": "cancel-button",
+      "description": "Spotlight on the Cancel button",
+      "success": true
+    },
+    "constellation/lucky-button": {
+      "file": "constellation/lucky-button.png",
+      "folder": "constellation",
+      "name": "lucky-button",
+      "description": "Spotlight on the I'm Feeling Lucky button",
+      "success": true
+    },
+    "constellation/use-button": {
+      "file": "constellation/use-button.png",
+      "folder": "constellation",
+      "name": "use-button",
+      "description": "Spotlight on the Use button",
+      "success": true
+    },
+    "constellation/hide-table": {
+      "file": "constellation/hide-table.png",
+      "folder": "constellation",
+      "name": "hide-table",
+      "description": "Spotlight on navigation arrow to hide table",
+      "success": true
+    },
+    "constellation/hide-plot": {
+      "file": "constellation/hide-plot.png",
+      "folder": "constellation",
+      "name": "hide-plot",
+      "description": "Spotlight on navigation arrow to hide plot",
+      "success": true
+    },
+    "plotting/controls": {
+      "file": "plotting/controls.png",
+      "folder": "plotting",
+      "name": "controls",
+      "description": "Full app with plotting controls spotlighted",
+      "success": true
+    }
+  }
+}

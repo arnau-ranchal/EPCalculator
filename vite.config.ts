@@ -5,6 +5,9 @@ import path from 'path'
 export default defineConfig({
   plugins: [svelte()],
 
+  // Static assets directory (served at /)
+  publicDir: 'public',
+
   // Build configuration
   build: {
     outDir: 'public',
@@ -37,6 +40,10 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/api-docs': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
