@@ -284,6 +284,48 @@ export class DatabaseService {
     return result?.results || null
   }
 
+  /**
+   * Batch lookup of cached results for multiple parameter hashes.
+   * Returns a Map of hash → results JSON string for all found entries.
+   * This is much more efficient than N individual getCachedResult calls.
+   */
+  async getBatchCachedResults(parameterHashes: string[]): Promise<Map<string, string>> {
+    const results = new Map<string, string>()
+
+    if (!this.db || !config.ENABLE_COMPUTATION_CACHE || parameterHashes.length === 0) {
+      return results
+    }
+
+    const cutoff = new Date(Date.now() - config.CACHE_TTL * 1000).toISOString()
+
+    // Use a single query with IN clause for efficiency
+    // We need the most recent result for each unique hash
+    const placeholders = parameterHashes.map(() => '?').join(',')
+
+    // SQLite query: Get most recent cached result for each hash
+    // Using a subquery to get the max timestamp per parameter, then join to get results
+    const stmt = this.db.prepare(`
+      SELECT c.parameters, c.results
+      FROM computations c
+      INNER JOIN (
+        SELECT parameters, MAX(timestamp) as max_ts
+        FROM computations
+        WHERE parameters IN (${placeholders}) AND timestamp > ?
+        GROUP BY parameters
+      ) latest ON c.parameters = latest.parameters AND c.timestamp = latest.max_ts
+    `)
+
+    // Parameters: all hashes, then cutoff
+    const queryParams = [...parameterHashes, cutoff]
+    const rows = stmt.all(...queryParams) as Array<{ parameters: string; results: string }>
+
+    for (const row of rows) {
+      results.set(row.parameters, row.results)
+    }
+
+    return results
+  }
+
   // Database statistics
   async getStatistics(): Promise<{
     totalComputations: number

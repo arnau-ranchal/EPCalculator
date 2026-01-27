@@ -1,6 +1,6 @@
 {
   "name": "epcalculator-v2",
-  "version": "2.0.0",
+  "version": "2.0.7",
   "description": "EPCalculator - Kubernetes-Native Transmission System Analysis Tool",
   "type": "module",
   "main": "dist/server.js",
@@ -10,13 +10,16 @@
     "build:frontend": "vite build",
     "build:backend": "tsc",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "node server/simple-server-working.js",
+    "dev:backend": "tsx watch src/server.ts",
+    "dev:backend:legacy": "node server/simple-server-working.js",
     "dev:frontend": "vite",
     "start": "node dist/server.js",
     "test": "vitest",
     "lint": "eslint src --ext .ts,.js,.svelte",
     "format": "prettier --write src",
-    "health-check": "curl -f http://localhost:8000/health || exit 1"
+    "health-check": "curl -f http://localhost:8000/health || exit 1",
+    "capture-screenshots": "node scripts/capture-screenshots.cjs",
+    "update-tutorial-images": "npm run capture-screenshots"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
@@ -41,6 +44,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.2",
     "@types/better-sqlite3": "^7.6.9",
     "@types/node": "^20.11.25",

@@ -176,7 +176,9 @@
     "newData": "New data",
     "series": "series",
     "newFigure": "New Figure",
-    "mergePlots": "Merge"
+    "mergePlots": "Merge",
+    "partial": "Partial",
+    "incompleteTooltip": "Computation was cancelled. Showing {computed} of {total} points."
   },
   "common": {
     "cancel": "Cancel"

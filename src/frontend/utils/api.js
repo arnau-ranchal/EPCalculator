@@ -2,7 +2,35 @@
 // Use relative URL so it works in both development and production
 // In production (Docker/Rancher), this will call the same server serving the frontend
 // In development with Vite, the proxy in vite.config.ts will forward to localhost:8000
-const API_BASE = '/api';
+const API_BASE = '/api/v1';
+
+// Session management for cancellation support
+let sessionId = null;
+let currentAbortController = null;
+
+function getSessionId() {
+  if (!sessionId) {
+    // Generate a unique session ID
+    sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+  return sessionId;
+}
+
+// Get current AbortController for cancellation
+export function getCurrentAbortController() {
+  return currentAbortController;
+}
+
+// Create new AbortController for a request
+export function createAbortController() {
+  currentAbortController = new AbortController();
+  return currentAbortController;
+}
+
+// Clear the abort controller after request completes
+export function clearAbortController() {
+  currentAbortController = null;
+}
 
 // Error handling
 class ApiError extends Error {
@@ -11,23 +39,39 @@ class ApiError extends Error {
     this.name = 'ApiError';
     this.status = status;
     this.data = data;
+    this.cancelled = status === 499 || (data && data.error === 'Request Cancelled');
   }
 }
 
-// Generic fetch wrapper with error handling
+// Generic fetch wrapper with error handling and cancellation support
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
 
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
+      'x-session-id': getSessionId(),
     },
   };
 
-  const finalOptions = { ...defaultOptions, ...options };
+  // Merge options, including AbortController signal if provided
+  const finalOptions = {
+    ...defaultOptions,
+    ...options,
+    headers: {
+      ...defaultOptions.headers,
+      ...(options.headers || {}),
+    },
+  };
 
   try {
     const response = await fetch(url, finalOptions);
+
+    // Update session ID from response if provided
+    const responseSessionId = response.headers.get('x-session-id');
+    if (responseSessionId) {
+      sessionId = responseSessionId;
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
@@ -44,6 +88,11 @@ async function apiRequest(endpoint, options = {}) {
       throw error;
     }
 
+    // Handle abort/cancellation
+    if (error.name === 'AbortError') {
+      throw new ApiError('Request was cancelled', 499, { cancelled: true });
+    }
+
     // Network or other errors
     throw new ApiError(
       `Network error: ${error.message}`,
@@ -55,7 +104,11 @@ async function apiRequest(endpoint, options = {}) {
 
 // Simulation API functions
 export async function computeExponents(params) {
-  return apiRequest('/compute', {
+  // Determine endpoint based on whether custom constellation is used
+  const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/single/custom' : '/compute/single/standard';
+
+  return apiRequest(endpoint, {
     method: 'POST',
     body: JSON.stringify(params)
   });
@@ -72,24 +125,69 @@ export async function computeExponentsLegacy(params) {
   return apiRequest(`/exponents?${queryParams.toString()}`);
 }
 
-// Plotting API functions
-export async function getPlotData(params) {
-  return apiRequest('/plot', {
+// Plotting API functions with cancellation support
+export async function getPlotData(params, abortSignal = null) {
+  // Determine endpoint based on whether custom constellation is used
+  const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/range/custom' : '/compute/range/standard';
+
+  const options = {
     method: 'POST',
     body: JSON.stringify(params)
-  });
+  };
+
+  // Add abort signal if provided
+  if (abortSignal) {
+    options.signal = abortSignal;
+  }
+
+  return apiRequest(endpoint, options);
 }
 
-export async function getContourData(params) {
-  return apiRequest('/plot_contour', {
+export async function getContourData(params, abortSignal = null) {
+  // Determine endpoint based on whether custom constellation is used
+  const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/contour/custom' : '/compute/contour/standard';
+
+  const options = {
     method: 'POST',
     body: JSON.stringify(params)
-  });
+  };
+
+  // Add abort signal if provided
+  if (abortSignal) {
+    options.signal = abortSignal;
+  }
+
+  return apiRequest(endpoint, options);
 }
 
 // Health check
 export async function getHealth() {
   return apiRequest('/health');
+}
+
+// Cancel all active requests for this session
+export async function cancelSession() {
+  // First, abort any in-flight HTTP request
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+
+  // Then tell the backend to cancel any running computations
+  try {
+    const result = await apiRequest('/session/cancel', {
+      method: 'POST',
+      body: JSON.stringify({}),  // Fastify requires a body when Content-Type is application/json
+    });
+    console.log('[API] Session cancelled:', result);
+    return result;
+  } catch (error) {
+    // Even if the backend call fails, we've already aborted the fetch
+    console.warn('[API] Backend cancel call failed (fetch already aborted):', error.message);
+    return { status: 'aborted_locally', message: 'Request aborted' };
+  }
 }
 
 // Parameter mapping for API compatibility
@@ -154,24 +252,18 @@ export function mapPlotParams(plotParams, simulationParams, customConstellation 
   const baseParams = {
     y: plotParams.yVar,
     x: xVar,
-    rang_x: xRange,
+    x_range: xRange,
     points: plotParams.points,
     snrUnit: plotParams.snrUnit || 'dB',  // Pass SNR unit to backend
-    // Flag to indicate n is on axis (backend should generate integer values)
-    nIsIntegerAxis: xVar === 'n' || xVar2 === 'n',
 
     // Fixed parameters from simulation (SNR is sent even if on axis - backend will override it)
     M: simulationParams.M,
-    typeM: simulationParams.typeModulation,
+    typeModulation: simulationParams.typeModulation,
     SNR: snrValue,
     R: simulationParams.R,
     N: simulationParams.N,
     n: simulationParams.n,
-    th: simulationParams.threshold,
-
-    // Distribution parameters
-    distribution: plotParams.distribution || 'uniform',
-    shaping_param: plotParams.shaping_param || 0
+    threshold: simulationParams.threshold
   };
 
   // Include custom constellation data if provided
@@ -187,8 +279,8 @@ export function mapPlotParams(plotParams, simulationParams, customConstellation 
       ...baseParams,
       x1: xVar,
       x2: xVar2,
-      rang_x1: xRange,
-      rang_x2: xRange2,
+      x1_range: xRange,
+      x2_range: xRange2,
       points1: plotParams.points,
       points2: plotParams.points2
     };

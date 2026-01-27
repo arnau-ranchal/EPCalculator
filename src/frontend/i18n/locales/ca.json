@@ -175,7 +175,9 @@
     "unit": "Unitat",
     "criticalRate": "Taxa Crítica (R_crit)",
     "mergeOrNewTitleTable": "Taula Compatible Detectada",
-    "mergeOrNewDescriptionTable": "Ja existeix una taula amb el mateix eix X. Voleu fusionar les dades o crear una nova taula?"
+    "mergeOrNewDescriptionTable": "Ja existeix una taula amb el mateix eix X. Voleu fusionar les dades o crear una nova taula?",
+    "partial": "Parcial",
+    "incompleteTooltip": "Càlcul cancel·lat. Mostrant {computed} de {total} punts."
   },
   "paramRef": {
     "title": "Model del Sistema",

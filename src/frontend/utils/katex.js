@@ -56,17 +56,26 @@ export function renderInlineLatex(formula) {
 
 /**
  * Process text containing $...$ delimiters for inline math,
- * and basic markdown formatting (**bold**, *italic*, `code`).
+ * basic markdown formatting (**bold**, *italic*, `code`),
+ * and Wikipedia-style article links ([[path|text]]).
  *
  * This finds all $formula$ patterns in a string and renders them,
- * then processes markdown-style formatting.
+ * then processes markdown-style formatting and article links.
  *
- * @param {string} text - Text with $...$ math delimiters and markdown
- * @returns {string} HTML with rendered math and formatting
+ * @param {string} text - Text with $...$ math delimiters, markdown, and links
+ * @returns {string} HTML with rendered math, formatting, and links
  *
  * @example
  * processInlineLatex("The **SNR** is $\\gamma = P_s / N_0$")
  * // Returns HTML where the formula is rendered and bold text is wrapped in <strong>
+ *
+ * @example
+ * processInlineLatex("See [[concepts/error-exponent|error exponent]] for details")
+ * // Returns HTML with a clickable link to the error-exponent article
+ *
+ * @example
+ * processInlineLatex("Learn about [[concepts/error-exponent#e0-formula|Gallager's E₀]]")
+ * // Returns HTML with a link that scrolls to the e0-formula section
  */
 export function processInlineLatex(text) {
   if (!text) return '';
@@ -79,6 +88,25 @@ export function processInlineLatex(text) {
     // \$       - Match the closing dollar sign
     let result = text.replace(/\$([^$]+)\$/g, (match, latex) => {
       return renderInlineLatex(latex);
+    });
+
+    // Process Wikipedia-style article links: [[path|display text]] or [[path#anchor|display text]]
+    // Creates clickable links that navigate within the documentation hub
+    // Supports optional #anchor for deep linking to sections within articles
+    result = result.replace(/\[\[([^\]|#]+)(#[^\]|]+)?\|([^\]]+)\]\]/g, (match, path, anchor, displayText) => {
+      // anchor includes the # if present, e.g., "#e0-formula" or undefined
+      const anchorId = anchor ? anchor.substring(1) : ''; // Remove the # prefix
+      const anchorAttr = anchorId ? ` data-anchor="${anchorId}"` : '';
+      // Use # routing for SPA navigation within learn section
+      return `<a href="#/learn/${path}" class="article-link" data-article-path="${path}"${anchorAttr}>${displayText}</a>`;
+    });
+
+    // Also support [[path]] or [[path#anchor]] without display text (uses path as text)
+    result = result.replace(/\[\[([^\]|#]+)(#[^\]|]+)?\]\]/g, (match, path, anchor) => {
+      const displayText = path.split('/').pop().replace(/-/g, ' ');
+      const anchorId = anchor ? anchor.substring(1) : '';
+      const anchorAttr = anchorId ? ` data-anchor="${anchorId}"` : '';
+      return `<a href="#/learn/${path}" class="article-link" data-article-path="${path}"${anchorAttr}>${displayText}</a>`;
     });
 
     // Process markdown bold (**text**)

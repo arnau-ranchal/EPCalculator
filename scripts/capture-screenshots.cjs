@@ -39,12 +39,85 @@ try {
 // Configuration
 const CONFIG = {
   baseUrl: process.env.BASE_URL || 'http://localhost:3000',
-  outputDir: path.join(__dirname, '..', 'public', 'tutorial-images'),
+  outputDir: path.join(__dirname, '..', 'src', 'frontend', 'assets', 'tutorial-images'),
   viewport: { width: 1400, height: 900 },
   deviceScaleFactor: 2, // Retina quality
 
   // Screenshots to capture - full-page with spotlight highlighting
   screenshots: [
+    // ============================================================
+    // FULL PAGE WITH SPOTLIGHT - TAB NAVIGATION
+    // ============================================================
+    {
+      name: 'tab-single-point',
+      fullPage: true,
+      url: '/',
+      description: 'Single Point tab highlighted',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Stay on Single Point tab (first tab) and spotlight it
+        { type: 'spotlight', selector: '.tab-button:nth-child(1), .tab-button:first-child, [role="tab"]:first-child' }
+      ]
+    },
+    {
+      name: 'tab-plot-mode',
+      fullPage: true,
+      url: '/',
+      description: 'Plotting & Visualization tab highlighted',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Click Plot tab first then spotlight it
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 400 },
+        { type: 'spotlight', selector: '.tab-button:nth-child(2), [role="tab"]:nth-child(2)' }
+      ]
+    },
+
+    // ============================================================
+    // QUICK START SCREENSHOTS - showing filled parameters
+    // ============================================================
+    {
+      name: 'quick-start-single-point',
+      fullPage: true,
+      url: '/',
+      description: 'Single Point form with QPSK at 10dB, ρ=0',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Fill in the example parameters: SNR=10, M=4, PSK, rho=0
+        { type: 'fill', selector: '#SNR, input[name="SNR"]', value: '10' },
+        { type: 'select', selector: 'select[name="SNRUnit"], .snr-unit', value: 'dB' },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'fill', selector: '#rho, input[name="rho"]', value: '0' },
+        { type: 'wait', ms: 400 },
+        // Spotlight the entire parameter form
+        { type: 'spotlight', selector: '.parameter-form, .simulation-parameters, .basic-params' }
+      ]
+    },
+    {
+      name: 'quick-start-plot-mode',
+      fullPage: true,
+      url: '/',
+      description: 'Plot mode form with SNR range 0-20dB',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // The plot tab should already have sensible defaults
+        // Spotlight the plotting controls
+        { type: 'spotlight', selector: '.plotting-controls, .plot-controls, .parameter-form' }
+      ]
+    },
+
     // ============================================================
     // FULL PAGE WITH SPOTLIGHT - PARAMETER INPUTS
     // ============================================================
@@ -64,11 +137,12 @@ const CONFIG = {
       name: 'modulation-selector',
       fullPage: true,
       url: '/',
-      description: 'Full app with modulation controls spotlighted',
+      description: 'Full app with modulation controls spotlighted (Single Point tab)',
       waitFor: '.simulation-panel',
       setup: [{ type: 'dismissTutorial' }],
       actions: [
         { type: 'wait', ms: 500 },
+        // Stay on Single Point tab (default) for getting-started tutorial
         { type: 'spotlight', selector: '.form-row:has(select), .basic-params .form-row:first-child' }
       ]
     },
@@ -317,6 +391,422 @@ const CONFIG = {
       ]
     },
 
+    // LINE PLOT WITH GENERATED RESULT
+    {
+      name: 'line-plot-generated',
+      fullPage: true,
+      url: '/',
+      description: 'Line plot with generated E₀ curve showing results',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Use simpler modulation (QPSK) for faster computation
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        // Click the Compute/Generate Plot button
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        // Wait longer for computation to complete (WASM/backend can be slow)
+        { type: 'wait', ms: 15000 },
+        // Spotlight the plots section containing the generated chart
+        { type: 'spotlight', selector: '.plot-item, .plots-grid, .plots-section' }
+      ]
+    },
+
+    // EXPORT BUTTON - On multiline plot (showing export button)
+    {
+      name: 'line-plot-export-button',
+      fullPage: true,
+      url: '/',
+      description: 'Export button highlighted on a multiline plot',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        // Change to 8-PSK and generate second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        // Wait for merge modal
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        // Click Merge button
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Spotlight the export button area
+        { type: 'spotlight', selector: '[data-tutorial="export"], .export-trigger, .plot-exporter' }
+      ]
+    },
+
+    // EXPORT MENU - On multiline plot (showing export options)
+    {
+      name: 'line-plot-export-menu',
+      fullPage: true,
+      url: '/',
+      description: 'Export menu open on multiline plot showing all format options',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        // Change to 8-PSK and generate second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        // Wait for merge modal
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        // Click Merge button
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Click the export button to open the menu
+        { type: 'click', selector: '.export-trigger' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the export menu
+        { type: 'spotlight', selector: '.export-menu, .export-menu-container' }
+      ]
+    },
+
+    // MULTILINE PLOT WORKFLOW - Step 1: First plot generated (no spotlight)
+    {
+      name: 'line-plot-step1-complete',
+      fullPage: true,
+      url: '/',
+      description: 'First plot (QPSK) generated, showing full interface without highlights',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 }
+        // No spotlight - show full interface
+      ]
+    },
+
+    // MULTILINE PLOT WORKFLOW - Step 2: Change parameters for second plot
+    {
+      name: 'line-plot-step2-params',
+      fullPage: true,
+      url: '/',
+      description: 'After first plot, changing modulation to 8-PSK for second curve',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#ref-M, #M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#ref-type, #typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        // Now change to 8-PSK for the second plot
+        { type: 'select', selector: '#ref-M, #M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 300 },
+        // Spotlight the param-row containing the M dropdown (showing M=8)
+        { type: 'spotlight', selector: '.param-row:has(#ref-M), .param-reference .param-row:first-of-type' }
+      ]
+    },
+
+    // MULTILINE PLOT WORKFLOW - Step 3: Merge confirmation modal
+    {
+      name: 'line-plot-merge-modal',
+      fullPage: true,
+      url: '/',
+      description: 'Merge confirmation modal asking to merge or create new figure',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        // Change to 8-PSK and generate second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        // Wait for merge modal to appear
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the merge modal
+        { type: 'spotlight', selector: '.modal-container' }
+      ]
+    },
+
+    // MULTILINE PLOT WORKFLOW - Step 4: Final merged multiline plot
+    {
+      name: 'line-plot-multiline',
+      fullPage: true,
+      url: '/',
+      description: 'Merged plot showing both QPSK and 8-PSK curves together',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        // Change to 8-PSK and generate second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        // Wait for merge modal
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        // Click Merge button (the primary button)
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        // Wait for merge to complete and plot to update
+        { type: 'wait', ms: 2000 },
+        // Spotlight the merged plot showing multiple curves
+        { type: 'spotlight', selector: '.plot-item, .plots-grid' }
+      ]
+    },
+
+    // ============================================================
+    // PLOT INTERACTION SCREENSHOTS - Hover effects
+    // ============================================================
+    // Hover on legend - highlights the corresponding curve
+    {
+      name: 'line-plot-hover-legend',
+      fullPage: true,
+      url: '/',
+      description: 'Hovering over legend entry highlights the corresponding curve',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Hover over the first legend entry (series-item)
+        { type: 'hover', selector: '.series-list .series-item:first-child, .series-items .series-item:first-child' },
+        { type: 'wait', ms: 500 }
+        // No spotlight - the hover effect IS the visual highlight
+      ]
+    },
+
+    // Hover on plot - shows tooltip with coordinates
+    {
+      name: 'line-plot-hover-point',
+      fullPage: true,
+      url: '/',
+      description: 'Hovering on plot shows tooltip with coordinates',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Hover on the plot area to trigger tooltip - target middle of plot SVG
+        { type: 'hoverCoordinates', selector: '.plot-content svg', offsetX: 0.5, offsetY: 0.5 },
+        { type: 'wait', ms: 500 }
+        // No spotlight - the tooltip IS the visual highlight
+      ]
+    },
+
+    // ============================================================
+    // AXIS CONFIGURATION SCREENSHOTS - Using multiline plot
+    // ============================================================
+    // Axis config: Default linear scales (no spotlight, just showing the plot)
+    {
+      name: 'line-plot-axis-linear',
+      fullPage: true,
+      url: '/',
+      description: 'Multiline plot with default linear X and Y scales',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Spotlight the scale buttons group
+        { type: 'spotlight', selector: '.plot-controls-header, .plot-item .plot-controls-header' }
+      ]
+    },
+
+    // Axis config: Log Y scale
+    {
+      name: 'line-plot-axis-log-y',
+      fullPage: true,
+      url: '/',
+      description: 'Multiline plot with logarithmic Y scale',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Click the Y-axis scale toggle to switch to log
+        { type: 'click', selector: '[data-tutorial="scale-y"], .log-toggle:last-of-type' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the Y-axis scale button
+        { type: 'spotlight', selector: '[data-tutorial="scale-y"]' }
+      ]
+    },
+
+    // Axis config: Log X scale (dB mode for SNR)
+    {
+      name: 'line-plot-axis-log-x',
+      fullPage: true,
+      url: '/',
+      description: 'Multiline plot with logarithmic X scale (linear SNR units)',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Click the X-axis scale toggle (toggles between dB and linear)
+        { type: 'click', selector: '[data-tutorial="scale-x"]' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the X-axis scale button
+        { type: 'spotlight', selector: '[data-tutorial="scale-x"]' }
+      ]
+    },
+
+    // Axis config: Transpose (swap X and Y)
+    {
+      name: 'line-plot-axis-transpose',
+      fullPage: true,
+      url: '/',
+      description: 'Multiline plot with transposed axes (E₀ on X, SNR on Y)',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 15000 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 16000 },
+        { type: 'waitForSelector', selector: '.modal-container, .modal-backdrop' },
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.modal-footer .btn-primary, .modal-footer button:last-child' },
+        { type: 'wait', ms: 2000 },
+        // Click the transpose button
+        { type: 'click', selector: '[data-tutorial="transpose"], .transpose-button' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the transpose button
+        { type: 'spotlight', selector: '[data-tutorial="transpose"], .transpose-button' }
+      ]
+    },
+
     // ============================================================
     // FULL PAGE WITH SPOTLIGHT - HEADER CONTROLS
     // ============================================================
@@ -372,11 +862,14 @@ const CONFIG = {
       name: 'modulation-selector-qam16',
       fullPage: true,
       url: '/',
-      description: '16-QAM modulation selected',
+      description: '16-QAM modulation selected (Plotting tab)',
       waitFor: '.simulation-panel',
       setup: [{ type: 'dismissTutorial' }],
       actions: [
         { type: 'wait', ms: 300 },
+        // Switch to Plotting & Visualization tab first
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 400 },
         { type: 'select', selector: '#M, select[name="M"]', value: '16' },
         { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'QAM' },
         { type: 'wait', ms: 300 },
@@ -387,11 +880,14 @@ const CONFIG = {
       name: 'modulation-selector-psk8',
       fullPage: true,
       url: '/',
-      description: '8-PSK modulation selected',
+      description: '8-PSK modulation selected (Plotting tab)',
       waitFor: '.simulation-panel',
       setup: [{ type: 'dismissTutorial' }],
       actions: [
         { type: 'wait', ms: 300 },
+        // Switch to Plotting & Visualization tab first
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 400 },
         { type: 'select', selector: '#M, select[name="M"]', value: '8' },
         { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
         { type: 'wait', ms: 300 },
@@ -481,6 +977,26 @@ async function executeAction(page, action) {
       case 'hover':
         await page.hover(action.selector);
         console.log(`     ✓ Hovered: ${action.selector}`);
+        break;
+
+      case 'hoverCoordinates':
+        // Hover at specific coordinates within an element (offsetX/Y are 0-1 percentages)
+        const hoverSelectors = action.selector.split(',').map(s => s.trim());
+        for (const sel of hoverSelectors) {
+          try {
+            const elem = await page.$(sel);
+            if (elem) {
+              const box = await elem.boundingBox();
+              if (box) {
+                const x = box.x + (box.width * (action.offsetX || 0.5));
+                const y = box.y + (box.height * (action.offsetY || 0.5));
+                await page.mouse.move(x, y);
+                console.log(`     ✓ Hovered at coordinates: ${sel} (${Math.round(x)}, ${Math.round(y)})`);
+                break;
+              }
+            }
+          } catch (e) { /* try next */ }
+        }
         break;
 
       case 'jsClick':

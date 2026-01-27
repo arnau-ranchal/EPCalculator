@@ -118,8 +118,9 @@ async function registerPlugins() {
         ],
         tags: [
           { name: 'computation', description: 'Computation endpoints' },
-          { name: 'plotting', description: 'Plotting endpoints' },
-          { name: 'health', description: 'Health check endpoints' }
+          { name: 'session', description: 'Session and cancellation endpoints' },
+          { name: 'health', description: 'Health check endpoints' },
+          { name: 'analytics', description: 'Analytics and monitoring endpoints' }
         ]
       }
     })
@@ -128,7 +129,7 @@ async function registerPlugins() {
       routePrefix: '/docs',
       uiConfig: {
         docExpansion: 'list',
-        deepLinking: false
+        deepLinking: true
       }
     })
   }
@@ -153,9 +154,9 @@ async function initializeServices() {
   const dbService = DatabaseService.getInstance()
   await dbService.initialize()
 
-  // Initialize computation service
+  // Initialize computation service with logger for process pool
   const computationService = ComputationService.getInstance()
-  await computationService.initialize()
+  await computationService.initialize(fastify.log)
 
   // Add services to Fastify context
   fastify.decorate('db', dbService)
@@ -165,11 +166,7 @@ async function initializeServices() {
 // Register routes
 async function registerApiRoutes() {
   await registerRoutes(fastify)
-
-  // Catch-all route for SPA
-  fastify.get('/*', async (request, reply) => {
-    return reply.sendFile('index.html')
-  })
+  // Note: SPA catch-all is handled by @fastify/static with prefix: '/'
 }
 
 // Graceful shutdown
@@ -211,7 +208,8 @@ async function start() {
     process.on('SIGINT', gracefulShutdown)
 
   } catch (error) {
-    fastify.log.error('Failed to start server:', error)
+    fastify.log.error('Failed to start server:')
+    console.error('Full error:', error)
     process.exit(1)
   }
 }

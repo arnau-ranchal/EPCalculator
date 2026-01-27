@@ -13,7 +13,7 @@ const configSchema = z.object({
 
   // Security
   ALLOWED_ORIGINS: z.string().transform(str => str.split(',')).default('http://localhost:3000,http://localhost:8000'),
-  RATE_LIMIT_MAX: z.coerce.number().default(100),
+  RATE_LIMIT_MAX: z.coerce.number().default(100000), // High for testing
   RATE_LIMIT_WINDOW: z.string().default('1 minute'),
 
   // Computation

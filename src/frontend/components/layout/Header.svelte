@@ -25,7 +25,7 @@
       <a href="https://github.com/arnau-ranchal/EPCalculator" target="_blank" rel="noopener noreferrer">
         {$_('nav.github')}
       </a>
-      <a href="/docs" target="_blank" rel="noopener noreferrer">
+      <a href="#/learn" target="_blank" rel="noopener">
         {$_('nav.documentation')}
       </a>
       <ThemeSelector />

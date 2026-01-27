@@ -2,6 +2,8 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import staticFiles from '@fastify/static'
+import swagger from '@fastify/swagger'
+import swaggerUi from '@fastify/swagger-ui'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { cppCalculator as epCalculator } from '../src/services/cpp-exact.js'
@@ -244,6 +246,74 @@ const fastify = Fastify({
 // Enable CORS
 fastify.register(cors, {
   origin: true
+})
+
+// API documentation with Swagger
+fastify.register(swagger, {
+  openapi: {
+    openapi: '3.0.3',
+    info: {
+      title: 'EPCalculator API',
+      description: `Error Probability Calculator API for digital communication systems.
+
+This API provides computational tools for analyzing transmission system performance,
+including error probability bounds, error exponents, and information-theoretic metrics.
+
+**Supported Modulations:** PAM, PSK, QAM, Custom constellations`,
+      version: '2.0.0',
+      contact: {
+        name: 'EPCalculator Team',
+        url: 'https://github.com/arnau-ranchal/EPCalculator'
+      },
+      license: {
+        name: 'MIT',
+        url: 'https://opensource.org/licenses/MIT'
+      }
+    },
+    servers: [
+      { url: '/', description: 'Current server' }
+    ],
+    tags: [
+      { name: 'compute', description: 'Error probability computation endpoints' },
+      { name: 'plot', description: '2D plot generation endpoints' },
+      { name: 'contour', description: '3D contour/surface generation endpoints' },
+      { name: 'health', description: 'Health check endpoints' }
+    ]
+  }
+})
+
+// UPF custom styles for Swagger UI
+const upfStyles = `
+  <style>
+    .swagger-ui .topbar { background-color: #C8102E !important; }
+    .swagger-ui .info .title { color: #C8102E !important; }
+    .swagger-ui .opblock.opblock-post { border-color: #C8102E !important; background: rgba(200, 16, 46, 0.1) !important; }
+    .swagger-ui .opblock.opblock-post .opblock-summary-method { background: #C8102E !important; }
+    .swagger-ui .opblock.opblock-get { border-color: #1a5276 !important; background: rgba(26, 82, 118, 0.1) !important; }
+    .swagger-ui .opblock.opblock-get .opblock-summary-method { background: #1a5276 !important; }
+    .swagger-ui .btn.execute { background-color: #C8102E !important; border-color: #C8102E !important; }
+    .swagger-ui .opblock-tag { color: #C8102E !important; }
+  </style>
+`
+
+fastify.register(swaggerUi, {
+  routePrefix: '/docs',
+  uiConfig: {
+    docExpansion: 'list',
+    deepLinking: true,
+    displayRequestDuration: true,
+    tryItOutEnabled: true
+  }
+})
+
+// Inject custom CSS into Swagger UI
+fastify.addHook('onSend', async (request, reply, payload) => {
+  if (request.url === '/docs/' || request.url === '/docs') {
+    if (typeof payload === 'string' && payload.includes('</head>')) {
+      return payload.replace('</head>', upfStyles + '</head>')
+    }
+  }
+  return payload
 })
 
 // Register static file serving for the frontend (built by Vite to public/)
@@ -705,13 +775,9 @@ fastify.post('/api/plot_contour', async (request, reply) => {
   }
 })
 
-// Documentation route - serve docs/index.html
-fastify.get('/docs', async (request, reply) => {
-  return reply.sendFile('docs/index.html')
-})
-
-fastify.get('/docs/', async (request, reply) => {
-  return reply.sendFile('docs/index.html')
+// OpenAPI JSON endpoint
+fastify.get('/api-docs', async () => {
+  return fastify.swagger()
 })
 
 // Start server

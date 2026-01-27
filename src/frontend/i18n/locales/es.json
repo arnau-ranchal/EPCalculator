@@ -175,7 +175,9 @@
     "unit": "Unidad",
     "criticalRate": "Tasa Crítica (R_crit)",
     "mergeOrNewTitleTable": "Tabla Compatible Detectada",
-    "mergeOrNewDescriptionTable": "Ya existe una tabla con el mismo eje X. ¿Desea fusionar los datos o crear una tabla separada?"
+    "mergeOrNewDescriptionTable": "Ya existe una tabla con el mismo eje X. ¿Desea fusionar los datos o crear una tabla separada?",
+    "partial": "Parcial",
+    "incompleteTooltip": "Cálculo cancelado. Mostrando {computed} de {total} puntos."
   },
   "paramRef": {
     "title": "Modelo del Sistema",

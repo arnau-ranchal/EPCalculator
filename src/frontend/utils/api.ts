@@ -1,1 +1,354 @@
-import type {\n  ComputationParameters,\n  ComputationResult,\n  PlotParameters,\n  PlotResult,\n  ContourParameters,\n  ContourResult,\n  ApiError\n} from '../types'\nimport { sessionStore } from '../stores/session'\nimport { get } from 'svelte/store'\n\n// API configuration\nconst API_BASE = '/api'\nconst REQUEST_TIMEOUT = 30000 // 30 seconds\n\n// Request headers\nfunction getHeaders(): HeadersInit {\n  const session = get(sessionStore)\n  return {\n    'Content-Type': 'application/json',\n    'X-Session-ID': session.sessionId,\n    'Accept': 'application/json'\n  }\n}\n\n// Generic API request wrapper with error handling\nasync function apiRequest<T>(\n  endpoint: string,\n  options: RequestInit = {}\n): Promise<T> {\n  const controller = new AbortController()\n  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)\n\n  try {\n    const response = await fetch(`${API_BASE}${endpoint}`, {\n      ...options,\n      headers: {\n        ...getHeaders(),\n        ...options.headers\n      },\n      signal: controller.signal\n    })\n\n    clearTimeout(timeoutId)\n\n    // Update session activity\n    sessionStore.updateActivity()\n\n    if (!response.ok) {\n      const errorData: ApiError = await response.json().catch(() => ({\n        error: 'Network Error',\n        message: `HTTP ${response.status}: ${response.statusText}`,\n        statusCode: response.status\n      }))\n      throw new Error(errorData.message || `API request failed with status ${response.status}`)\n    }\n\n    return await response.json()\n  } catch (error) {\n    clearTimeout(timeoutId)\n    \n    if (error instanceof Error && error.name === 'AbortError') {\n      throw new Error('Request timeout - computation may be too complex')\n    }\n    \n    throw error\n  }\n}\n\n// Single computation\nexport async function computeSingle(\n  parameters: ComputationParameters\n): Promise<ComputationResult> {\n  const result = await apiRequest<ComputationResult>('/compute', {\n    method: 'POST',\n    body: JSON.stringify(parameters)\n  })\n\n  // Update computation count\n  sessionStore.incrementComputations()\n\n  return result\n}\n\n// Batch computation\nexport async function computeBatch(\n  parameters: ComputationParameters[]\n): Promise<{ results: ComputationResult[]; total_computation_time_ms: number }> {\n  const result = await apiRequest<{\n    results: ComputationResult[]\n    total_computation_time_ms: number\n  }>('/compute/batch', {\n    method: 'POST',\n    body: JSON.stringify({ parameters })\n  })\n\n  // Update computation count\n  for (let i = 0; i < parameters.length; i++) {\n    sessionStore.incrementComputations()\n  }\n\n  return result\n}\n\n// Plot generation\nexport async function generatePlot(\n  parameters: PlotParameters\n): Promise<PlotResult> {\n  return await apiRequest<PlotResult>('/plot', {\n    method: 'POST',\n    body: JSON.stringify(parameters)\n  })\n}\n\n// Contour plot generation\nexport async function generateContour(\n  parameters: ContourParameters\n): Promise<ContourResult> {\n  return await apiRequest<ContourResult>('/contour', {\n    method: 'POST',\n    body: JSON.stringify(parameters)\n  })\n}\n\n// Legacy endpoint compatibility\nexport async function computeLegacy(\n  M: number,\n  typeM: string,\n  SNR: number,\n  R: number,\n  N: number,\n  n: number,\n  th: number\n): Promise<{\n  'Probabilidad de error': number\n  'error_exponent': number\n  'rho óptima': number\n}> {\n  const params = new URLSearchParams({\n    M: M.toString(),\n    typeM,\n    SNR: SNR.toString(),\n    R: R.toString(),\n    N: N.toString(),\n    n: n.toString(),\n    th: th.toString()\n  })\n\n  return await apiRequest(`/exponents?${params.toString()}`, {\n    method: 'GET'\n  })\n}\n\n// Health check\nexport async function healthCheck(): Promise<{\n  status: string\n  timestamp: string\n  version: string\n  uptime: number\n  services: {\n    database: boolean\n    computation: boolean\n  }\n  university: {\n    name: string\n    activeUsers: number\n    maxUsers: number\n  }\n  resources: {\n    memory: {\n      used: number\n      total: number\n      percentage: number\n    }\n    activeComputations: number\n  }\n}> {\n  return await apiRequest('/health')\n}\n\n// Analytics\nexport async function getAnalytics(): Promise<{\n  computations: {\n    total: number\n    today: number\n    averageTime: number\n    active: number\n  }\n  users: {\n    total: number\n    active: number\n    activeLastHour: number\n  }\n  performance: {\n    databaseSize: number\n    memoryUsage: number\n    uptime: number\n  }\n}> {\n  return await apiRequest('/analytics')\n}\n\n// Get computation history\nexport async function getComputationHistory(\n  sessionId?: string,\n  limit = 50\n): Promise<Array<{\n  id: number\n  timestamp: string\n  parameters: string\n  results: string\n  computation_time_ms: number\n}>> {\n  const endpoint = sessionId \n    ? `/analytics/history/${sessionId}?limit=${limit}`\n    : `/analytics/history?limit=${limit}`\n  \n  return await apiRequest(endpoint)\n}\n\n// Retry mechanism for failed requests\nexport async function withRetry<T>(\n  operation: () => Promise<T>,\n  maxRetries = 3,\n  delay = 1000\n): Promise<T> {\n  let lastError: Error\n  \n  for (let attempt = 1; attempt <= maxRetries; attempt++) {\n    try {\n      return await operation()\n    } catch (error) {\n      lastError = error instanceof Error ? error : new Error('Unknown error')\n      \n      if (attempt === maxRetries) {\n        throw lastError\n      }\n      \n      // Exponential backoff\n      const waitTime = delay * Math.pow(2, attempt - 1)\n      await new Promise(resolve => setTimeout(resolve, waitTime))\n    }\n  }\n  \n  throw lastError!\n}\n\n// Connection status monitoring\nlet isOnline = navigator.onLine\nlet connectionListeners: ((online: boolean) => void)[] = []\n\nwindow.addEventListener('online', () => {\n  isOnline = true\n  connectionListeners.forEach(listener => listener(true))\n})\n\nwindow.addEventListener('offline', () => {\n  isOnline = false\n  connectionListeners.forEach(listener => listener(false))\n})\n\nexport function onConnectionChange(listener: (online: boolean) => void): () => void {\n  connectionListeners.push(listener)\n  \n  // Return unsubscribe function\n  return () => {\n    connectionListeners = connectionListeners.filter(l => l !== listener)\n  }\n}\n\nexport function isNetworkOnline(): boolean {\n  return isOnline\n}\n\n// Request queue for offline support\ninterface QueuedRequest {\n  id: string\n  endpoint: string\n  options: RequestInit\n  timestamp: number\n  resolve: (value: any) => void\n  reject: (error: Error) => void\n}\n\nlet requestQueue: QueuedRequest[] = []\n\nexport function queueRequest<T>(\n  endpoint: string,\n  options: RequestInit = {}\n): Promise<T> {\n  return new Promise((resolve, reject) => {\n    const request: QueuedRequest = {\n      id: Math.random().toString(36).substring(2),\n      endpoint,\n      options,\n      timestamp: Date.now(),\n      resolve,\n      reject\n    }\n    \n    requestQueue.push(request)\n    \n    // Try to process queue if online\n    if (isOnline) {\n      processRequestQueue()\n    }\n  })\n}\n\nasync function processRequestQueue(): Promise<void> {\n  if (!isOnline || requestQueue.length === 0) {\n    return\n  }\n  \n  const request = requestQueue.shift()!\n  \n  try {\n    const result = await apiRequest(request.endpoint, request.options)\n    request.resolve(result)\n  } catch (error) {\n    request.reject(error instanceof Error ? error : new Error('Unknown error'))\n  }\n  \n  // Process next request\n  if (requestQueue.length > 0) {\n    setTimeout(processRequestQueue, 100)\n  }\n}\n\n// Auto-process queue when coming back online\nonConnectionChange((online) => {\n  if (online) {\n    processRequestQueue()\n  }\n})\n\n// Clear old queued requests (older than 5 minutes)\nsetInterval(() => {\n  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000\n  const originalLength = requestQueue.length\n  \n  requestQueue = requestQueue.filter(request => {\n    if (request.timestamp < fiveMinutesAgo) {\n      request.reject(new Error('Request expired'))\n      return false\n    }\n    return true\n  })\n  \n  if (requestQueue.length !== originalLength) {\n    console.log(`Cleared ${originalLength - requestQueue.length} expired requests from queue`)\n  }\n}, 60000) // Check every minute"
+import type {
+  ComputationParameters,
+  ComputationResult,
+  PlotParameters,
+  PlotResult,
+  ContourParameters,
+  ContourResult,
+  ApiError
+} from '../types'
+import { sessionStore } from '../stores/session'
+import { get } from 'svelte/store'
+
+// API configuration
+const API_BASE = '/api/v1'
+const REQUEST_TIMEOUT = 30000 // 30 seconds
+
+// Request headers
+function getHeaders(): HeadersInit {
+  const session = get(sessionStore)
+  return {
+    'Content-Type': 'application/json',
+    'X-Session-ID': session.sessionId,
+    'Accept': 'application/json'
+  }
+}
+
+// Generic API request wrapper with error handling
+async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
+
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers: {
+        ...getHeaders(),
+        ...options.headers
+      },
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId)
+
+    // Update session activity
+    sessionStore.updateActivity()
+
+    if (!response.ok) {
+      const errorData: ApiError = await response.json().catch(() => ({
+        error: 'Network Error',
+        message: `HTTP ${response.status}: ${response.statusText}`,
+        statusCode: response.status
+      }))
+      throw new Error(errorData.message || `API request failed with status ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    clearTimeout(timeoutId)
+
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout - computation may be too complex')
+    }
+
+    throw error
+  }
+}
+
+// Single computation
+export async function computeSingle(
+  parameters: ComputationParameters
+): Promise<ComputationResult> {
+  const result = await apiRequest<ComputationResult>('/compute/single/standard', {
+    method: 'POST',
+    body: JSON.stringify(parameters)
+  })
+
+  // Update computation count
+  sessionStore.incrementComputations()
+
+  return result
+}
+
+// Batch computation
+export async function computeBatch(
+  parameters: ComputationParameters[]
+): Promise<{ results: ComputationResult[]; total_computation_time_ms: number }> {
+  const result = await apiRequest<{
+    results: ComputationResult[]
+    total_computation_time_ms: number
+  }>('/compute/batch/standard', {
+    method: 'POST',
+    body: JSON.stringify({ parameters })
+  })
+
+  // Update computation count
+  for (let i = 0; i < parameters.length; i++) {
+    sessionStore.incrementComputations()
+  }
+
+  return result
+}
+
+// Plot generation (range computation)
+export async function generatePlot(
+  parameters: PlotParameters
+): Promise<PlotResult> {
+  return await apiRequest<PlotResult>('/compute/range/standard', {
+    method: 'POST',
+    body: JSON.stringify(parameters)
+  })
+}
+
+// Contour plot generation
+export async function generateContour(
+  parameters: ContourParameters
+): Promise<ContourResult> {
+  return await apiRequest<ContourResult>('/compute/contour/standard', {
+    method: 'POST',
+    body: JSON.stringify(parameters)
+  })
+}
+
+// Legacy endpoint compatibility
+export async function computeLegacy(
+  M: number,
+  typeM: string,
+  SNR: number,
+  R: number,
+  N: number,
+  n: number,
+  th: number
+): Promise<{
+  'Probabilidad de error': number
+  'error_exponent': number
+  'rho óptima': number
+}> {
+  const params = new URLSearchParams({
+    M: M.toString(),
+    typeM,
+    SNR: SNR.toString(),
+    R: R.toString(),
+    N: N.toString(),
+    n: n.toString(),
+    th: th.toString()
+  })
+
+  return await apiRequest(`/exponents?${params.toString()}`, {
+    method: 'GET'
+  })
+}
+
+// Health check
+export async function healthCheck(): Promise<{
+  status: string
+  timestamp: string
+  version: string
+  uptime: number
+  services: {
+    database: boolean
+    computation: boolean
+  }
+  university: {
+    name: string
+    activeUsers: number
+    maxUsers: number
+  }
+  resources: {
+    memory: {
+      used: number
+      total: number
+      percentage: number
+    }
+    activeComputations: number
+  }
+}> {
+  return await apiRequest('/health')
+}
+
+// Analytics
+export async function getAnalytics(): Promise<{
+  computations: {
+    total: number
+    today: number
+    averageTime: number
+    active: number
+  }
+  users: {
+    total: number
+    active: number
+    activeLastHour: number
+  }
+  performance: {
+    databaseSize: number
+    memoryUsage: number
+    uptime: number
+  }
+}> {
+  return await apiRequest('/analytics')
+}
+
+// Get computation history
+export async function getComputationHistory(
+  sessionId?: string,
+  limit = 50
+): Promise<Array<{
+  id: number
+  timestamp: string
+  parameters: string
+  results: string
+  computation_time_ms: number
+}>> {
+  const endpoint = sessionId
+    ? `/analytics/history/${sessionId}?limit=${limit}`
+    : `/analytics/history?limit=${limit}`
+
+  return await apiRequest(endpoint)
+}
+
+// Retry mechanism for failed requests
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  delay = 1000
+): Promise<T> {
+  let lastError: Error
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+
+      if (attempt === maxRetries) {
+        throw lastError
+      }
+
+      // Exponential backoff
+      const waitTime = delay * Math.pow(2, attempt - 1)
+      await new Promise(resolve => setTimeout(resolve, waitTime))
+    }
+  }
+
+  throw lastError!
+}
+
+// Connection status monitoring
+let isOnline = navigator.onLine
+let connectionListeners: ((online: boolean) => void)[] = []
+
+window.addEventListener('online', () => {
+  isOnline = true
+  connectionListeners.forEach(listener => listener(true))
+})
+
+window.addEventListener('offline', () => {
+  isOnline = false
+  connectionListeners.forEach(listener => listener(false))
+})
+
+export function onConnectionChange(listener: (online: boolean) => void): () => void {
+  connectionListeners.push(listener)
+
+  // Return unsubscribe function
+  return () => {
+    connectionListeners = connectionListeners.filter(l => l !== listener)
+  }
+}
+
+export function isNetworkOnline(): boolean {
+  return isOnline
+}
+
+// Request queue for offline support
+interface QueuedRequest {
+  id: string
+  endpoint: string
+  options: RequestInit
+  timestamp: number
+  resolve: (value: any) => void
+  reject: (error: Error) => void
+}
+
+let requestQueue: QueuedRequest[] = []
+
+export function queueRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const request: QueuedRequest = {
+      id: Math.random().toString(36).substring(2),
+      endpoint,
+      options,
+      timestamp: Date.now(),
+      resolve,
+      reject
+    }
+
+    requestQueue.push(request)
+
+    // Try to process queue if online
+    if (isOnline) {
+      processRequestQueue()
+    }
+  })
+}
+
+async function processRequestQueue(): Promise<void> {
+  if (!isOnline || requestQueue.length === 0) {
+    return
+  }
+
+  const request = requestQueue.shift()!
+
+  try {
+    const result = await apiRequest(request.endpoint, request.options)
+    request.resolve(result)
+  } catch (error) {
+    request.reject(error instanceof Error ? error : new Error('Unknown error'))
+  }
+
+  // Process next request
+  if (requestQueue.length > 0) {
+    setTimeout(processRequestQueue, 100)
+  }
+}
+
+// Auto-process queue when coming back online
+onConnectionChange((online) => {
+  if (online) {
+    processRequestQueue()
+  }
+})
+
+// Clear old queued requests (older than 5 minutes)
+setInterval(() => {
+  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000
+  const originalLength = requestQueue.length
+
+  requestQueue = requestQueue.filter(request => {
+    if (request.timestamp < fiveMinutesAgo) {
+      request.reject(new Error('Request expired'))
+      return false
+    }
+    return true
+  })
+
+  if (requestQueue.length !== originalLength) {
+    console.log(`Cleared ${originalLength - requestQueue.length} expired requests from queue`)
+  }
+}, 60000) // Check every minute

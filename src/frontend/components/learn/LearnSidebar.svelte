@@ -27,20 +27,20 @@
     contentIndex
   } from '../../stores/learn.js';
 
-  /**
-   * Check if a given article is currently active (being viewed).
-   * We use this to highlight the current page in the sidebar.
-   */
-  function isActive(section, articleId) {
-    return $routeParts.section === section && $routeParts.article === articleId;
-  }
+  // Reactive values extracted from store for proper Svelte tracking
+  $: currentSection = $routeParts.section;
+  $: currentArticle = $routeParts.article;
+  $: isHome = $routeParts.isHome;
 
   /**
-   * Check if a section is currently active (any article within it).
+   * Map section IDs to their SVG icon identifiers.
+   * This allows us to render different icons for each section.
    */
-  function isSectionActive(section) {
-    return $routeParts.section === section;
-  }
+  const sectionIcons = {
+    concepts: 'compass',    // Mathematical concepts - compass/protractor
+    tutorials: 'book-open', // Tutorials - open book
+    api: 'zap'              // API - lightning bolt
+  };
 </script>
 
 <nav class="sidebar-nav" aria-label="Documentation navigation">
@@ -48,10 +48,13 @@
   <a
     href="#/learn"
     class="nav-home"
-    class:active={$routeParts.isHome}
+    class:active={isHome}
     on:click|preventDefault={() => navigateToLearn('')}
   >
-    <span class="nav-icon">🏠</span>
+    <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
     Home
   </a>
 
@@ -70,12 +73,31 @@
         -->
         <button
           class="section-header"
-          class:active={isSectionActive(sectionId)}
+          class:active={currentSection === sectionId}
           class:expanded={$sidebarExpanded[sectionId]}
           on:click={() => toggleSection(sectionId)}
           aria-expanded={$sidebarExpanded[sectionId]}
         >
-          <span class="section-icon">{section.icon}</span>
+          <span class="section-icon">
+            {#if sectionIcons[sectionId] === 'compass'}
+              <!-- Compass/protractor icon for Mathematical Concepts -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+              </svg>
+            {:else if sectionIcons[sectionId] === 'book-open'}
+              <!-- Open book icon for Tutorials -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+            {:else if sectionIcons[sectionId] === 'zap'}
+              <!-- Lightning bolt icon for API -->
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            {/if}
+          </span>
           <span class="section-title">{section.title}</span>
           <!--
             Chevron icon that rotates when expanded.
@@ -105,7 +127,7 @@
                 <a
                   href="#/learn/{sectionId}/{article.id}"
                   class="article-link"
-                  class:active={isActive(sectionId, article.id)}
+                  class:active={currentSection === sectionId && currentArticle === article.id}
                   on:click|preventDefault={() => navigateToLearn(`${sectionId}/${article.id}`)}
                 >
                   {article.title}
@@ -158,7 +180,10 @@
   }
 
   .nav-icon {
-    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 
   /* Remove default list styles */
@@ -199,8 +224,11 @@
   }
 
   .section-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-right: var(--spacing-sm, 8px);
-    font-size: 1.1em;
+    flex-shrink: 0;
   }
 
   .section-title {

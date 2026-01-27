@@ -421,6 +421,81 @@ function areYVarsCompatible(yVar1, yVar2) {
   return false;
 }
 
+// Check if all simulation and plot parameters match between two plots
+// (excluding xRange, points which can differ for range extension)
+function checkAllParamsMatch(existingPlot, newPlotData) {
+  const plotParams = existingPlot.plotParams || {};
+  const newParams = newPlotData.plotParams || {};
+  const plotSimParams = existingPlot.simulationParams || {};
+  const newSimParams = newPlotData.simulationParams || {};
+
+  console.log('[checkAllParamsMatch] Comparing:', {
+    existingPlotParams: plotParams,
+    newPlotParams: newParams,
+    existingSimParams: plotSimParams,
+    newSimParams: newSimParams
+  });
+
+  // Check distribution equivalence
+  const plotDist = plotParams.distribution || 'uniform';
+  const newDist = newParams.distribution || 'uniform';
+  const plotBeta = plotParams.shaping_param || 0;
+  const newBeta = newParams.shaping_param || 0;
+
+  if (!areDistributionsEquivalent(plotDist, plotBeta, newDist, newBeta)) {
+    console.log('[checkAllParamsMatch] Distribution mismatch:', { plotDist, plotBeta, newDist, newBeta });
+    return false;
+  }
+
+  // Compare plot parameters (excluding xRange, points)
+  const plotParamKeys = ['plotType', 'yVar', 'xVar', 'xVar2', 'xRange2', 'snrUnit'];
+  for (const key of plotParamKeys) {
+    if (JSON.stringify(plotParams[key]) !== JSON.stringify(newParams[key])) {
+      console.log(`[checkAllParamsMatch] plotParam mismatch for ${key}:`, plotParams[key], 'vs', newParams[key]);
+      return false;
+    }
+  }
+
+  // Compare simulation parameters
+  const simParamKeys = ['M', 'typeModulation', 'SNR', 'SNRUnit', 'R', 'n', 'N', 'threshold'];
+  for (const key of simParamKeys) {
+    if (plotSimParams[key] !== newSimParams[key]) {
+      console.log(`[checkAllParamsMatch] simParam mismatch for ${key}:`, plotSimParams[key], '('+typeof plotSimParams[key]+') vs', newSimParams[key], '('+typeof newSimParams[key]+')');
+      return false;
+    }
+  }
+
+  // Check constellation info for custom constellations
+  const plotIsCustom = plotSimParams.typeModulation === 'Custom';
+  const newIsCustom = newSimParams.typeModulation === 'Custom';
+
+  if (plotIsCustom !== newIsCustom) {
+    return false;
+  }
+
+  if (plotIsCustom && newIsCustom) {
+    const plotConstellationInfo = existingPlot.constellationInfo;
+    const newConstellationInfo = newPlotData.constellationInfo;
+
+    const plotId = plotConstellationInfo?.constellationId;
+    const newId = newConstellationInfo?.constellationId;
+
+    if (plotId !== newId) {
+      return false;
+    }
+
+    if (!plotId && !newId) {
+      const plotName = plotConstellationInfo?.constellationName;
+      const newName = newConstellationInfo?.constellationName;
+      if (plotName !== newName) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 // Find a plot with identical params except xRange (for range extension)
 function findRangeExtensionPlot(plots, newPlotData) {
   if (newPlotData.type !== 'line' && newPlotData.type !== 'rawData') return null;
@@ -453,8 +528,9 @@ function findRangeExtensionPlot(plots, newPlotData) {
       continue;
     }
 
-    // Compare plot parameters (excluding xRange, distribution, and shaping_param which we handled)
-    const plotParamKeys = ['plotType', 'yVar', 'xVar', 'xVar2', 'xRange2', 'points', 'points2', 'snrUnit', 'contourMode'];
+    // Compare plot parameters (excluding xRange, points, distribution, and shaping_param which we handled)
+    // points/points2 are excluded because user may want different sampling density
+    const plotParamKeys = ['plotType', 'yVar', 'xVar', 'xVar2', 'xRange2', 'snrUnit', 'contourMode'];
     let paramsMatch = true;
     for (const key of plotParamKeys) {
       if (JSON.stringify(plotParams[key]) !== JSON.stringify(newParams[key])) {
@@ -526,10 +602,10 @@ function findRangeExtensionPlot(plots, newPlotData) {
     if (existingXRange && existingXRange.length === 2) {
       const relationship = analyzeRangeRelationship(existingXRange, newXRange);
 
-      // For Proposal 3: auto-merge overlapping and adjacent, skip separate
-      if (relationship.type === 'overlapping' || relationship.type === 'adjacent') {
-        return { plot, relationship };
-      }
+      // When all other parameters match exactly, always treat as range extension
+      // regardless of whether ranges are overlapping, adjacent, or separate.
+      // This ensures the data is merged into a single series, not multiple series.
+      return { plot, relationship };
     }
   }
 
@@ -965,6 +1041,20 @@ export function addPlot(plotData) {
     const compatiblePlot = findCompatiblePlot(currentPlots, plotData);
     if (compatiblePlot) {
       console.log(`Compatible axes detected - prompting user for merge decision`);
+      console.log('[addPlot] Found compatible plot:', {
+        plotId: compatiblePlot.plotId,
+        simulationParams: compatiblePlot.simulationParams,
+        plotParams: compatiblePlot.plotParams
+      });
+      console.log('[addPlot] New plot data:', {
+        simulationParams: plotData.simulationParams,
+        plotParams: plotData.plotParams
+      });
+      console.log('[addPlot] All current plots:', currentPlots.map(p => ({
+        plotId: p.plotId,
+        M: p.simulationParams?.M,
+        xRange: p.plotParams?.xRange
+      })));
       pendingMerge.set({
         newPlotData: plotData,
         existingPlot: compatiblePlot,
@@ -1049,6 +1139,54 @@ export function confirmMerge() {
 
         return updatedPlot;
       } else if (mergeType === 'compatibleAxes') {
+        // FIRST: Check if all parameters actually match (except range/points)
+        // If so, this should be treated as a range extension, not multi-series
+        console.log('[confirmMerge] compatibleAxes - checking if all params match');
+        console.log('[confirmMerge] existingPlot:', {
+          plotParams: plot.plotParams,
+          simulationParams: plot.simulationParams,
+          isMultiSeries: plot.isMultiSeries
+        });
+        console.log('[confirmMerge] newPlotData:', {
+          plotParams: newPlotData.plotParams,
+          simulationParams: newPlotData.simulationParams
+        });
+        const allParamsMatch = checkAllParamsMatch(plot, newPlotData);
+        console.log('[confirmMerge] allParamsMatch:', allParamsMatch);
+
+        if (allParamsMatch && !plot.isMultiSeries) {
+          // All params match - merge as single series (like rangeExtension)
+          const mergedData = mergeRangeData(plot.data, newPlotData.data);
+          const mergedPlotData = { ...plot, data: mergedData };
+          const mergedUseLogY = shouldUseLogY(mergedPlotData);
+          const mergedRecommendedScale = mergedUseLogY ? 'logY' : 'linear';
+
+          updatePlotScale(existingPlot.plotId, mergedRecommendedScale);
+          console.log(`Compatible axes but all params match - merging as single series`);
+
+          // Update xRange to cover both ranges
+          const existingXRange = plot.plotParams?.xRange || [];
+          const newXRange = newPlotData.plotParams?.xRange || [];
+          let mergedXRange = existingXRange;
+          if (existingXRange.length === 2 && newXRange.length === 2) {
+            mergedXRange = [
+              Math.min(existingXRange[0], newXRange[0]),
+              Math.max(existingXRange[1], newXRange[1])
+            ];
+          }
+
+          return {
+            ...plot,
+            data: mergedData,
+            plotParams: {
+              ...plot.plotParams,
+              xRange: mergedXRange
+            },
+            recommendedScale: mergedRecommendedScale,
+            timestamp: Date.now()
+          };
+        }
+
         // For tables (rawData), handle differently - use parameter columns instead of series legend
         if (plot.type === 'rawData') {
           // Find differing parameters between existing and new data

@@ -1,0 +1,196 @@
+{
+  "generated": "2026-01-26T14:23:53.889Z",
+  "baseUrl": "/tutorial-images/",
+  "screenshots": {
+    "tab-single-point": {
+      "file": "tab-single-point.png",
+      "description": "Single Point tab highlighted",
+      "success": false
+    },
+    "tab-plot-mode": {
+      "file": "tab-plot-mode.png",
+      "description": "Plotting & Visualization tab highlighted",
+      "success": false
+    },
+    "quick-start-single-point": {
+      "file": "quick-start-single-point.png",
+      "description": "Single Point form with QPSK at 10dB, ρ=0",
+      "success": false
+    },
+    "quick-start-plot-mode": {
+      "file": "quick-start-plot-mode.png",
+      "description": "Plot mode form with SNR range 0-20dB",
+      "success": false
+    },
+    "parameter-form-full": {
+      "file": "parameter-form-full.png",
+      "description": "Full app with parameter form spotlighted",
+      "success": false
+    },
+    "modulation-selector": {
+      "file": "modulation-selector.png",
+      "description": "Full app with modulation controls spotlighted (Single Point tab)",
+      "success": false
+    },
+    "snr-input": {
+      "file": "snr-input.png",
+      "description": "Full app with SNR input spotlighted",
+      "success": false
+    },
+    "compute-button": {
+      "file": "compute-button.png",
+      "description": "Full app with compute button spotlighted",
+      "success": false
+    },
+    "custom-constellation": {
+      "file": "custom-constellation.png",
+      "description": "Full app with entire constellation editor modal spotlighted",
+      "success": false
+    },
+    "constellation-add-point": {
+      "file": "constellation-add-point.png",
+      "description": "Spotlight on the Add Point button in constellation editor",
+      "success": false
+    },
+    "constellation-polar-toggle": {
+      "file": "constellation-polar-toggle.png",
+      "description": "Spotlight on the Polar/Cartesian toggle",
+      "success": false
+    },
+    "constellation-undo-redo": {
+      "file": "constellation-undo-redo.png",
+      "description": "Spotlight on the Undo/Redo buttons",
+      "success": false
+    },
+    "constellation-cancel-button": {
+      "file": "constellation-cancel-button.png",
+      "description": "Spotlight on the Cancel button in modal footer",
+      "success": false
+    },
+    "constellation-use-button": {
+      "file": "constellation-use-button.png",
+      "description": "Spotlight on the Use button in modal footer",
+      "success": false
+    },
+    "constellation-lucky-button": {
+      "file": "constellation-lucky-button.png",
+      "description": "Spotlight on the I'm Feeling Lucky button",
+      "success": false
+    },
+    "constellation-lucky-dropdown": {
+      "file": "constellation-lucky-dropdown.png",
+      "description": "Spotlight on the I'm Feeling Lucky options dropdown",
+      "success": false
+    },
+    "constellation-hide-table": {
+      "file": "constellation-hide-table.png",
+      "description": "Spotlight on the navigation arrow to hide table",
+      "success": false
+    },
+    "constellation-hide-plot": {
+      "file": "constellation-hide-plot.png",
+      "description": "Spotlight on the navigation arrow to hide plot",
+      "success": false
+    },
+    "plotting-controls": {
+      "file": "plotting-controls.png",
+      "description": "Full app with plotting controls spotlighted",
+      "success": false
+    },
+    "line-plot-generated": {
+      "file": "line-plot-generated.png",
+      "description": "Line plot with generated E₀ curve showing results",
+      "success": false
+    },
+    "line-plot-export-button": {
+      "file": "line-plot-export-button.png",
+      "description": "Export button highlighted on a multiline plot",
+      "success": false
+    },
+    "line-plot-export-menu": {
+      "file": "line-plot-export-menu.png",
+      "description": "Export menu open on multiline plot showing all format options",
+      "success": false
+    },
+    "line-plot-step1-complete": {
+      "file": "line-plot-step1-complete.png",
+      "description": "First plot (QPSK) generated, showing full interface without highlights",
+      "success": false
+    },
+    "line-plot-step2-params": {
+      "file": "line-plot-step2-params.png",
+      "description": "After first plot, changing modulation to 8-PSK for second curve",
+      "success": false
+    },
+    "line-plot-merge-modal": {
+      "file": "line-plot-merge-modal.png",
+      "description": "Merge confirmation modal asking to merge or create new figure",
+      "success": false
+    },
+    "line-plot-multiline": {
+      "file": "line-plot-multiline.png",
+      "description": "Merged plot showing both QPSK and 8-PSK curves together",
+      "success": false
+    },
+    "line-plot-hover-legend": {
+      "file": "line-plot-hover-legend.png",
+      "description": "Hovering over legend entry highlights the corresponding curve",
+      "success": true
+    },
+    "line-plot-hover-point": {
+      "file": "line-plot-hover-point.png",
+      "description": "Hovering on plot shows tooltip with coordinates",
+      "success": true
+    },
+    "line-plot-axis-linear": {
+      "file": "line-plot-axis-linear.png",
+      "description": "Multiline plot with default linear X and Y scales",
+      "success": false
+    },
+    "line-plot-axis-log-y": {
+      "file": "line-plot-axis-log-y.png",
+      "description": "Multiline plot with logarithmic Y scale",
+      "success": false
+    },
+    "line-plot-axis-log-x": {
+      "file": "line-plot-axis-log-x.png",
+      "description": "Multiline plot with logarithmic X scale (linear SNR units)",
+      "success": false
+    },
+    "line-plot-axis-transpose": {
+      "file": "line-plot-axis-transpose.png",
+      "description": "Multiline plot with transposed axes (E₀ on X, SNR on Y)",
+      "success": false
+    },
+    "theme-language": {
+      "file": "theme-language.png",
+      "description": "Full app with theme/language controls spotlighted",
+      "success": false
+    },
+    "app-overview": {
+      "file": "app-overview.png",
+      "description": "Full application overview (light mode)",
+      "success": false
+    },
+    "app-dark-mode": {
+      "file": "app-dark-mode.png",
+      "description": "Full application in dark mode",
+      "success": false
+    },
+    "modulation-selector-qam16": {
+      "file": "modulation-selector-qam16.png",
+      "description": "16-QAM modulation selected (Plotting tab)",
+      "success": false
+    },
+    "modulation-selector-psk8": {
+      "file": "modulation-selector-psk8.png",
+      "description": "8-PSK modulation selected (Plotting tab)",
+      "success": false
+    },
+    "snr-input-db": {
+      "file": "snr-input-db.png",
+      "description": "SNR input in dB mode",
+      "success": false
+    }
+  }
+}

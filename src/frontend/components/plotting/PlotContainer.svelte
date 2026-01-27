@@ -205,6 +205,11 @@
   $: currentScaleZ = $plotScalesZ.get(plotId) || 'linear';
   $: currentSnrUnit = $plotSnrUnits.get(plotId) || metadata.snrUnit || 'dB';
 
+  // Check if plot is incomplete (cancelled before completion)
+  $: isIncomplete = metadata?.incomplete || false;
+  $: computedPoints = metadata?.computedPoints || 0;
+  $: requestedPoints = metadata?.requestedPoints || 0;
+
   // Parse scale into independent X and Y components
   $: isLogX = currentScale === 'logX' || currentScale === 'logLog';
   $: isLogY = currentScale === 'logY' || currentScale === 'logLog';
@@ -347,71 +352,78 @@
       }
     }
 
-    // Transform data from linear to dB if needed
-    // Backend should send LINEAR SNR values, convert to dB if unit is dB
-    if (meta.type === 'contour' && currentSnrUnit === 'dB') {
-      // For contour plots, check all three axes (x1, x2, z)
+    // SNR unit conversion for display toggle
+    // The backend returns data in the unit specified by metadata.snrUnit (the original request unit)
+    // The user can toggle currentSnrUnit to view data in a different unit
+    // We need to convert if currentSnrUnit differs from the original metadata.snrUnit
+    const originalSnrUnit = meta.snrUnit || 'dB';  // The unit the data was fetched in
+
+    if (xVar === 'SNR' && currentSnrUnit !== originalSnrUnit && meta.type !== 'rawData') {
+      // User toggled the SNR unit - convert the data
+      if (currentSnrUnit === 'dB' && originalSnrUnit === 'linear') {
+        // Convert from linear to dB: dB = 10 * log10(linear)
+        if (multiSeries && seriesData) {
+          seriesData = seriesData.map(series => ({
+            ...series,
+            data: series.data.map(point => ({
+              ...point,
+              x: point.x > 0 ? 10 * Math.log10(point.x) : -100
+            }))
+          }));
+        } else if (plotData) {
+          plotData = plotData.map(point => ({
+            ...point,
+            x: point.x > 0 ? 10 * Math.log10(point.x) : -100
+          }));
+        }
+      } else if (currentSnrUnit === 'linear' && originalSnrUnit === 'dB') {
+        // Convert from dB to linear: linear = 10^(dB/10)
+        if (multiSeries && seriesData) {
+          seriesData = seriesData.map(series => ({
+            ...series,
+            data: series.data.map(point => ({
+              ...point,
+              x: Math.pow(10, point.x / 10)
+            }))
+          }));
+        } else if (plotData) {
+          plotData = plotData.map(point => ({
+            ...point,
+            x: Math.pow(10, point.x / 10)
+          }));
+        }
+      }
+    }
+
+    // Same logic for contour plots
+    if (meta.type === 'contour') {
       const x1Var = meta.xVar || meta.x1Var;
       const x2Var = meta.xVar2 || meta.x2Var;
-      const zVar = meta.zVar || meta.yVar;
 
-      if (plotData) {
+      if (plotData && currentSnrUnit !== originalSnrUnit) {
         plotData = plotData.map(point => {
           const newPoint = { ...point };
-          // Convert x1 if it's SNR (only if value is positive, indicating linear form)
-          // Linear SNR is always positive; negative values indicate already in dB
+
+          // Convert x1 if it's SNR
           if (x1Var === 'SNR') {
-            if (point.x1 > 0) {
-              newPoint.x1 = 10 * Math.log10(point.x1);
-            } else if (point.x1 < 0) {
-              // Negative value suggests already in dB, keep as-is
-              newPoint.x1 = point.x1;
-            } else {
-              // Zero or undefined - set to very small dB value
-              newPoint.x1 = -100;
+            if (currentSnrUnit === 'dB' && originalSnrUnit === 'linear') {
+              newPoint.x1 = point.x1 > 0 ? 10 * Math.log10(point.x1) : -100;
+            } else if (currentSnrUnit === 'linear' && originalSnrUnit === 'dB') {
+              newPoint.x1 = Math.pow(10, point.x1 / 10);
             }
           }
+
           // Convert x2 if it's SNR
           if (x2Var === 'SNR') {
-            if (point.x2 > 0) {
-              newPoint.x2 = 10 * Math.log10(point.x2);
-            } else if (point.x2 < 0) {
-              newPoint.x2 = point.x2;
-            } else {
-              newPoint.x2 = -100;
+            if (currentSnrUnit === 'dB' && originalSnrUnit === 'linear') {
+              newPoint.x2 = point.x2 > 0 ? 10 * Math.log10(point.x2) : -100;
+            } else if (currentSnrUnit === 'linear' && originalSnrUnit === 'dB') {
+              newPoint.x2 = Math.pow(10, point.x2 / 10);
             }
           }
-          // Convert z if it's SNR (for 3D plots)
-          if (zVar === 'SNR') {
-            if (point.z > 0) {
-              newPoint.z = 10 * Math.log10(point.z);
-            } else if (point.z < 0) {
-              newPoint.z = point.z;
-            } else {
-              newPoint.z = -100;
-            }
-          }
+
           return newPoint;
         });
-      }
-    } else if (xVar === 'SNR' && currentSnrUnit === 'dB' && meta.type !== 'rawData') {
-      // For regular line plots (NOT tables - tables already have values in user's chosen unit)
-      // Backend returns LINEAR SNR values, so we convert to dB here for display
-      if (multiSeries && seriesData) {
-        // Transform multi-series data
-        seriesData = seriesData.map(series => ({
-          ...series,
-          data: series.data.map(point => ({
-            ...point,
-            x: 10 * Math.log10(point.x)  // Convert linear to dB
-          }))
-        }));
-      } else if (plotData) {
-        // Transform single-series data
-        plotData = plotData.map(point => ({
-          ...point,
-          x: 10 * Math.log10(point.x)  // Convert linear to dB
-        }));
       }
     }
 
@@ -2107,6 +2119,17 @@
 </script>
 
 <div class="plot-container">
+  <!-- Incomplete badge for cancelled computations -->
+  {#if isIncomplete}
+    <div class="incomplete-badge"
+         title={$_('plotting.incompleteTooltip', { values: { computed: computedPoints, total: requestedPoints } }) || `Computation was cancelled. Showing ${computedPoints} of ${requestedPoints} points.`}>
+      <svg class="warning-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"/>
+      </svg>
+      <span>{$_('plotting.partial') || 'Partial'} ({computedPoints}/{requestedPoints})</span>
+    </div>
+  {/if}
+
   <!-- Observable Plot content (2D) -->
   <div bind:this={container} class="plot-content"></div>
 
@@ -2150,6 +2173,32 @@
     font-size: var(--font-size-sm);
     color: var(--text-color-secondary);
     font-weight: 500;
+  }
+
+  .incomplete-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #fef3cd;
+    color: #856404;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid #ffc107;
+  }
+
+  .warning-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  :global(.dark) .incomplete-badge {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border-color: rgba(255, 193, 7, 0.3);
   }
 
   /* Responsive design */

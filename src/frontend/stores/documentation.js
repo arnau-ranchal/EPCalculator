@@ -50,42 +50,54 @@ export const documentationContent = {
     category: 'Plot Controls',
     description: 'Displays the X-axis using a linear scale where equal distances represent equal value differences.',
     theory: 'Linear scales are intuitive for comparing absolute differences. Use when the data range is relatively small or when you want to see the true shape of the curve.',
-    behavior: 'Click to switch to logarithmic X scale.'
+    behavior: 'Click to switch to logarithmic X scale.',
+    learnMoreUrl: '#/learn/concepts/plot-controls',
+    learnMoreSection: 'linear-x'
   },
   'scale-log-x': {
     title: 'Logarithmic X Scale',
     category: 'Plot Controls',
     description: 'Displays the X-axis using a logarithmic (log₁₀) scale where equal distances represent equal ratios.',
     theory: 'Logarithmic scales compress large ranges and reveal patterns in data spanning multiple orders of magnitude. Essential for viewing exponential decay or growth.',
-    behavior: 'Click to switch to linear X scale.'
+    behavior: 'Click to switch to linear X scale.',
+    learnMoreUrl: '#/learn/concepts/plot-controls',
+    learnMoreSection: 'log-x'
   },
   'scale-linear-y': {
     title: 'Linear Y Scale',
     category: 'Plot Controls',
     description: 'Displays the Y-axis using a linear scale.',
     theory: 'Best for data with a narrow range. Shows the true proportional differences between values.',
-    behavior: 'Click to switch to logarithmic Y scale.'
+    behavior: 'Click to switch to logarithmic Y scale.',
+    learnMoreUrl: '#/learn/concepts/plot-controls',
+    learnMoreSection: 'linear-y'
   },
   'scale-log-y': {
     title: 'Logarithmic Y Scale',
     category: 'Plot Controls',
     description: 'Displays the Y-axis using a logarithmic (log₁₀) scale.',
     theory: 'Error probabilities often span many orders of magnitude (e.g., 10⁻¹ to 10⁻¹⁰). Log scale makes these differences visible and reveals the linear relationship between SNR and error exponent.',
-    behavior: 'Click to switch to linear Y scale.'
+    behavior: 'Click to switch to linear Y scale.',
+    learnMoreUrl: '#/learn/concepts/plot-controls',
+    learnMoreSection: 'log-y'
   },
   'snr-db': {
     title: 'SNR in dB',
     category: 'Units',
     description: 'Signal-to-Noise Ratio expressed in decibels: SNR(dB) = 10·log₁₀(SNR)',
     theory: 'Decibels are a logarithmic unit that compress large ratios into manageable numbers. A 3 dB increase doubles the SNR. Common in communications engineering because gains/losses add linearly in dB.',
-    behavior: 'Click to switch to linear SNR units.'
+    behavior: 'Click to switch to linear SNR units.',
+    learnMoreUrl: '#/learn/concepts/awgn-channel',
+    learnMoreSection: 'snr'
   },
   'snr-linear': {
     title: 'SNR (Linear)',
     category: 'Units',
     description: 'Signal-to-Noise Ratio as a direct power ratio: SNR = P_signal / P_noise',
     theory: 'Linear SNR shows the actual power ratio. SNR=10 means signal power is 10× noise power. Useful for theoretical analysis but spans large ranges in practice.',
-    behavior: 'Click to switch to dB units.'
+    behavior: 'Click to switch to dB units.',
+    learnMoreUrl: '#/learn/concepts/plot-controls',
+    learnMoreSection: 'snr-units'
   },
   // Transpose button
   'transpose': {
@@ -93,7 +105,9 @@ export const documentationContent = {
     category: 'Plot Controls',
     description: 'Swaps the X and Y axes of the plot.',
     theory: 'Different perspectives reveal different insights. Swapping axes can make trends more apparent or match conventions from literature.',
-    behavior: 'Click to swap X↔Y (for line plots) or X1↔X2 (for contour plots).'
+    behavior: 'Click to swap X↔Y (for line plots) or X1↔X2 (for contour plots).',
+    learnMoreUrl: '#/learn/concepts/plot-controls',
+    learnMoreSection: 'transpose'
   },
   // Export button
   'export': {
@@ -106,7 +120,9 @@ export const documentationContent = {
       { name: 'CSV', desc: 'Raw data for analysis in other tools' },
       { name: 'JSON', desc: 'Full data with metadata, re-importable' }
     ],
-    behavior: 'Click to open the export menu with format options.'
+    behavior: 'Click to open the export menu with format options.',
+    learnMoreUrl: '#/learn/tutorials/exporting',
+    learnMoreSection: 'formats'
   },
   // Remove button
   'remove': {
@@ -121,7 +137,9 @@ export const documentationContent = {
     category: 'Computation',
     description: 'Calculates the error probability bound for the current parameters.',
     theory: 'Uses Gallager\'s random coding bound with Hermite-Gauss quadrature for numerical integration. Optimizes over the parameter ρ ∈ [0,1] to find the tightest bound.',
-    behavior: 'Click to start computation. Results appear in the panel on the right.'
+    behavior: 'Click to start computation. Results appear in the panel on the right.',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'formula'
   },
   // Generate plot button
   'generate-plot': {
@@ -129,7 +147,9 @@ export const documentationContent = {
     category: 'Plotting',
     description: 'Creates a new plot with the current settings.',
     theory: 'Computes error probability at multiple points across the specified range, then renders an interactive visualization.',
-    behavior: 'Click to generate. If a compatible plot exists, you\'ll be asked to merge or create new.'
+    behavior: 'Click to generate. If a compatible plot exists, you\'ll be asked to merge or create new.',
+    learnMoreUrl: '#/learn/tutorials/plotting',
+    learnMoreSection: 'setup'
   },
   // Modulation type
   'modulation-pam': {
@@ -137,21 +157,27 @@ export const documentationContent = {
     category: 'Modulation',
     description: 'One-dimensional modulation with M amplitude levels.',
     theory: 'PAM uses M equally-spaced amplitude levels on a single axis. M-PAM has log₂(M) bits per symbol. Simple but less power-efficient than 2D modulations.',
-    example: '2-PAM = BPSK, 4-PAM has levels {-3, -1, +1, +3}'
+    example: '2-PAM = BPSK, 4-PAM has levels {-3, -1, +1, +3}',
+    learnMoreUrl: '#/learn/concepts/modulation',
+    learnMoreSection: 'pam'
   },
   'modulation-psk': {
     title: 'PSK (Phase Shift Keying)',
     category: 'Modulation',
     description: 'Two-dimensional modulation with M phases on a circle.',
     theory: 'All constellation points have equal energy (lie on a circle). Good for non-linear channels. Phase differences of 2π/M between adjacent symbols.',
-    example: '2-PSK = BPSK, 4-PSK = QPSK, 8-PSK'
+    example: '2-PSK = BPSK, 4-PSK = QPSK, 8-PSK',
+    learnMoreUrl: '#/learn/concepts/modulation',
+    learnMoreSection: 'psk'
   },
   'modulation-qam': {
     title: 'QAM (Quadrature Amplitude Modulation)',
     category: 'Modulation',
     description: 'Two-dimensional modulation combining amplitude and phase.',
     theory: 'Points arranged in a square grid. Most spectrally efficient for AWGN channels. Higher M increases throughput but requires higher SNR.',
-    example: '4-QAM = QPSK, 16-QAM (4×4 grid), 64-QAM (8×8 grid)'
+    example: '4-QAM = QPSK, 16-QAM (4×4 grid), 64-QAM (8×8 grid)',
+    learnMoreUrl: '#/learn/concepts/modulation',
+    learnMoreSection: 'qam'
   },
   // Distribution buttons
   'distribution-uniform': {
@@ -159,14 +185,18 @@ export const documentationContent = {
     category: 'Probabilistic Shaping',
     description: 'All constellation points are transmitted with equal probability.',
     theory: 'Standard approach in most systems. Simple but not capacity-achieving. Each symbol carries exactly log₂(M) bits of information.',
-    behavior: 'Click to use uniform (equal) symbol probabilities.'
+    behavior: 'Click to use uniform (equal) symbol probabilities.',
+    learnMoreUrl: '#/learn/concepts/probabilistic-shaping',
+    learnMoreSection: 'uniform'
   },
   'distribution-maxwell': {
     title: 'Maxwell-Boltzmann Distribution',
     category: 'Probabilistic Shaping',
     description: 'Symbol probabilities follow P(x) ∝ exp(-β|x|²), favoring lower-energy symbols.',
     theory: 'Probabilistic shaping can approach channel capacity by making the transmitted distribution more Gaussian-like. The parameter β controls the "temperature" - higher β means stronger shaping.',
-    behavior: 'Click to enable Maxwell-Boltzmann shaping. Adjust β parameter to control shaping strength.'
+    behavior: 'Click to enable Maxwell-Boltzmann shaping. Adjust β parameter to control shaping strength.',
+    learnMoreUrl: '#/learn/concepts/probabilistic-shaping',
+    learnMoreSection: 'maxwell-boltzmann'
   },
   // Y-axis variable buttons
   'yvar-error-prob': {
@@ -174,21 +204,27 @@ export const documentationContent = {
     category: 'Output Variables',
     description: 'The probability that a codeword is decoded incorrectly.',
     theory: 'Bounded by Pe ≤ exp(-n·E(R)) where E(R) is the error exponent and n is the code length. This is the ultimate metric for system reliability.',
-    formula: 'P_e \\leq \\exp(-n \\cdot E(R))'
+    formula: 'P_e \\leq \\exp(-n \\cdot E(R))',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'error-probability'
   },
   'yvar-error-exp': {
     title: 'Error Exponent E(R)',
     category: 'Output Variables',
     description: 'The rate of exponential decay of error probability with code length.',
     theory: 'A fundamental quantity in information theory. Higher E(R) means error probability decreases faster with code length. E(R) > 0 for rates R < C (channel capacity).',
-    formula: 'E(R) = \\max_{\\rho \\in [0,1]} \\left[ E_0(\\rho) - \\rho R \\right]'
+    formula: 'E(R) = \\max_{\\rho \\in [0,1]} \\left[ E_0(\\rho) - \\rho R \\right]',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'formula'
   },
   'yvar-rho': {
     title: 'Optimal ρ',
     category: 'Output Variables',
     description: 'The optimization parameter that maximizes the error exponent bound.',
     theory: 'Gallager\'s bound involves optimizing over ρ ∈ [0,1]. The optimal ρ depends on the rate R and channel conditions. At capacity, optimal ρ → 0.',
-    formula: '\\rho^* = \\arg\\max_{\\rho \\in [0,1]} \\left[ E_0(\\rho) - \\rho R \\right]'
+    formula: '\\rho^* = \\arg\\max_{\\rho \\in [0,1]} \\left[ E_0(\\rho) - \\rho R \\right]',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'rho'
   },
   // Plot type buttons
   'plot-line': {
@@ -196,21 +232,26 @@ export const documentationContent = {
     category: 'Plot Types',
     description: '2D plot showing Y variable vs one X variable.',
     theory: 'Best for showing trends and comparing curves. Multiple series can be overlaid for comparison.',
-    behavior: 'Creates a standard X-Y plot with the selected variables.'
+    behavior: 'Creates a standard X-Y plot with the selected variables.',
+    learnMoreUrl: '#/learn/tutorials/plotting',
+    learnMoreSection: 'line-plot'
   },
   'plot-contour': {
     title: 'Contour Plot',
     category: 'Plot Types',
     description: '3D visualization showing Z variable vs two X variables.',
     theory: 'Contour lines connect points of equal value. Color indicates magnitude. Essential for understanding how error probability depends on two parameters simultaneously.',
-    behavior: 'Creates a 2D heatmap (or 3D surface) with two independent variables.'
+    behavior: 'Creates a 2D heatmap (or 3D surface) with two independent variables.',
+    learnMoreUrl: '#/learn/tutorials/plotting',
+    learnMoreSection: 'contour-plot'
   },
   'plot-table': {
     title: 'Data Table',
     category: 'Plot Types',
     description: 'Raw numerical data in tabular format.',
     theory: 'Useful when exact values are needed or for export to other analysis tools.',
-    behavior: 'Displays computed values in a scrollable table format.'
+    behavior: 'Displays computed values in a scrollable table format.',
+    learnMoreUrl: '#/learn/tutorials/exporting'
   },
   // Custom Constellation buttons
   'constellation-lucky': {
@@ -225,14 +266,18 @@ export const documentationContent = {
       { name: 'Clustered', desc: 'Points grouped into 2-4 clusters around a ring' },
       { name: 'Scattered', desc: 'Uniformly random positions using polar coordinates for better coverage' }
     ],
-    behavior: 'Click to generate a new random constellation. Each click produces a different pattern type with random parameters (rotation, spacing, perturbation). The result is always valid and ready for simulation.'
+    behavior: 'Click to generate a new random constellation. Each click produces a different pattern type with random parameters (rotation, spacing, perturbation). The result is always valid and ready for simulation.',
+    learnMoreUrl: '#/learn/tutorials/custom-constellation',
+    learnMoreSection: 'random'
   },
   'constellation-hide-table': {
     title: 'Toggle Table View',
     category: 'Display',
     description: 'Shows or hides the numerical table for precise point editing.',
     theory: 'The table allows exact coordinate and probability entry. The plot provides visual feedback and drag-to-edit capability.',
-    behavior: 'Click to show/hide the points table. The constellation plot remains visible.'
+    behavior: 'Click to show/hide the points table. The constellation plot remains visible.',
+    learnMoreUrl: '#/learn/tutorials/custom-constellation',
+    learnMoreSection: 'table'
   },
 
   // Clear all button
@@ -247,7 +292,9 @@ export const documentationContent = {
     title: 'Download All Plots',
     category: 'Data Export',
     description: 'Exports all plots as PNG images.',
-    behavior: 'Click to download each plot as a separate PNG file.'
+    behavior: 'Click to download each plot as a separate PNG file.',
+    learnMoreUrl: '#/learn/tutorials/exporting',
+    learnMoreSection: 'formats'
   },
   // Reset defaults
   'reset-defaults': {
@@ -277,42 +324,53 @@ export const documentationContent = {
     category: 'X-Axis Variables',
     description: 'Number of symbols in the constellation.',
     theory: 'M determines spectral efficiency: log₂(M) bits per symbol. Higher M = more bits/symbol but requires higher SNR. Common values: 2, 4, 8, 16, 64, 256.',
-    formula: '\\eta = \\log_2(M) \\text{ bits/symbol}'
+    formula: '\\eta = \\log_2(M) \\text{ bits/symbol}',
+    learnMoreUrl: '#/learn/concepts/modulation'
   },
   'xvar-SNR': {
     title: 'Signal-to-Noise Ratio',
     category: 'X-Axis Variables',
     description: 'Ratio of signal power to noise power.',
     theory: 'SNR = Es/N₀ where Es is symbol energy and N₀ is noise spectral density. Higher SNR → lower error probability. Often expressed in dB: SNR_dB = 10·log₁₀(SNR).',
-    formula: '\\text{SNR} = \\frac{E_s}{N_0} = \\frac{E_b}{N_0} \\cdot \\log_2(M)'
+    formula: '\\text{SNR} = \\frac{E_s}{N_0} = \\frac{E_b}{N_0} \\cdot \\log_2(M)',
+    learnMoreUrl: '#/learn/concepts/awgn-channel',
+    learnMoreSection: 'snr'
   },
   'xvar-R': {
     title: 'Code Rate (R)',
     category: 'X-Axis Variables',
     description: 'Ratio of information bits to total coded bits.',
     theory: 'R = k/n where k = info bits, n = codeword length. Lower R = more redundancy = better error correction but lower throughput. R must be below channel capacity for reliable communication.',
-    formula: 'R = \\frac{k}{n}, \\quad 0 < R \\leq 1'
+    formula: 'R = \\frac{k}{n}, \\quad 0 < R \\leq 1',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'code-rate'
   },
   'xvar-n': {
     title: 'Code Length (n)',
     category: 'X-Axis Variables',
     description: 'Number of symbols in a codeword.',
     theory: 'Longer codes achieve lower error probability: Pe ≤ exp(-n·E(R)). However, longer codes mean more latency and complexity. The error exponent E(R) determines how fast Pe decreases with n.',
-    formula: 'P_e \\leq \\exp(-n \\cdot E(R))'
+    formula: 'P_e \\leq \\exp(-n \\cdot E(R))',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'code-length'
   },
   'xvar-N': {
     title: 'Quadrature Points (N)',
     category: 'X-Axis Variables',
     description: 'Number of points for Gauss-Hermite numerical integration.',
     theory: 'Higher N = more accurate integration but slower computation. The integral ∫f(x)e^(-x²)dx is approximated by Σwᵢf(xᵢ). N=50-100 is typically sufficient.',
-    formula: '\\int f(x) e^{-x^2} dx \\approx \\sum_{i} w_i \\cdot f(x_i)'
+    formula: '\\int f(x) e^{-x^2} dx \\approx \\sum_{i} w_i \\cdot f(x_i)',
+    learnMoreUrl: '#/learn/concepts/plot-controls',
+    learnMoreSection: 'quadrature'
   },
   'xvar-beta': {
     title: 'Shaping Parameter (β)',
     category: 'X-Axis Variables',
     description: 'Controls the strength of Maxwell-Boltzmann probabilistic shaping.',
     theory: 'P(x) ∝ exp(-β|x|²). β=0 gives uniform distribution. Higher β favors low-energy symbols, approaching Gaussian distribution and channel capacity.',
-    formula: 'P(x_i) = \\frac{\\exp(-\\beta |x_i|^2)}{\\sum_j \\exp(-\\beta |x_j|^2)}'
+    formula: 'P(x_i) = \\frac{\\exp(-\\beta |x_i|^2)}{\\sum_j \\exp(-\\beta |x_j|^2)}',
+    learnMoreUrl: '#/learn/concepts/probabilistic-shaping',
+    learnMoreSection: 'maxwell-boltzmann'
   },
 
   // ===== Y-AXIS VARIABLES =====
@@ -321,14 +379,18 @@ export const documentationContent = {
     category: 'Output Variables',
     description: 'Maximum achievable rate for reliable communication.',
     theory: 'I(X;Y) = H(Y) - H(Y|X) measures how much information Y reveals about X. Channel capacity C = max_P(x) I(X;Y). Reliable communication possible iff R < I(X;Y).',
-    formula: 'I(X;Y) = H(Y) - H(Y|X)'
+    formula: 'I(X;Y) = H(Y) - H(Y|X)',
+    learnMoreUrl: '#/learn/concepts/mutual-information',
+    learnMoreSection: 'mutual-info'
   },
   'yvar-cutoff-rate': {
     title: 'Cutoff Rate R₀',
     category: 'Output Variables',
     description: 'Rate above which sequential decoding becomes impractical.',
     theory: 'R₀ = E₀(1) is the error exponent at ρ=1. Historically important as the computational cutoff for sequential decoding. Always R₀ ≤ C (capacity).',
-    formula: 'R_0 = -\\log_2 \\left[ \\sum_i \\sqrt{P(y_i|x_1) P(y_i|x_2)} \\right]'
+    formula: 'R_0 = -\\log_2 \\left[ \\sum_i \\sqrt{P(y_i|x_1) P(y_i|x_2)} \\right]',
+    learnMoreUrl: '#/learn/concepts/mutual-information',
+    learnMoreSection: 'cutoff-rate'
   },
 
   // ===== SIMULATION PARAMETERS (for ParameterReference) =====
@@ -337,7 +399,8 @@ export const documentationContent = {
     category: 'Simulation Parameters',
     description: 'Current constellation size.',
     theory: 'M-ary modulation uses M distinct symbols. Spectral efficiency = log₂(M) bits/symbol. Trade-off: higher M gives more bits but needs better SNR.',
-    formula: '\\text{Bits per symbol} = \\log_2(M)'
+    formula: '\\text{Bits per symbol} = \\log_2(M)',
+    learnMoreUrl: '#/learn/concepts/modulation'
   },
   'param-type-PAM': {
     title: 'PAM (Pulse Amplitude Modulation)',
@@ -345,7 +408,9 @@ export const documentationContent = {
     description: 'One-dimensional modulation using amplitude levels.',
     theory: 'M-PAM places M points on a line at positions ±1, ±3, ..., ±(M-1). Normalized for unit average energy. Simple but less efficient than 2D schemes.',
     formula: 'x_k = 2k - 1 - M, \\quad k = 1, 2, \\ldots, M',
-    example: '2-PAM: $\\{-1, +1\\}$, 4-PAM: $\\{-3, -1, +1, +3\\}$'
+    example: '2-PAM: $\\{-1, +1\\}$, 4-PAM: $\\{-3, -1, +1, +3\\}$',
+    learnMoreUrl: '#/learn/concepts/modulation',
+    learnMoreSection: 'pam'
   },
   'param-type-PSK': {
     title: 'PSK (Phase Shift Keying)',
@@ -353,7 +418,9 @@ export const documentationContent = {
     description: 'Two-dimensional modulation with constant amplitude.',
     theory: 'M-PSK places M points uniformly on a circle. All symbols have equal energy, making it robust to amplitude variations. Phase detection required.',
     formula: 'x_k = e^{\\,j\\frac{2\\pi k}{M}}, \\quad k = 0, 1, \\ldots, M-1',
-    example: 'BPSK: $\\{-1, +1\\}$, QPSK: $\\{\\pm 1 \\pm j\\}/\\sqrt{2}$'
+    example: 'BPSK: $\\{-1, +1\\}$, QPSK: $\\{\\pm 1 \\pm j\\}/\\sqrt{2}$',
+    learnMoreUrl: '#/learn/concepts/modulation',
+    learnMoreSection: 'psk'
   },
   'param-type-QAM': {
     title: 'QAM (Quadrature Amplitude Modulation)',
@@ -361,27 +428,35 @@ export const documentationContent = {
     description: 'Two-dimensional grid modulation.',
     theory: 'Square M-QAM arranges √M × √M points in a grid. Combines amplitude and phase modulation. Optimal for AWGN channels. Requires M to be a perfect square.',
     formula: 'x_k = a_k + j \\cdot b_k, \\quad a_k, b_k \\in \\{\\pm 1, \\pm 3, \\ldots\\}',
-    example: '16-QAM: $4 \\times 4$ grid, 64-QAM: $8 \\times 8$ grid'
+    example: '16-QAM: $4 \\times 4$ grid, 64-QAM: $8 \\times 8$ grid',
+    learnMoreUrl: '#/learn/concepts/modulation',
+    learnMoreSection: 'qam'
   },
   'param-SNR': {
     title: 'Signal-to-Noise Ratio',
     category: 'Simulation Parameters',
     description: 'Current SNR value for computation.',
     theory: 'SNR = Es/N₀ determines the reliability of detection. In dB: SNR_dB = 10·log₁₀(Es/N₀). Higher SNR exponentially reduces error probability.',
-    formula: '\\text{BER} \\approx Q\\left(\\sqrt{2 \\cdot \\text{SNR}}\\right) \\text{ for BPSK}'
+    formula: '\\text{BER} \\approx Q\\left(\\sqrt{2 \\cdot \\text{SNR}}\\right) \\text{ for BPSK}',
+    learnMoreUrl: '#/learn/concepts/awgn-channel',
+    learnMoreSection: 'snr'
   },
   'param-R': {
     title: 'Code Rate',
     category: 'Simulation Parameters',
     description: 'Current code rate for error exponent computation.',
     theory: 'Rate R bits/channel use. Error exponent E(R) > 0 only when R < C (capacity). E(R) decreases as R approaches C.',
-    formula: 'E(R) = \\max_\\rho \\left[ E_0(\\rho) - \\rho R \\right]'
+    formula: 'E(R) = \\max_\\rho \\left[ E_0(\\rho) - \\rho R \\right]',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'code-rate'
   },
   'param-n': {
     title: 'Code Length',
     category: 'Simulation Parameters',
     description: 'Codeword length for error probability computation.',
     theory: 'Error probability bounded by Pe ≤ exp(-n·E(R)). Doubling n roughly squares the error probability (in log scale, it doubles the exponent).',
-    formula: '\\log_{10}(P_e) \\approx \\frac{-n \\cdot E(R)}{\\ln(10)}'
+    formula: '\\log_{10}(P_e) \\approx \\frac{-n \\cdot E(R)}{\\ln(10)}',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'code-length'
   }
 };

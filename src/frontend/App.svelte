@@ -13,14 +13,81 @@
   import { plotParams } from './stores/plotting.js';
   import { isNewUser, tutorialState } from './stores/tutorial.js';
 
+  // =========================================================================
+  // LEARN MODE (Documentation Hub) - Hash-based routing
+  // =========================================================================
+  import { learnRoute, routeParts, initializeFromHash } from './stores/learn.js';
+  import LearnLayout from './components/learn/LearnLayout.svelte';
+  import LearnHome from './components/learn/LearnHome.svelte';
+  import LearnArticle from './components/learn/LearnArticle.svelte';
+
+  // =========================================================================
+  // DEMO MODE - For Playwright screenshot capture of real UI components
+  // =========================================================================
+  import DemoRoutes from './components/learn/DemoRoutes.svelte';
+
+  // This variable controls whether we show the documentation hub or calculator
+  let isInLearnMode = false;
+  let isInDemoMode = false;
+  let demoName = '';
+  let demoVariant = 'default';
+
+  /**
+   * Handle URL hash changes to switch between calculator and learn mode.
+   *
+   * This function is called:
+   * 1. When the page first loads (to check initial URL)
+   * 2. When the user clicks a link that changes the hash
+   * 3. When user uses browser back/forward buttons
+   */
+  function handleHashChange() {
+    const hash = window.location.hash;
+
+    // Check for demo mode first (for Playwright screenshot capture)
+    if (hash.startsWith('#/demo/')) {
+      isInDemoMode = true;
+      isInLearnMode = false;
+      // Parse demo name: #/demo/modulation-selector?M=16&type=QAM
+      const demoPath = hash.slice(7); // Remove '#/demo/'
+      const queryIndex = demoPath.indexOf('?');
+      if (queryIndex !== -1) {
+        demoName = demoPath.slice(0, queryIndex);
+        demoVariant = new URLSearchParams(demoPath.slice(queryIndex + 1)).get('variant') || 'default';
+      } else {
+        demoName = demoPath;
+        demoVariant = 'default';
+      }
+    } else if (hash.startsWith('#/learn')) {
+      isInLearnMode = true;
+      isInDemoMode = false;
+      initializeFromHash();
+    } else {
+      isInLearnMode = false;
+      isInDemoMode = false;
+    }
+  }
+
   // Tutorial state
   let showWelcome = false;
 
   onMount(() => {
+    // Check initial URL hash when page loads
+    handleHashChange();
+
+    // Listen for hash changes (when user navigates)
+    window.addEventListener('hashchange', handleHashChange);
+
     // Show welcome modal for new users after a short delay
     setTimeout(() => {
       showWelcome = $isNewUser;
     }, 500);
+  });
+
+  // Clean up event listener when component is destroyed
+  onDestroy(() => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('hashchange', handleHashChange);
+    }
   });
 
   console.log('EPCalculator v2 Frontend initialized');
@@ -244,30 +311,54 @@
     <div class="loading-spinner"></div>
   </div>
 {:else}
-  <MainLayout title={$_('app.title')}>
-    <div class="app-content">
-      <TabContainer {tabs} bind:activeTab bind:this={tabContainerRef} let:activeTab={currentTab}>
-        {#if currentTab === 0}
-          <div class="tab-panel" role="tabpanel" id="tabpanel-0" aria-labelledby="tab-0">
-            <SimulationPanel />
-          </div>
-        {:else if currentTab === 1}
-          <div class="tab-panel" role="tabpanel" id="tabpanel-1" aria-labelledby="tab-1">
-            <PlottingPanel onNavigateToParams={() => navigateToTab(0)} />
-          </div>
-        {/if}
-      </TabContainer>
-    </div>
-  </MainLayout>
+  <!-- ================================================================== -->
+  <!-- ROUTING: Show either Documentation Hub or Calculator               -->
+  <!-- This is where Svelte's {#if} IS correct - we're in the template!  -->
+  <!-- ================================================================== -->
+  {#if isInDemoMode}
+    <!-- DEMO MODE - For Playwright screenshot capture -->
+    <DemoRoutes {demoName} variant={demoVariant} />
 
-  <!-- Tutorial components -->
-  {#if showWelcome}
-    <WelcomeModal on:close={() => showWelcome = false} />
+  {:else if isInLearnMode}
+    <!-- DOCUMENTATION HUB -->
+    <LearnLayout>
+      <!--
+        Show different content based on the route.
+        $routeParts.isHome is true when viewing /#/learn (no specific article)
+      -->
+      {#if $routeParts.isHome}
+        <LearnHome />
+      {:else}
+        <LearnArticle />
+      {/if}
+    </LearnLayout>
+  {:else}
+    <!-- CALCULATOR (original content) -->
+    <MainLayout title={$_('app.title')}>
+      <div class="app-content">
+        <TabContainer {tabs} bind:activeTab bind:this={tabContainerRef} let:activeTab={currentTab}>
+          {#if currentTab === 0}
+            <div class="tab-panel" role="tabpanel" id="tabpanel-0" aria-labelledby="tab-0">
+              <SimulationPanel />
+            </div>
+          {:else if currentTab === 1}
+            <div class="tab-panel" role="tabpanel" id="tabpanel-1" aria-labelledby="tab-1">
+              <PlottingPanel onNavigateToParams={() => navigateToTab(0)} />
+            </div>
+          {/if}
+        </TabContainer>
+      </div>
+    </MainLayout>
+
+    <!-- Tutorial components (only show when in calculator mode) -->
+    {#if showWelcome}
+      <WelcomeModal on:close={() => showWelcome = false} />
+    {/if}
+
+    <SpotlightTutorial />
   {/if}
 
-  <SpotlightTutorial />
-
-  <!-- Documentation panel (hover help) -->
+  <!-- Documentation panel (hover help) - available in both modes -->
   <DocumentationPanel />
 {/if}
 
@@ -326,5 +417,64 @@
     .tab-panel {
       animation: none;
     }
+  }
+
+  /* Learn Mode Placeholder (temporary - will be replaced by LearnLayout) */
+  .learn-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fdf5f6 0%, #fff 100%);
+    text-align: center;
+    padding: var(--spacing-xl);
+  }
+
+  .learn-placeholder h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color, #C8102E);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .learn-placeholder p {
+    color: var(--text-color-secondary, #666);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .learn-placeholder code {
+    background: var(--surface-color, #f5f5f5);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .learn-placeholder .back-link {
+    margin-top: var(--spacing-lg);
+    color: var(--primary-color, #C8102E);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .learn-placeholder .back-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Article placeholder (temporary - will be replaced by LearnArticle) */
+  .article-placeholder {
+    background: var(--card-background, white);
+    border: 1px solid var(--border-color, #e5e5e5);
+    border-radius: 12px;
+    padding: var(--spacing-xl, 32px);
+    text-align: center;
+  }
+
+  .article-placeholder h1 {
+    color: var(--primary-color, #C8102E);
+    margin-bottom: var(--spacing-md, 16px);
+  }
+
+  .article-placeholder p {
+    color: var(--text-color-secondary, #666);
   }
 </style>

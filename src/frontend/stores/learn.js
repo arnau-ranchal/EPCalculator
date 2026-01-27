@@ -20,7 +20,7 @@ import { writable, derived } from 'svelte/store';
  *   ''                        → Landing page (/#/learn)
  *   'concepts'                → Concepts index
  *   'concepts/error-exponent' → Specific article
- *   'tutorials/plotting'      → Tutorial article
+ *   'tutorials/line-plots'    → Tutorial article
  *   'api'                     → API reference page
  *
  * We use writable() to create a store that components can both read and write.
@@ -193,7 +193,10 @@ export const contentIndex = {
       { id: 'modulation', title: 'Modulation Schemes (PAM, PSK, QAM)' },
       { id: 'error-exponent', title: 'Error Probability & Exponents' },
       { id: 'mutual-information', title: 'Mutual Information & Cutoff Rate' },
-      { id: 'probabilistic-shaping', title: 'Probabilistic Shaping' }
+      { id: 'probabilistic-shaping', title: 'Probabilistic Shaping' },
+      { id: 'plot-controls', title: 'Plot Controls & Visualization' },
+      { id: 'numerical-methods', title: 'Numerical Methods: Gauss-Hermite Quadrature' },
+      { id: 'optimization-algorithms', title: 'Optimization Algorithms' }
     ]
   },
   tutorials: {
@@ -202,8 +205,12 @@ export const contentIndex = {
     articles: [
       { id: 'getting-started', title: 'Getting Started' },
       { id: 'single-point', title: 'Single Point Computation' },
-      { id: 'plotting', title: 'Creating Plots' },
+      { id: 'line-plots', title: 'Line Plots' },
+      { id: 'contour-plots', title: 'Contour Plots' },
+      { id: '3d-surfaces', title: '3D Surface Plots' },
+      { id: 'table-mode', title: 'Table Mode' },
       { id: 'custom-constellation', title: 'Custom Constellations' },
+      { id: 'import-data', title: 'Importing Data' },
       { id: 'exporting', title: 'Exporting Results' }
     ]
   },

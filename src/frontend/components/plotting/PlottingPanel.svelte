@@ -1,7 +1,7 @@
 <script>
   import { _, locale } from 'svelte-i18n';
   import { activePlots, isPlotting, addPlot, removePlot, clearAllPlots, formatPlotData, formatContourData, findExistingPlotWithStyling, updatePlotStyling, plotScales, plotScalesZ, updatePlotScale, updatePlotScaleZ, plotSnrUnits, updatePlotSnrUnit, plotShowFrame, defaultShowFrame, transposePlot, selectedContourPlots, showContourSelection, togglePlotSelection, clearPlotSelection, isPlotSelected, getSelectedContourPlots, pendingMerge, confirmMerge, confirmNewFigure, cancelPendingMerge, plotParams, updatePlotParam } from '../../stores/plotting.js';
-  import { getPlotData, getContourData, mapPlotParams, handleApiError, computeExponents } from '../../utils/api.js';
+  import { getPlotData, getContourData, mapPlotParams, handleApiError, computeExponents, cancelSession, createAbortController, clearAbortController } from '../../utils/api.js';
   import { shouldShowPlotTutorial, shouldShowContourComparisonTutorial, startSpotlightTutorial, tutorialState } from '../../stores/tutorial.js';
   import { currentColorTheme } from '../../stores/theme.js';
   import { docHover } from '../../actions/documentation.js';
@@ -428,6 +428,17 @@
     };
   }
 
+  // Cancel the current plot generation
+  async function handleCancelPlot() {
+    console.log('[PlottingPanel] User requested cancellation');
+    try {
+      await cancelSession();
+    } catch (error) {
+      console.warn('[PlottingPanel] Cancel request failed:', error);
+    }
+    // isPlotting will be set to false by the catch/finally block in handlePlot
+  }
+
   async function handlePlot(plotParams, simulationParams) {
     try {
       errorMessage = '';
@@ -482,12 +493,15 @@
 
       isPlotting.set(true);
 
+      // Create AbortController for cancellation support
+      const abortController = createAbortController();
+
       let rawData, formattedData;
 
       if (plotParams.plotType === 'contour' || plotParams.plotType === 'surface') {
         const constellationData = $useCustomConstellation ? $customConstellation : null;
         const mappedParams = mapPlotParams(plotParams, simulationParams, constellationData);
-        rawData = await getContourData(mappedParams);
+        rawData = await getContourData(mappedParams, abortController.signal);
         // Set contourMode based on plotType: 'contour' = 2D, 'surface' = 3D
         const contourMode = plotParams.plotType === 'surface' ? '3d' : '2d';
         formattedData = formatContourData(rawData, {
@@ -536,7 +550,25 @@
         // Standard line plot - backend handles SNR spacing based on snrUnit
         const constellationData = $useCustomConstellation ? $customConstellation : null;
         const mappedParams = mapPlotParams(plotParams, simulationParams, constellationData);
-        rawData = await getPlotData(mappedParams);
+
+        // Debug: Log what we're sending to the API
+        console.log('[PlottingPanel DEBUG] Sending to API:', {
+          plotParams_xRange: plotParams.xRange,
+          plotParams_snrUnit: plotParams.snrUnit,
+          plotParams_xVar: plotParams.xVar,
+          mappedParams_x_range: mappedParams.x_range,
+          mappedParams_snrUnit: mappedParams.snrUnit,
+          mappedParams_x: mappedParams.x
+        });
+
+        rawData = await getPlotData(mappedParams, abortController.signal);
+
+        // Debug: Log what we received from the API
+        console.log('[PlottingPanel DEBUG] Received from API:', {
+          x_values: rawData.x_values,
+          y_values_length: rawData.y_values?.length,
+          first_3_y: rawData.y_values?.slice(0, 3)
+        });
 
         formattedData = formatPlotData(rawData, {
           xVar: plotParams.xVar,
@@ -550,13 +582,30 @@
       // Create plot data with converted arrays
       const convertedData = convertToPlotData(rawData, plotParams.plotType);
 
+      // Check if result is incomplete (cancelled before completion)
+      if (rawData.incomplete) {
+        console.log(`[PlottingPanel] Partial results: ${rawData.computed_points}/${rawData.requested_points} points`);
+      }
+
       console.log('[PlottingPanel] Plot data prepared:', {
         plotType: plotParams.plotType,
         rawDataKeys: Object.keys(rawData),
         convertedDataLength: convertedData?.length,
         convertedDataSample: convertedData?.slice(0, 3),
-        formattedMetadata: formattedData.metadata
+        formattedMetadata: formattedData.metadata,
+        incomplete: rawData.incomplete,
+        cached: rawData.cached
       });
+
+      // Add incomplete status to metadata if cancelled
+      if (rawData.incomplete) {
+        formattedData.metadata = {
+          ...formattedData.metadata,
+          incomplete: true,
+          computedPoints: rawData.computed_points,
+          requestedPoints: rawData.requested_points
+        };
+      }
 
       const plotData = {
         ...formattedData,
@@ -586,10 +635,18 @@
       }
 
     } catch (error) {
-      const errorInfo = handleApiError(error, 'Failed to generate plot');
-      errorMessage = errorInfo.message;
-      console.error('Plotting error:', error);
+      // Handle cancellation - don't show error message for user-initiated cancellation
+      if (error.cancelled || error.name === 'AbortError' ||
+          (error.message && (error.message.includes('cancelled') || error.message.includes('cancellation')))) {
+        console.log('[PlottingPanel] Plot generation cancelled by user');
+        errorMessage = ''; // Clear any error message
+      } else {
+        const errorInfo = handleApiError(error, 'Failed to generate plot');
+        errorMessage = errorInfo.message;
+        console.error('Plotting error:', error);
+      }
     } finally {
+      clearAbortController();
       isPlotting.set(false);
     }
   }
@@ -1797,6 +1854,13 @@
             <div class="spinner"></div>
             <p>{$_('plottingPanel.generatingPlot')}</p>
             <small>{$_('plottingPanel.generatingHint')}</small>
+            <button
+              type="button"
+              class="cancel-button"
+              on:click={handleCancelPlot}
+            >
+              {$_('common.cancel') || 'Cancel'}
+            </button>
           </div>
         {:else if $activePlots.length > 0}
           <div class="plots-grid">
@@ -2455,6 +2519,28 @@
   .loading-state small {
     color: var(--text-color-secondary);
     text-align: center;
+  }
+
+  .cancel-button {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--error-color, #dc3545);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .cancel-button:hover {
+    background: var(--error-color-hover, #c82333);
+    transform: scale(1.02);
+  }
+
+  .cancel-button:active {
+    transform: scale(0.98);
   }
 
   .plots-grid {

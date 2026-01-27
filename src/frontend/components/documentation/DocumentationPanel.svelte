@@ -1,9 +1,31 @@
 <script>
   import { _ } from 'svelte-i18n';
   import { documentationPanel, hideDocumentation, documentationContent } from '../../stores/documentation.js';
+  import { navigateToLearn } from '../../stores/learn.js';
   import { onMount, onDestroy } from 'svelte';
   import katex from 'katex';
   import 'katex/dist/katex.min.css';
+
+  /**
+   * Handle "Learn More" button click.
+   * Opens the documentation article in a new tab.
+   *
+   * @param {string} url - The learnMoreUrl (e.g., '#/learn/concepts/modulation')
+   * @param {string} [section] - Optional section ID to scroll to (e.g., 'pam')
+   */
+  function handleLearnMore(url, section) {
+    // Build full URL with optional section anchor
+    let fullUrl = url;
+    if (section) {
+      fullUrl += `#${section}`;
+    }
+
+    // Open in new tab
+    window.open(fullUrl, '_blank', 'noopener');
+
+    // Close the documentation panel
+    hideDocumentation();
+  }
 
   // Render LaTeX formula to HTML
   function renderLatex(formula) {
@@ -193,6 +215,14 @@
       </div>
 
       <div class="doc-footer">
+        {#if content.learnMoreUrl}
+          <button
+            class="learn-more-link"
+            on:click={() => handleLearnMore(content.learnMoreUrl, content.learnMoreSection)}
+          >
+            📚 Learn More
+          </button>
+        {/if}
         <span class="doc-hint">Press Esc or click outside to close</span>
       </div>
   </div>
@@ -399,10 +429,34 @@
   }
 
   .doc-footer {
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--surface-color);
     border-top: 1px solid var(--border-color);
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .learn-more-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .learn-more-link:hover {
+    background: var(--primary-color-dark);
+    transform: translateY(-1px);
   }
 
   .doc-hint {
