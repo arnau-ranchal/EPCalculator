@@ -772,6 +772,38 @@
       return { filename: `${filename}.csv` };
     }
 
+    // Table (rawData) export - all Y variables in columns
+    if (metadata.type === 'rawData') {
+      const plotData = metadata.data || [];
+      if (plotData.length === 0) {
+        throw new Error('No data available for CSV export');
+      }
+
+      // Get X label and use translated column headers if available
+      const xLabel = metadata.xLabel || 'X';
+      const headers = metadata.tableHeaders || {};
+
+      // Build CSV with all columns
+      const columns = [
+        xLabel,
+        headers.errorExponent || 'Error Exponent',
+        headers.errorProbability || 'Error Probability',
+        headers.optimalRho || 'Optimal ρ',
+        headers.mutualInformation || 'Mutual Information',
+        headers.cutoffRate || 'Cutoff Rate',
+        'Critical Rate'  // Always in English as it's not in tableHeaders
+      ];
+
+      let csvContent = columns.join(',') + '\n';
+
+      plotData.forEach(point => {
+        csvContent += `${point.x},${point.error_exponent},${point.error_probability},${point.rho},${point.mutual_information},${point.cutoff_rate},${point.critical_rate}\n`;
+      });
+
+      downloadFile(csvContent, `${filename}.csv`, 'text/csv');
+      return { filename: `${filename}.csv` };
+    }
+
     // Line plot data export - check for multi-series
     const hasMultipleSeries = seriesData && seriesData.length > 1;
 
@@ -848,6 +880,7 @@
     // Export complete plot data and metadata as JSON
     const hasMultipleSeries = seriesData && seriesData.length > 1;
     const isContour = metadata.type === 'contour';
+    const isTable = metadata.type === 'rawData';
 
     const exportData = {
       version: '2.0',  // Format version for future compatibility
@@ -857,11 +890,13 @@
       plot: {
         type: metadata.type || 'line',
         xLabel: metadata.xLabel || 'X',
-        yLabel: metadata.yLabel || 'Y',
+        yLabel: isTable ? 'All Metrics' : (metadata.yLabel || 'Y'),
         x2Label: isContour ? (metadata.x2Label || 'X2') : null,
         zLabel: isContour ? (metadata.zLabel || 'Z') : null,
         contourMode: isContour ? (metadata.contourMode || '2d') : null,
-        title: plotTitle || null
+        title: plotTitle || null,
+        // Include column names for table exports
+        columns: isTable ? ['x', 'error_exponent', 'error_probability', 'optimal_rho', 'mutual_information', 'cutoff_rate', 'critical_rate'] : null
       }
     };
 
@@ -878,6 +913,31 @@
         x2Var: metadata.xVar2,
         yVar: metadata.yVar
       };
+      if (metadata.simulationParams) {
+        exportData.simulationParams = metadata.simulationParams;
+      }
+      if (metadata.plotParams) {
+        exportData.plotParams = metadata.plotParams;
+      }
+    } else if (metadata.type === 'rawData') {
+      // Table (rawData) export - all Y variables
+      const plotData = metadata.data || [];
+      exportData.isTable = true;
+      exportData.isMultiSeries = false;
+      exportData.data = {
+        x: plotData.map(p => p.x),
+        error_exponent: plotData.map(p => p.error_exponent),
+        error_probability: plotData.map(p => p.error_probability),
+        optimal_rho: plotData.map(p => p.rho),
+        mutual_information: plotData.map(p => p.mutual_information),
+        cutoff_rate: plotData.map(p => p.cutoff_rate),
+        critical_rate: plotData.map(p => p.critical_rate)
+      };
+      exportData.metadata = {
+        xVar: metadata.xVar,
+        snrUnit: metadata.snrUnit
+      };
+      // Include simulation params if available
       if (metadata.simulationParams) {
         exportData.simulationParams = metadata.simulationParams;
       }

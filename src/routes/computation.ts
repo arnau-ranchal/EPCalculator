@@ -49,7 +49,8 @@ const PlotParametersSchema = Type.Object({
   y: Type.Union([
     Type.Literal('error_probability'),
     Type.Literal('error_exponent'),
-    Type.Literal('optimal_rho')
+    Type.Literal('optimal_rho'),
+    Type.Literal('all')  // Returns all Y values for table mode
   ]),
   x: Type.Union([
     Type.Literal('M'),
@@ -80,7 +81,8 @@ const CustomPlotParametersSchema = Type.Object({
   y: Type.Union([
     Type.Literal('error_probability'),
     Type.Literal('error_exponent'),
-    Type.Literal('optimal_rho')
+    Type.Literal('optimal_rho'),
+    Type.Literal('all')  // Returns all Y values for table mode
   ]),
   x: Type.Union([
     Type.Literal('SNR'),
@@ -457,12 +459,22 @@ export async function computationRoutes(fastify: FastifyInstance): Promise<void>
       tags: ['computation'],
       operationId: 'computeRangeStandard',
       summary: 'Compute error probability over a parameter range',
-      description: 'Calculate error exponents across a range of values for plotting. Supports cancellation via POST /session/cancel. Returns partial results if cancelled.',
+      description: 'Calculate error exponents across a range of values for plotting. Supports cancellation via POST /session/cancel. Returns partial results if cancelled. Use y="all" to get all Y values (for table mode).',
       body: PlotParametersSchema,
       response: {
         200: Type.Object({
           x_values: Type.Array(Type.Number()),
-          y_values: Type.Array(Type.Number()),
+          // y_values for single Y variable mode
+          y_values: Type.Optional(Type.Array(Type.Number())),
+          // results for y='all' mode - returns all Y values per point
+          results: Type.Optional(Type.Array(Type.Object({
+            error_probability: Type.Number(),
+            error_exponent: Type.Number(),
+            optimal_rho: Type.Number(),
+            mutual_information: Type.Optional(Type.Number()),
+            cutoff_rate: Type.Optional(Type.Number()),
+            critical_rate: Type.Optional(Type.Number())
+          }))),
           computation_time_ms: Type.Number(),
           cached: Type.Boolean(),
           incomplete: Type.Optional(Type.Boolean()),
@@ -528,12 +540,22 @@ export async function computationRoutes(fastify: FastifyInstance): Promise<void>
     schema: {
       tags: ['computation'],
       summary: 'Compute error probability over a range for custom constellation',
-      description: 'Calculate error exponents across a range for custom constellation plotting. Supports cancellation via POST /session/cancel. Returns partial results if cancelled.',
+      description: 'Calculate error exponents across a range for custom constellation plotting. Supports cancellation via POST /session/cancel. Returns partial results if cancelled. Use y="all" to get all Y values (for table mode).',
       body: CustomPlotParametersSchema,
       response: {
         200: Type.Object({
           x_values: Type.Array(Type.Number()),
-          y_values: Type.Array(Type.Number()),
+          // y_values for single Y variable mode
+          y_values: Type.Optional(Type.Array(Type.Number())),
+          // results for y='all' mode - returns all Y values per point
+          results: Type.Optional(Type.Array(Type.Object({
+            error_probability: Type.Number(),
+            error_exponent: Type.Number(),
+            optimal_rho: Type.Number(),
+            mutual_information: Type.Optional(Type.Number()),
+            cutoff_rate: Type.Optional(Type.Number()),
+            critical_rate: Type.Optional(Type.Number())
+          }))),
           computation_time_ms: Type.Number(),
           cached: Type.Boolean(),
           incomplete: Type.Optional(Type.Boolean()),

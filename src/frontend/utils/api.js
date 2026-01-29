@@ -162,6 +162,31 @@ export async function getContourData(params, abortSignal = null) {
   return apiRequest(endpoint, options);
 }
 
+// Get table data with all Y values (y='all' mode)
+export async function getRangeAllData(params, abortSignal = null) {
+  // Determine endpoint based on whether custom constellation is used
+  const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/range/custom' : '/compute/range/standard';
+
+  // Set y='all' to get all Y values
+  const requestParams = {
+    ...params,
+    y: 'all'
+  };
+
+  const options = {
+    method: 'POST',
+    body: JSON.stringify(requestParams)
+  };
+
+  // Add abort signal if provided
+  if (abortSignal) {
+    options.signal = abortSignal;
+  }
+
+  return apiRequest(endpoint, options);
+}
+
 // Health check
 export async function getHealth() {
   return apiRequest('/health');
@@ -333,9 +358,9 @@ export function formatPlotResponse(data, metadata) {
 
 export function formatContourResponse(data, metadata) {
   return {
-    x1: data.x1,
-    x2: data.x2,
-    z: data.z,
+    x1: data.x1_values || data.x1,
+    x2: data.x2_values || data.x2,
+    z: data.z_matrix || data.z,
     metadata: {
       x1Var: metadata.x1Var,
       x2Var: metadata.x2Var,

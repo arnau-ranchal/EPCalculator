@@ -1,7 +1,7 @@
 <script>
   import { _, locale } from 'svelte-i18n';
   import { activePlots, isPlotting, addPlot, removePlot, clearAllPlots, formatPlotData, formatContourData, findExistingPlotWithStyling, updatePlotStyling, plotScales, plotScalesZ, updatePlotScale, updatePlotScaleZ, plotSnrUnits, updatePlotSnrUnit, plotShowFrame, defaultShowFrame, transposePlot, selectedContourPlots, showContourSelection, togglePlotSelection, clearPlotSelection, isPlotSelected, getSelectedContourPlots, pendingMerge, confirmMerge, confirmNewFigure, cancelPendingMerge, plotParams, updatePlotParam } from '../../stores/plotting.js';
-  import { getPlotData, getContourData, mapPlotParams, handleApiError, computeExponents, cancelSession, createAbortController, clearAbortController } from '../../utils/api.js';
+  import { getPlotData, getContourData, getRangeAllData, mapPlotParams, handleApiError, computeExponents, cancelSession, createAbortController, clearAbortController } from '../../utils/api.js';
   import { shouldShowPlotTutorial, shouldShowContourComparisonTutorial, startSpotlightTutorial, tutorialState } from '../../stores/tutorial.js';
   import { currentColorTheme } from '../../stores/theme.js';
   import { docHover } from '../../actions/documentation.js';
@@ -293,83 +293,25 @@
     selectedContourPlots.set(new Set(compatible.map(p => p.plotId)));
   }
 
-  // Generate Table data with all 3 Y variables
-  async function getTableData(plotParams, simulationParams, customConstellationData = null) {
-    const [xMin, xMax] = plotParams.xRange;
-    const numPoints = plotParams.points;
-    const xVar = plotParams.xVar;
+  // Generate Table data with all Y variables using efficient batch API (y='all' mode)
+  async function getTableData(plotParams, simulationParams, customConstellationData = null, abortSignal = null) {
+    // Map plot params to API format
+    const mappedParams = mapPlotParams(plotParams, simulationParams, customConstellationData);
 
-    // Generate X values
-    const xValues = [];
-    const step = numPoints > 1 ? (xMax - xMin) / (numPoints - 1) : 0;
-    for (let i = 0; i < numPoints; i++) {
-      let xVal = numPoints === 1 ? xMin : xMin + i * step;
-      // Round to integer if n (code length) is on X axis
-      if (xVar === 'n') {
-        xVal = Math.round(xVal);
-      }
-      xValues.push(xVal);
-    }
+    // Call the range API with y='all' to get all values in one request
+    const result = await getRangeAllData(mappedParams, abortSignal);
 
-    // Make API calls for each X value and collect all 3 Y values
-    const tableData = [];
-    for (let i = 0; i < xValues.length; i++) {
-      const xVal = xValues[i];
-
-      // Build params with X variable set
-      const params = {
-        M: simulationParams.M,
-        typeModulation: simulationParams.typeModulation,
-        SNR: simulationParams.SNR,
-        R: simulationParams.R,
-        N: simulationParams.N,
-        n: simulationParams.n,
-        threshold: simulationParams.threshold,
-        distribution: plotParams.distribution || 'uniform',
-        shaping_param: plotParams.shaping_param || 0
-      };
-
-      // Include custom constellation if provided
-      if (customConstellationData && customConstellationData.points && customConstellationData.points.length > 0) {
-        params.customConstellation = {
-          points: customConstellationData.points
-        };
-      }
-
-      // Override the X variable with the current value
-      if (xVar === 'SNR') {
-        // Convert from dB to linear if using dB units
-        if (plotParams.snrUnit === 'dB') {
-          params.SNR = Math.pow(10, xVal / 10);
-        } else {
-          params.SNR = xVal;
-        }
-      } else if (xVar === 'M') {
-        params.M = xVal;
-      } else if (xVar === 'R') {
-        params.R = xVal;
-      } else if (xVar === 'n') {
-        params.n = Math.round(xVal);
-      } else if (xVar === 'N') {
-        params.N = xVal;
-      } else if (xVar === 'threshold') {
-        params.threshold = xVal;
-      } else if (xVar === 'shaping_param') {
-        params.shaping_param = xVal;
-      }
-
-      const result = await computeExponents(params);
-
-      tableData.push({
-        x: xVal,
-        error_exponent: parseFloat(result.error_exponent),
-        error_probability: parseFloat(result.error_probability),
-        rho: parseFloat(result.optimal_rho),
-        mutual_information: parseFloat(result.mutual_information),
-        cutoff_rate: parseFloat(result.cutoff_rate),
-        critical_rate: parseFloat(result.critical_rate)
-      });
-    }
+    // Transform API response to table format
+    // API returns: { x_values: [...], results: [{error_probability, error_exponent, optimal_rho, mutual_information, cutoff_rate, critical_rate}, ...] }
+    const tableData = result.x_values.map((x, i) => ({
+      x: x,
+      error_exponent: result.results[i].error_exponent,
+      error_probability: result.results[i].error_probability,
+      rho: result.results[i].optimal_rho,
+      mutual_information: result.results[i].mutual_information,
+      cutoff_rate: result.results[i].cutoff_rate,
+      critical_rate: result.results[i].critical_rate
+    }));
 
     return tableData;
   }
@@ -512,9 +454,9 @@
           contourMode: contourMode
         });
       } else if (plotParams.plotType === 'rawData') {
-        // Table mode - fetch all 3 Y variables
+        // Table mode - fetch all Y variables using efficient batch API
         const constellationData = $useCustomConstellation ? $customConstellation : null;
-        const tableData = await getTableData(plotParams, simulationParams, constellationData);
+        const tableData = await getTableData(plotParams, simulationParams, constellationData, abortController.signal);
 
         // Get X label based on xVar
         const xLabels = {
@@ -655,9 +597,9 @@
     if (plotType === 'contour' || plotType === 'surface') {
       // Convert contour/surface data to array of points
       const points = [];
-      const x1Values = rawData.x1 || [];
-      const x2Values = rawData.x2 || [];
-      const zValues = rawData.z || [];
+      const x1Values = rawData.x1_values || rawData.x1 || [];
+      const x2Values = rawData.x2_values || rawData.x2 || [];
+      const zValues = rawData.z_matrix || rawData.z || [];
 
       // Assuming z is a 2D array [x1_index][x2_index]
       for (let i = 0; i < x1Values.length; i++) {

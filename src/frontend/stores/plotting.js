@@ -1187,6 +1187,64 @@ export function confirmMerge() {
           };
         }
 
+        // For multi-series plots, check if new data matches an EXISTING series
+        // If so, merge into that series instead of adding a new one
+        if (plot.isMultiSeries && plot.series) {
+          const matchingSeriesIndex = plot.series.findIndex(series =>
+            checkAllParamsMatch(series, newPlotData)
+          );
+
+          if (matchingSeriesIndex !== -1) {
+            console.log(`[confirmMerge] Found matching series at index ${matchingSeriesIndex} - merging into it`);
+            const matchingSeries = plot.series[matchingSeriesIndex];
+
+            // Merge data into the matching series
+            const mergedData = mergeRangeData(matchingSeries.data, newPlotData.data);
+
+            // Update xRange to cover both ranges
+            const existingXRange = matchingSeries.plotParams?.xRange || [];
+            const newXRange = newPlotData.plotParams?.xRange || [];
+            let mergedXRange = existingXRange;
+            if (existingXRange.length === 2 && newXRange.length === 2) {
+              mergedXRange = [
+                Math.min(existingXRange[0], newXRange[0]),
+                Math.max(existingXRange[1], newXRange[1])
+              ];
+            }
+
+            // Create updated series array with merged data
+            const updatedSeries = plot.series.map((series, index) => {
+              if (index === matchingSeriesIndex) {
+                return {
+                  ...series,
+                  data: mergedData,
+                  plotParams: {
+                    ...series.plotParams,
+                    xRange: mergedXRange
+                  },
+                  timestamp: Date.now()
+                };
+              }
+              return series;
+            });
+
+            const updatedPlot = {
+              ...plot,
+              series: updatedSeries,
+              timestamp: Date.now()
+            };
+
+            const multiSeriesUseLogY = shouldUseLogY(updatedPlot);
+            const multiSeriesRecommendedScale = multiSeriesUseLogY ? 'logY' : 'linear';
+            updatePlotScale(existingPlot.plotId, multiSeriesRecommendedScale);
+
+            return {
+              ...updatedPlot,
+              recommendedScale: multiSeriesRecommendedScale
+            };
+          }
+        }
+
         // For tables (rawData), handle differently - use parameter columns instead of series legend
         if (plot.type === 'rawData') {
           // Find differing parameters between existing and new data
@@ -1604,9 +1662,9 @@ export function formatContourData(rawData, metadata) {
   const snrUnit = metadata.snrUnit || 'linear';
   return {
     type: 'contour',
-    x1: rawData.x1,
-    x2: rawData.x2,
-    z: rawData.z,
+    x1: rawData.x1_values || rawData.x1,
+    x2: rawData.x2_values || rawData.x2,
+    z: rawData.z_matrix || rawData.z,
     metadata: {
       x1Label: getAxisLabel(metadata.x1Var, snrUnit),
       x2Label: getAxisLabel(metadata.x2Var, snrUnit),

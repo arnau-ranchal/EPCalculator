@@ -321,8 +321,13 @@
 
   /* Medium screens - sidebar toggle always visible when collapsed */
   @media (max-width: 1024px) {
+    .sidebar-toggle {
+      opacity: 1;  /* Always visible on medium screens */
+    }
+
     .sidebar-toggle.collapsed {
-      opacity: 0.7;
+      opacity: 1;
+      left: 8px;  /* Position near left edge when sidebar is collapsed */
     }
 
     .learn-content {
@@ -336,7 +341,14 @@
     }
 
     .sidebar-toggle {
-      display: none;  /* Hide toggle button on mobile, use hamburger instead */
+      /* Keep toggle visible on mobile too */
+      opacity: 1;
+      top: 70px;  /* Below header */
+      left: 284px;  /* At edge of open sidebar */
+    }
+
+    .sidebar-toggle.collapsed {
+      left: 8px;  /* At left edge when sidebar is collapsed/hidden */
     }
 
     .learn-sidebar {

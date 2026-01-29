@@ -39,12 +39,15 @@ export interface ComputationResult {
   error_probability: number
   error_exponent: number
   optimal_rho: number
+  mutual_information: number
+  cutoff_rate: number
+  critical_rate: number
   computation_time_ms: number
   cached: boolean
 }
 
 export interface PlotParameters extends ComputationParameters {
-  y: 'error_probability' | 'error_exponent' | 'optimal_rho'
+  y: 'error_probability' | 'error_exponent' | 'optimal_rho' | 'all'
   x: 'M' | 'SNR' | 'R' | 'N' | 'n' | 'threshold'
   x_range: [number, number]
   points: number
@@ -59,6 +62,24 @@ export interface PlotResult {
   incomplete?: boolean       // true if cancelled before completion
   computed_points?: number   // how many points were computed
   requested_points?: number  // how many were requested
+}
+
+// Result for y='all' mode - returns all Y values for each X point
+export interface PlotAllResult {
+  x_values: number[]
+  results: Array<{
+    error_probability: number
+    error_exponent: number
+    optimal_rho: number
+    mutual_information: number
+    cutoff_rate: number
+    critical_rate: number
+  }>
+  computation_time_ms: number
+  cached: boolean
+  incomplete?: boolean
+  computed_points?: number
+  requested_points?: number
 }
 
 export interface ContourParameters extends ComputationParameters {
@@ -275,6 +296,9 @@ export class ComputationService {
         error_probability: result.error_probability,
         error_exponent: result.error_exponent,
         optimal_rho: result.optimal_rho,
+        mutual_information: result.mutual_information,
+        cutoff_rate: result.cutoff_rate,
+        critical_rate: result.critical_rate,
         computation_time_ms
       }
 
@@ -337,6 +361,9 @@ export class ComputationService {
         error_probability: result.error_probability,
         error_exponent: result.error_exponent,
         optimal_rho: result.optimal_rho,
+        mutual_information: result.mutual_information,
+        cutoff_rate: result.cutoff_rate,
+        critical_rate: result.critical_rate,
         computation_time_ms
       }
 
@@ -720,13 +747,35 @@ export class ComputationService {
     // Compute results with cancellation and caching support
     const batchResult = await this.computeBatch(computationParams, sessionId, ipAddress, cancellationToken)
 
-    // Extract y values from the results we have (may be partial)
-    const y_values = batchResult.results.map(result => result[params.y])
-
     // Slice x_values to match the number of computed results
     const computed_x_values = x_values_display.slice(0, batchResult.results.length)
 
     const computation_time_ms = Date.now() - startTime
+
+    // Handle y='all' mode - return all Y values for each X point
+    if (params.y === 'all') {
+      const results = batchResult.results.map(result => ({
+        error_probability: result.error_probability,
+        error_exponent: result.error_exponent,
+        optimal_rho: result.optimal_rho,
+        mutual_information: result.mutual_information,
+        cutoff_rate: result.cutoff_rate,
+        critical_rate: result.critical_rate
+      }))
+
+      return {
+        x_values: computed_x_values,
+        results,
+        computation_time_ms,
+        cached: batchResult.allCached,
+        incomplete: batchResult.cancelled,
+        computed_points: batchResult.results.length,
+        requested_points: batchResult.totalRequested
+      } as any  // Return PlotAllResult type
+    }
+
+    // Extract y values from the results we have (may be partial)
+    const y_values = batchResult.results.map(result => result[params.y as keyof typeof result])
 
     return {
       x_values: computed_x_values,

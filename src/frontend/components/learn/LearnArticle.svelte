@@ -531,36 +531,9 @@
     border-top: none;
   }
 
-  /* Scroll highlight animation for deep linking */
+  /* Scroll highlight for deep linking - no fade, persistent highlight */
   .section-heading.scroll-highlight {
-    animation: highlightPulse 2.5s ease-out forwards;
-  }
-
-  @keyframes highlightPulse {
-    0% {
-      background: color-mix(in srgb, var(--primary-color, #C8102E) 35%, transparent);
-      border-radius: 8px;
-      padding-left: var(--spacing-md, 16px);
-      margin-left: calc(-1 * var(--spacing-md, 16px));
-      padding-right: var(--spacing-sm, 8px);
-      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color, #C8102E) 25%, transparent);
-    }
-    70% {
-      background: color-mix(in srgb, var(--primary-color, #C8102E) 20%, transparent);
-      border-radius: 8px;
-      padding-left: var(--spacing-md, 16px);
-      margin-left: calc(-1 * var(--spacing-md, 16px));
-      padding-right: var(--spacing-sm, 8px);
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color, #C8102E) 15%, transparent);
-    }
-    100% {
-      background: transparent;
-      border-radius: 0;
-      padding-left: 0;
-      margin-left: 0;
-      padding-right: 0;
-      box-shadow: none;
-    }
+    /* No animation - just scroll into view without visual highlight */
   }
 
   /* Paragraphs */
@@ -818,6 +791,7 @@
     font-size: var(--font-size-sm, 0.875rem);
     color: var(--text-color-secondary, #666);
     font-style: italic;
+    text-align: center;
   }
 
   /* Definition list */
@@ -838,6 +812,14 @@
     font-weight: 600;
     color: var(--primary-color, #C8102E);
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-definitions dt :global(svg) {
+    flex-shrink: 0;
+    vertical-align: middle;
   }
 
   .section-definitions dt::after {
@@ -924,6 +906,7 @@
     font-size: var(--font-size-sm, 0.875rem);
     color: var(--text-color-secondary, #6c757d);
     font-style: italic;
+    text-align: center;
   }
 
   /* Cross-reference links */
