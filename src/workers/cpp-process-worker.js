@@ -159,23 +159,104 @@ function computeCustom(params) {
   return extractResults(results)
 }
 
+/**
+ * Handle batch computation - process multiple points in a single IPC call
+ * This dramatically reduces IPC overhead for large batches
+ */
+function computeBatch(tasks) {
+  const startTime = Date.now()
+
+  // Log batch summary - extract SNR values to show what points this worker is computing
+  if (tasks.length > 0) {
+    const firstTask = tasks[0]
+    const isCustom = firstTask.type === 'compute_custom'
+
+    // Extract SNR values from all tasks
+    const snrValues = tasks.map(t => {
+      if (t.type === 'compute_custom') {
+        return t.params[4] // SNR is at index 4 for custom
+      } else {
+        return t.params[2] // SNR is at index 2 for standard
+      }
+    })
+
+    // Get modulation info from first task
+    let modInfo = ''
+    if (isCustom) {
+      const numPoints = firstTask.params[3]
+      const N = firstTask.params[6]
+      modInfo = `CUSTOM pts=${numPoints} N=${N}`
+    } else {
+      const [M, typeM, , , N] = firstTask.params
+      modInfo = `M=${M} ${typeM} N=${N}`
+    }
+
+    // Format SNR range for compact logging
+    const minSNR = Math.min(...snrValues).toFixed(2)
+    const maxSNR = Math.max(...snrValues).toFixed(2)
+
+    console.log(`[WORKER START] ${tasks.length} points | ${modInfo} | SNR: ${minSNR} to ${maxSNR}`)
+  }
+
+  const results = []
+
+  for (const task of tasks) {
+    const { taskId, type, params } = task
+
+    try {
+      let data
+
+      if (type === 'compute') {
+        data = computeStandard(params)
+      } else if (type === 'compute_custom') {
+        data = computeCustom(params)
+      } else {
+        throw new Error(`Unknown task type: ${type}`)
+      }
+
+      results.push({ taskId, success: true, data })
+    } catch (error) {
+      // Individual task failure doesn't stop the batch
+      results.push({ taskId, success: false, error: error.message })
+    }
+  }
+
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+  console.log(`[WORKER DONE] ${tasks.length} points in ${elapsed}s`)
+
+  return results
+}
+
 // Listen for computation tasks from the parent process via IPC
 process.on('message', (task) => {
-  const { id, type, params } = task
+  const { id, type, params, tasks } = task
 
   try {
     let data
 
     if (type === 'compute') {
+      const startTime = Date.now()
+      const [M, typeM, SNR, , N] = params
+      console.log(`[WORKER START] M=${M} ${typeM} N=${N} SNR=${SNR.toFixed(2)}`)
       data = computeStandard(params)
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+      console.log(`[WORKER DONE] 1 point in ${elapsed}s`)
+      process.send({ id, success: true, data })
     } else if (type === 'compute_custom') {
+      const startTime = Date.now()
+      const [, , , numPoints, SNR, , N] = params
+      console.log(`[WORKER START] CUSTOM pts=${numPoints} N=${N} SNR=${SNR.toFixed(2)}`)
       data = computeCustom(params)
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+      console.log(`[WORKER DONE] 1 point in ${elapsed}s`)
+      process.send({ id, success: true, data })
+    } else if (type === 'compute_batch') {
+      // Batch mode: process multiple tasks, return array of results
+      const batchResults = computeBatch(tasks)
+      process.send({ id, success: true, batchResults })
     } else {
       throw new Error(`Unknown task type: ${type}`)
     }
-
-    // Send result back to parent via IPC
-    process.send({ id, success: true, data })
   } catch (error) {
     process.send({ id, success: false, error: error.message })
   }

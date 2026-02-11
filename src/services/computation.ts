@@ -165,7 +165,7 @@ export class ComputationService {
     }
   }
 
-  private generateParametersHash(params: ComputationParameters): string {
+  private generateParametersHash(params: ComputationParameters | CustomComputationParameters): string {
     const paramString = JSON.stringify(params, Object.keys(params).sort())
     return createHash('md5').update(paramString).digest('hex')
   }
@@ -554,65 +554,129 @@ export class ComputationService {
       }
     }
 
-    // Step 4: Compute uncached points with chunking and cancellation support
-    const concurrencyLimit = Math.min(config.MAX_CONCURRENT_COMPUTATIONS, uncachedItems.length)
-    const chunks: Array<typeof uncachedItems> = []
-    for (let i = 0; i < uncachedItems.length; i += concurrencyLimit) {
-      chunks.push(uncachedItems.slice(i, i + concurrencyLimit))
-    }
+    // Step 4: Compute uncached points using batched IPC (dramatically reduces overhead)
+    // Instead of 2*N IPC messages, we send batches to workers
+    this.logger?.info(`Computing ${uncachedItems.length} uncached points via batched IPC`)
+    const startTime = Date.now()
 
-    let computedCount = 0
-    for (const chunk of chunks) {
-      // Check cancellation before each chunk
-      if (cancellationToken?.isCancelled) {
-        this.logger?.info(`Batch cancelled: ${computedCount}/${uncachedItems.length} computed, ${cachedResults.size} from cache`)
-        cancelled = true
-        break
-      }
+    try {
+      if (this.useWorkerPool && this.workerPool) {
+        // Prepare tasks for batch execution
+        const batchTasks = uncachedItems.map((item, idx) => {
+          const isCustom = 'customConstellation' in item.params && item.params.customConstellation
 
-      const chunkPromises = chunk.map(async (item) => {
-        try {
-          // Skip items if cancelled mid-chunk
-          if (cancellationToken?.isCancelled) {
-            return { item, result: null, error: null }
+          if (isCustom) {
+            const customParams = item.params as CustomComputationParameters
+            const points = customParams.customConstellation.points
+            const numPoints = points.length
+
+            // Create typed arrays for FFI
+            const realParts = Buffer.alloc(numPoints * 8)
+            const imagParts = Buffer.alloc(numPoints * 8)
+            const probabilities = Buffer.alloc(numPoints * 8)
+
+            for (let i = 0; i < numPoints; i++) {
+              realParts.writeDoubleLE(points[i].real, i * 8)
+              imagParts.writeDoubleLE(points[i].imag, i * 8)
+              probabilities.writeDoubleLE(points[i].prob, i * 8)
+            }
+
+            return {
+              id: `task_${idx}_${item.hash.substring(0, 8)}`,
+              type: 'compute_custom' as const,
+              params: [realParts, imagParts, probabilities, numPoints,
+                       customParams.SNR, customParams.R, customParams.N,
+                       customParams.n, customParams.threshold]
+            }
+          } else {
+            const stdParams = item.params as ComputationParameters
+            return {
+              id: `task_${idx}_${item.hash.substring(0, 8)}`,
+              type: 'compute' as const,
+              params: [stdParams.M, stdParams.typeModulation, stdParams.SNR,
+                       stdParams.R, stdParams.N, stdParams.n, stdParams.threshold,
+                       'uniform', 0.0]
+            }
           }
+        })
 
-          const result = await this.computeSingleWithoutCacheCheck(
-            item.params,
-            item.hash,
-            sessionId,
-            ipAddress,
-            cancellationToken
-          )
-          return { item, result, error: null }
-        } catch (error) {
-          // If cancelled, don't treat as error
-          if (error instanceof Error &&
-              (error.message.includes('cancelled') || error.message.includes('cancellation'))) {
+        // Execute all uncached tasks via batched IPC
+        const batchResults = await this.workerPool.executeBatch(batchTasks, cancellationToken)
+
+        const batchTime = Date.now() - startTime
+        this.logger?.info(`Batched computation completed in ${batchTime}ms for ${uncachedItems.length} points`)
+
+        // Process results and save to cache
+        const timestamp = new Date().toISOString()
+        let computedCount = 0
+
+        for (let i = 0; i < batchResults.length; i++) {
+          const batchResult = batchResults[i]
+          const item = uncachedItems[i]
+
+          if (batchResult.success && batchResult.data) {
+            const result: ComputationResult = {
+              error_probability: batchResult.data.error_probability,
+              error_exponent: batchResult.data.error_exponent,
+              optimal_rho: batchResult.data.optimal_rho,
+              mutual_information: batchResult.data.mutual_information,
+              cutoff_rate: batchResult.data.cutoff_rate,
+              critical_rate: batchResult.data.critical_rate,
+              computation_time_ms: Math.round(batchTime / uncachedItems.length), // Amortized time
+              cached: false
+            }
+
+            finalResults[item.index] = result
+            computedCount++
+
+            // Save to database cache (async, don't wait)
+            db.saveComputation({
+              timestamp,
+              parameters: item.hash,
+              results: JSON.stringify(result),
+              computation_time_ms: result.computation_time_ms,
+              user_session: sessionId,
+              ip_address: ipAddress
+            }).catch(err => this.logger?.error('Failed to cache result:', err))
+          } else if (batchResult.error?.includes('cancelled') || batchResult.error?.includes('cancellation')) {
             cancelled = true
-            return { item, result: null, error: null }
           }
-          return { item, result: null, error }
+          // If result failed for non-cancellation reason, leave as null
         }
-      })
 
-      const chunkResults = await Promise.all(chunkPromises)
+        this.logger?.info(`Batch processed: ${computedCount}/${uncachedItems.length} computed successfully`)
 
-      for (const { item, result, error } of chunkResults) {
-        if (result) {
-          finalResults[item.index] = result
-          computedCount++
-        } else if (error) {
-          // Re-throw non-cancellation errors
-          throw error
+      } else {
+        // Fallback to sequential execution without worker pool
+        for (const item of uncachedItems) {
+          if (cancellationToken?.isCancelled) {
+            cancelled = true
+            break
+          }
+          try {
+            const result = await this.computeSingleWithoutCacheCheck(
+              item.params,
+              item.hash,
+              sessionId,
+              ipAddress,
+              cancellationToken
+            )
+            finalResults[item.index] = result
+          } catch (error) {
+            if (error instanceof Error && error.message.includes('cancelled')) {
+              cancelled = true
+              break
+            }
+            throw error
+          }
         }
-        // If result is null due to cancellation, leave finalResults[index] as null
       }
-
-      // Check cancellation after chunk completes
-      if (cancellationToken?.isCancelled) {
+    } catch (error) {
+      if (error instanceof Error &&
+          (error.message.includes('cancelled') || error.message.includes('cancellation'))) {
         cancelled = true
-        break
+      } else {
+        throw error
       }
     }
 
@@ -633,7 +697,7 @@ export class ComputationService {
    * This is an internal helper for the optimized batch computation.
    */
   private async computeSingleWithoutCacheCheck(
-    params: ComputationParameters,
+    params: ComputationParameters | CustomComputationParameters,
     parametersHash: string,
     sessionId?: string,
     ipAddress?: string,

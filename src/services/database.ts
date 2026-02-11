@@ -23,6 +23,32 @@ export interface UsageRecord {
   status_code: number
 }
 
+// API Key interfaces for authentication and usage tracking
+export interface ApiKeyRecord {
+  id: number
+  key_prefix: string
+  key_hint: string
+  key_hash: string
+  owner_name: string
+  owner_email: string | null
+  tier: 'free' | 'standard' | 'premium'
+  is_active: number  // SQLite uses 0/1 for boolean
+  created_at: string
+  expires_at: string | null
+  last_used_at: string | null
+  total_requests: number
+  total_credits_used: number  // Track for future billing
+}
+
+export interface ApiUsageRecord {
+  id?: number
+  key_id: number
+  timestamp: string
+  endpoint: string
+  request_cost: number  // Computed cost (tracked, not enforced)
+  computation_params: string | null  // JSON summary of params
+}
+
 export class DatabaseService {
   private static instance: DatabaseService
   private db: Database.Database | null = null
@@ -130,6 +156,47 @@ export class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_usage_timestamp ON usage_analytics(timestamp);
       CREATE INDEX IF NOT EXISTS idx_usage_endpoint ON usage_analytics(endpoint);
       CREATE INDEX IF NOT EXISTS idx_sessions_session_id ON user_sessions(session_id);
+    `)
+
+    // API Keys table for authentication
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key_prefix TEXT NOT NULL,
+        key_hint TEXT NOT NULL,
+        key_hash TEXT NOT NULL UNIQUE,
+        owner_name TEXT NOT NULL,
+        owner_email TEXT,
+        tier TEXT DEFAULT 'free',
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME,
+        last_used_at DATETIME,
+        total_requests INTEGER DEFAULT 0,
+        total_credits_used INTEGER DEFAULT 0,
+        UNIQUE(key_prefix, key_hint)
+      )
+    `)
+
+    // API Usage tracking (for future billing)
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS api_usage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key_id INTEGER NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        endpoint TEXT NOT NULL,
+        request_cost INTEGER DEFAULT 1,
+        computation_params TEXT,
+        FOREIGN KEY (key_id) REFERENCES api_keys(id) ON DELETE CASCADE
+      )
+    `)
+
+    // API Keys indexes
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_api_keys_prefix_hint ON api_keys(key_prefix, key_hint);
+      CREATE INDEX IF NOT EXISTS idx_api_keys_active ON api_keys(is_active);
+      CREATE INDEX IF NOT EXISTS idx_api_usage_key_id ON api_usage(key_id);
+      CREATE INDEX IF NOT EXISTS idx_api_usage_timestamp ON api_usage(timestamp);
     `)
   }
 
@@ -371,6 +438,182 @@ export class DatabaseService {
     }
 
     return stats
+  }
+
+  // ============================================
+  // API Key Methods
+  // ============================================
+
+  /**
+   * Find an API key by prefix and hint (for efficient lookup).
+   * Returns the full record if found, null otherwise.
+   */
+  async getApiKeyByHint(prefix: string, hint: string): Promise<ApiKeyRecord | null> {
+    if (!this.db) {
+      throw new Error('Database not initialized')
+    }
+
+    const stmt = this.db.prepare(`
+      SELECT * FROM api_keys
+      WHERE key_prefix = ? AND key_hint = ? AND is_active = 1
+    `)
+
+    const result = stmt.get(prefix, hint) as ApiKeyRecord | undefined
+    return result || null
+  }
+
+  /**
+   * Create a new API key record.
+   * Returns the inserted ID.
+   */
+  async createApiKey(
+    keyPrefix: string,
+    keyHint: string,
+    keyHash: string,
+    ownerName: string,
+    ownerEmail?: string,
+    tier: 'free' | 'standard' | 'premium' = 'free',
+    expiresAt?: Date
+  ): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized')
+    }
+
+    const stmt = this.db.prepare(`
+      INSERT INTO api_keys (key_prefix, key_hint, key_hash, owner_name, owner_email, tier, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `)
+
+    const result = stmt.run(
+      keyPrefix,
+      keyHint,
+      keyHash,
+      ownerName,
+      ownerEmail || null,
+      tier,
+      expiresAt?.toISOString() || null
+    )
+
+    return result.lastInsertRowid as number
+  }
+
+  /**
+   * Update last_used_at and increment total_requests for an API key.
+   */
+  async updateApiKeyUsage(keyId: number, creditsCost: number = 1): Promise<void> {
+    if (!this.db) {
+      throw new Error('Database not initialized')
+    }
+
+    const stmt = this.db.prepare(`
+      UPDATE api_keys
+      SET last_used_at = CURRENT_TIMESTAMP,
+          total_requests = total_requests + 1,
+          total_credits_used = total_credits_used + ?
+      WHERE id = ?
+    `)
+
+    stmt.run(creditsCost, keyId)
+  }
+
+  /**
+   * Record API usage for future billing.
+   */
+  async recordApiUsage(
+    keyId: number,
+    endpoint: string,
+    requestCost: number,
+    computationParams?: object
+  ): Promise<void> {
+    if (!this.db) {
+      return
+    }
+
+    const stmt = this.db.prepare(`
+      INSERT INTO api_usage (key_id, endpoint, request_cost, computation_params)
+      VALUES (?, ?, ?, ?)
+    `)
+
+    stmt.run(
+      keyId,
+      endpoint,
+      requestCost,
+      computationParams ? JSON.stringify(computationParams) : null
+    )
+  }
+
+  /**
+   * List all API keys (for admin).
+   */
+  async listApiKeys(): Promise<Omit<ApiKeyRecord, 'key_hash'>[]> {
+    if (!this.db) {
+      throw new Error('Database not initialized')
+    }
+
+    const stmt = this.db.prepare(`
+      SELECT id, key_prefix, key_hint, owner_name, owner_email, tier,
+             is_active, created_at, expires_at, last_used_at,
+             total_requests, total_credits_used
+      FROM api_keys
+      ORDER BY created_at DESC
+    `)
+
+    return stmt.all() as Omit<ApiKeyRecord, 'key_hash'>[]
+  }
+
+  /**
+   * Revoke (deactivate) an API key.
+   */
+  async revokeApiKey(keyId: number): Promise<boolean> {
+    if (!this.db) {
+      throw new Error('Database not initialized')
+    }
+
+    const stmt = this.db.prepare(`
+      UPDATE api_keys SET is_active = 0 WHERE id = ?
+    `)
+
+    const result = stmt.run(keyId)
+    return result.changes > 0
+  }
+
+  /**
+   * Get usage statistics for an API key.
+   */
+  async getApiKeyUsageStats(keyId: number, days: number = 30): Promise<{
+    totalRequests: number
+    totalCredits: number
+    usageByEndpoint: Array<{ endpoint: string; count: number; credits: number }>
+  }> {
+    if (!this.db) {
+      throw new Error('Database not initialized')
+    }
+
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+
+    // Total stats
+    const totalStmt = this.db.prepare(`
+      SELECT COUNT(*) as total_requests, COALESCE(SUM(request_cost), 0) as total_credits
+      FROM api_usage
+      WHERE key_id = ? AND timestamp > ?
+    `)
+    const totals = totalStmt.get(keyId, cutoff) as { total_requests: number; total_credits: number }
+
+    // By endpoint
+    const byEndpointStmt = this.db.prepare(`
+      SELECT endpoint, COUNT(*) as count, COALESCE(SUM(request_cost), 0) as credits
+      FROM api_usage
+      WHERE key_id = ? AND timestamp > ?
+      GROUP BY endpoint
+      ORDER BY credits DESC
+    `)
+    const usageByEndpoint = byEndpointStmt.all(keyId, cutoff) as Array<{ endpoint: string; count: number; credits: number }>
+
+    return {
+      totalRequests: totals.total_requests,
+      totalCredits: totals.total_credits,
+      usageByEndpoint
+    }
   }
 
   async close(): Promise<void> {

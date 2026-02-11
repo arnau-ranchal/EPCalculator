@@ -161,3 +161,4 @@ export class EPCalculatorJS {
 }
 // Create singleton instance
 export const epCalculator = new EPCalculatorJS();
+//# sourceMappingURL=wasm-fallback.js.map

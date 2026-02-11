@@ -30,40 +30,87 @@ export const articles = {
       sections: [
         {
           type: 'paragraph',
-          text: 'The Additive White Gaussian Noise (AWGN) channel is the most fundamental model in digital communications. It represents an ideal channel where the only impairment is the addition of noise. This page describes the mathematical model used in EPCalculator.'
+          text: 'The Additive White Gaussian Noise (AWGN) channel is the most fundamental model in digital communications. It represents an ideal channel where the only impairment is the addition of noise. This page describes the mathematical model used in EPCalculator, following the treatment in standard references [1, 2].'
         },
         // ─────────────────────────────────────────────────────────────────────
-        // CHANNEL MODEL
+        // CONTINUOUS-TIME MODEL
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'The Channel Model',
-          id: 'channel-model'
+          text: 'From Continuous to Discrete Time',
+          id: 'continuous-time'
         },
         {
           type: 'paragraph',
-          text: 'In the AWGN channel, the received signal $Y$ is the transmitted signal $X$ (scaled by $\\sqrt{\\text{SNR}}$) plus noise $N$:'
+          text: 'In the physical channel, transmission occurs in continuous time. The received signal $y(t)$ is the sum of the transmitted signal $x(t)$ and noise $z(t)$:'
         },
         {
           type: 'formula',
-          latex: 'Y = \\sqrt{\\text{SNR}} \\cdot X + N',
-          label: 'AWGN Channel Model'
+          latex: 'y(t) = x(t) + z(t)',
+          label: 'Continuous-Time AWGN Model'
         },
         {
           type: 'paragraph',
-          text: 'where $N$ is a complex Gaussian random variable with independent real and imaginary parts, each with variance $\\frac{1}{2}$ (so the total noise power is 1).'
-        },
-        {
-          type: 'paragraph',
-          text: 'The noise $N$ has three key properties:'
+          text: 'The noise $z(t)$ is a Gaussian random process with three key properties:'
         },
         {
           type: 'list',
           items: [
             '**Additive**: The noise adds to the signal (doesn\'t multiply or distort)',
-            '**White**: Equal power at all frequencies (flat power spectral density)',
-            '**Gaussian**: The noise amplitude follows a normal distribution with mean zero'
+            '**White**: Equal power at all frequencies (flat power spectral density $N_0/2$)',
+            '**Gaussian**: At any time $t$, the noise amplitude follows a normal distribution with mean zero'
           ]
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // DISCRETE-TIME MODEL
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'Discrete-Time Symbol Model',
+          id: 'discrete-time'
+        },
+        {
+          type: 'paragraph',
+          text: 'Digital communication operates on discrete symbols. After matched filtering and sampling at the symbol rate, we obtain the discrete-time model:'
+        },
+        {
+          type: 'formula',
+          latex: 'y_i = x_i + z_i',
+          label: 'Discrete-Time Model'
+        },
+        {
+          type: 'paragraph',
+          text: 'where $x_i$ is the transmitted symbol with energy $E_s$ (energy per symbol), and $z_i$ is complex Gaussian noise with variance $N_0$ (noise power spectral density).'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // NORMALIZED MODEL
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'The Normalized Channel Model',
+          id: 'channel-model'
+        },
+        {
+          type: 'paragraph',
+          text: 'For mathematical convenience, we normalize the model. Let $\\tilde{x}_i$ be the unit-energy version of the transmitted symbol ($E[|\\tilde{x}_i|^2] = 1$) and $\\tilde{z}_i$ be unit-variance noise. Then:'
+        },
+        {
+          type: 'formula',
+          latex: 'y_i = \\sqrt{E_s} \\cdot \\tilde{x}_i + \\sqrt{N_0} \\cdot \\tilde{z}_i',
+          label: 'Normalized Components'
+        },
+        {
+          type: 'paragraph',
+          text: 'Dividing both sides by $\\sqrt{N_0}$ and defining the normalized output $Y = y_i / \\sqrt{N_0}$, input $X = \\tilde{x}_i$, and noise $N = \\tilde{z}_i$:'
+        },
+        {
+          type: 'formula',
+          latex: 'Y = \\sqrt{\\frac{E_s}{N_0}} \\cdot X + N = \\sqrt{\\text{SNR}} \\cdot X + N',
+          label: 'AWGN Channel Model'
+        },
+        {
+          type: 'paragraph',
+          text: 'This is the standard form used in EPCalculator. Here $X$ has unit average energy and $N$ is a complex Gaussian with independent real and imaginary parts, each with variance $\\frac{1}{2}$ (so total noise power is 1).'
         },
         // ─────────────────────────────────────────────────────────────────────
         // GAUSSIAN PDF
@@ -178,6 +225,21 @@ export const articles = {
           params: { snr: 10, modulation: 'psk', M: 4 },
           label: 'Try QPSK at 10 dB SNR',
           description: 'See how a 4-PSK constellation performs with moderate noise'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // REFERENCES
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'References',
+          id: 'references'
+        },
+        {
+          type: 'numbered-list',
+          items: [
+            'J. G. Proakis and M. Salehi, *Digital Communications*, 5th ed. McGraw-Hill, 2007.',
+            'T. M. Cover and J. A. Thomas, *Elements of Information Theory*, 2nd ed. Wiley-Interscience, 2006.'
+          ]
         },
         {
           type: 'cross-reference',
@@ -367,21 +429,42 @@ export const articles = {
           id: 'special-values'
         },
         {
+          type: 'paragraph',
+          text: 'The parameter $\\rho$ takes values in $[0,1]$, and important quantities emerge at the boundaries:'
+        },
+        {
           type: 'list',
           items: [
-            '$\\rho = 0$: Gives the **mutual information** $I(X;Y)$ — the channel capacity',
-            '$\\rho = 1$: Gives the **cutoff rate** $R_0$ — a practical coding threshold',
-            'The **derivative** $\\frac{\\partial E_0}{\\partial \\rho}\\big|_{\\rho=0}$ gives the channel dispersion'
+            '$E_0(0) = 0$ always (the formula reduces to $-\\log_2(1) = 0$)',
+            '$E_0(1) = R_0$ — the **cutoff rate**, a practical coding threshold',
+            '$\\left.\\frac{\\partial E_0}{\\partial \\rho}\\right|_{\\rho=0} = I(X;Y)$ — the **mutual information** (channel capacity for given input distribution)',
+            '$\\left.\\frac{\\partial^2 E_0}{\\partial \\rho^2}\\right|_{\\rho=0}$ — related to the **channel dispersion** (characterizes finite-length performance)'
           ]
         },
         {
           type: 'note',
-          text: 'In EPCalculator, when you compute "Single Point" with ρ=0, you get the mutual information. With ρ=1, you get the cutoff rate.',
+          text: 'In EPCalculator, the mutual information is computed as the derivative of $E_0(\\rho)$ at $\\rho=0$. The cutoff rate is $E_0(1)$.',
           variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
-        // CODE RATE AND LENGTH
+        // CODE PARAMETERS
         // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'Code Parameters: n, k, and R',
+          id: 'code-parameters'
+        },
+        {
+          type: 'paragraph',
+          text: 'Block codes are characterized by two fundamental parameters that determine their structure:'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: '$n$ (code length)', definition: 'The number of channel symbols in each codeword. This is the block length sent over the channel.' },
+            { term: '$k$ (information bits)', definition: 'The number of information bits encoded into each codeword. These are the "useful" bits being transmitted.' }
+          ]
+        },
         {
           type: 'heading',
           text: 'Code Rate (R)',
@@ -389,16 +472,16 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'The code rate $R = k/n$ is the ratio of information bits ($k$) to total coded bits ($n$). Lower rate means more redundancy for error correction, but lower throughput.'
+          text: 'The code rate $R$ is defined as the ratio of information bits to codeword symbols:'
         },
         {
           type: 'formula',
-          latex: 'R = \\frac{k}{n}, \\quad 0 < R \\leq C',
+          latex: 'R = \\frac{k}{n} \\quad \\text{bits per channel use}',
           label: 'Code Rate'
         },
         {
           type: 'paragraph',
-          text: 'Reliable communication is only possible when $R < C$ (channel capacity). The error exponent $E(R)$ determines how quickly errors decrease as $n$ grows.'
+          text: 'Lower rate means more redundancy (smaller $k$ for fixed $n$), providing stronger error protection at the cost of throughput. Reliable communication is only possible when $R < C$ (channel capacity). The error exponent $E(R)$ determines how quickly errors decrease as $n$ grows.'
         },
         {
           type: 'heading',
@@ -407,7 +490,7 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'The code length $n$ is the number of symbols in each codeword. Longer codes achieve better error performance because the error probability decreases exponentially with $n$:'
+          text: 'The code length $n$ directly controls reliability. Longer codes achieve better error performance because the error probability decreases exponentially with $n$:'
         },
         {
           type: 'formula',
@@ -434,6 +517,22 @@ export const articles = {
           params: { snr: 5, modulation: 'qam', M: 16, rho: 0.5 },
           label: 'Calculate E₀ for 16-QAM',
           description: 'Compute the error exponent at ρ=0.5 for a 16-QAM constellation'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // REFERENCES
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'References',
+          id: 'references'
+        },
+        {
+          type: 'numbered-list',
+          items: [
+            'R. G. Gallager, *Information Theory and Reliable Communication*. Wiley, 1968.',
+            'J. Scarlett, A. Martinez, and A. Guillén i Fàbregas, "Mismatched decoding: Error exponents, second-order rates and saddlepoint approximations," *IEEE Trans. Inf. Theory*, vol. 60, no. 5, 2014.',
+            'T. M. Cover and J. A. Thomas, *Elements of Information Theory*, 2nd ed. Wiley-Interscience, 2006.'
+          ]
         },
         {
           type: 'cross-reference',
@@ -502,9 +601,9 @@ export const articles = {
         {
           type: 'list',
           items: [
-            'BPSK (2-PSK): Two points at 0° and 180°',
-            'QPSK (4-PSK): Four points at 45°, 135°, 225°, 315°',
-            '8-PSK: Eight equally-spaced phases'
+            'BPSK (2-PSK): Two points at 0° and 180° (k=0,1)',
+            'QPSK (4-PSK): Four points at 0°, 90°, 180°, 270° (k=0,1,2,3)',
+            '8-PSK: Eight equally-spaced phases at 0°, 45°, 90°, ..., 315°'
           ]
         },
         {
@@ -591,7 +690,7 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'Furthermore, $E_0(0) = 0$ always, so the mutual information equals the slope of $E_0(\\rho)$ at the origin. This is why setting $\\rho = 0$ in EPCalculator gives you the mutual information.'
+          text: 'Note that $E_0(0) = 0$ always (not the mutual information itself). The mutual information is the **slope** (derivative) of $E_0(\\rho)$ at the origin. EPCalculator computes the mutual information by evaluating this derivative numerically.'
         },
         {
           type: 'paragraph',
@@ -694,44 +793,66 @@ export const articles = {
 
     'probabilistic-shaping': {
       title: 'Probabilistic Shaping',
-      subtitle: 'Optimizing constellation point probabilities',
+      subtitle: 'Optimizing constellation point probabilities for better performance',
       sections: [
         {
           type: 'paragraph',
-          text: 'In standard constellations, all points are transmitted with equal probability. Probabilistic shaping assigns different probabilities to constellation points to improve performance.'
+          text: 'Probabilistic shaping (or constellation shaping) assigns non-uniform probabilities to constellation points, allowing the input distribution to be optimized for the channel. This is distinct from geometric shaping (changing point positions) and can provide significant performance gains.'
         },
+        // ─────────────────────────────────────────────────────────────────────
+        // UNIFORM DISTRIBUTION
+        // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Uniform Distribution',
+          text: 'Uniform Distribution (Baseline)',
           id: 'uniform'
         },
         {
           type: 'paragraph',
-          text: 'The simplest approach is uniform distribution, where each of the $M$ constellation points has equal probability $P(x_k) = 1/M$. This maximizes entropy but doesn\'t minimize transmission energy.'
+          text: 'In standard modulation schemes, each of the $M$ constellation points is transmitted with equal probability:'
         },
         {
           type: 'formula',
-          latex: 'P(x_k) = \\frac{1}{M}, \\quad k = 1, 2, \\ldots, M',
+          latex: 'Q(x_k) = \\frac{1}{M}, \\quad k = 1, 2, \\ldots, M',
           label: 'Uniform Distribution'
         },
         {
+          type: 'paragraph',
+          text: 'This uniform distribution maximizes the entropy of the transmitted symbols (achieving $\\log_2 M$ bits per symbol) but does not account for the different "costs" (energies) of constellation points.'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // WHY SHAPE
+        // ─────────────────────────────────────────────────────────────────────
+        {
           type: 'heading',
-          text: 'Why Shape?',
+          text: 'Why Shape the Distribution?',
           id: 'why-shape'
         },
         {
           type: 'paragraph',
-          text: 'The error exponent formula includes the input distribution $P(x)$. By optimizing these probabilities, we can increase the error exponent and approach channel capacity more closely.'
-        },
-        {
-          type: 'formula',
-          latex: 'E_0^{\\text{shaped}}(\\rho) \\geq E_0^{\\text{uniform}}(\\rho)',
-          label: 'Shaping Gain'
+          text: 'The error exponent $E_0(\\rho)$ explicitly depends on the input distribution $Q(x)$. By choosing $Q(x)$ wisely, we can potentially improve performance. The theoretical motivation comes from the capacity-achieving distribution, which for AWGN channels is Gaussian—concentrating probability on lower-energy points.'
         },
         {
           type: 'paragraph',
-          text: 'The optimal distribution typically gives higher probabilities to points closer to the origin (lower energy) and lower probabilities to outer points.'
+          text: 'However, shaping gain is **not guaranteed** for arbitrary distributions. The inequality:'
         },
+        {
+          type: 'formula',
+          latex: 'E_0^{Q}(\\rho) \\geq E_0^{\\text{uniform}}(\\rho)',
+          label: 'Potential Shaping Gain'
+        },
+        {
+          type: 'paragraph',
+          text: 'holds only when $Q(x)$ is appropriately chosen. A poorly chosen distribution can actually **decrease** the error exponent. The optimal distribution depends on the SNR, modulation order, and the value of $\\rho$.'
+        },
+        {
+          type: 'note',
+          text: 'Shaping gain comes at a cost: the effective number of transmitted bits decreases because high-probability symbols carry less information. The rate reduction is $H(Q) - \\log_2 M$ where $H(Q)$ is the entropy of the shaped distribution.',
+          variant: 'warning'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // MAXWELL-BOLTZMANN
+        // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
           text: 'Maxwell-Boltzmann Distribution',
@@ -739,20 +860,39 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'A common shaping distribution is Maxwell-Boltzmann, which has the form:'
+          text: 'A popular parametric family for shaping is the Maxwell-Boltzmann (exponential) distribution, which assigns probability based on symbol energy:'
         },
         {
           type: 'formula',
-          latex: 'P(x_k) = \\frac{e^{-\\lambda |x_k|^2}}{\\sum_j e^{-\\lambda |x_j|^2}}',
-          label: 'Maxwell-Boltzmann'
+          latex: 'Q(x_k) = \\frac{e^{-\\lambda |x_k|^2}}{\\sum_{j=1}^{M} e^{-\\lambda |x_j|^2}}',
+          label: 'Maxwell-Boltzmann Distribution'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: '$\\lambda$', definition: 'Shaping parameter controlling the distribution "peakedness"' },
+            { term: '$|x_k|^2$', definition: 'Energy of constellation point $x_k$' }
+          ]
         },
         {
           type: 'paragraph',
-          text: 'The parameter $\\lambda$ controls how "peaked" the distribution is toward low-energy points.'
+          text: 'Special cases of the parameter $\\lambda$:'
+        },
+        {
+          type: 'list',
+          items: [
+            '$\\lambda = 0$: Uniform distribution (all points equally likely)',
+            '$\\lambda > 0$: Lower-energy points have higher probability',
+            '$\\lambda \\to \\infty$: Only the lowest-energy point(s) are transmitted'
+          ]
+        },
+        {
+          type: 'paragraph',
+          text: 'The optimal $\\lambda$ depends on the operating point (SNR, rate) and must be found by optimization or exhaustive search. EPCalculator allows you to sweep $\\lambda$ values to find the best shaping for your scenario.'
         },
         {
           type: 'note',
-          text: 'EPCalculator allows custom constellations where you can specify individual point probabilities, enabling you to test various shaping strategies.',
+          text: 'EPCalculator supports custom constellations where you can specify individual point probabilities, enabling testing of any shaping strategy—including optimal distributions found by numerical optimization.',
           variant: 'info'
         },
         {
@@ -915,14 +1055,14 @@ export const articles = {
         {
           type: 'list',
           items: [
-            '$N = 20$: Fast, good for quick exploration',
-            '$N = 50$: Balanced accuracy and speed (default)',
-            '$N = 100+$: High precision for publication-quality results'
+            '$N = 20$: Default in EPCalculator—good balance of speed and accuracy',
+            '$N = 30$-$40$: Higher precision for detailed analysis',
+            '$N = 50+$: Maximum precision for publication-quality results'
           ]
         },
         {
           type: 'note',
-          text: 'Higher N gives more accurate results but slower computation. For most practical purposes, N=50 is sufficient.',
+          text: 'Higher N gives more accurate results but slower computation. For most practical purposes, N=20 is sufficient and is the EPCalculator default.',
           variant: 'info'
         },
         {
@@ -1118,9 +1258,9 @@ export const articles = {
         {
           type: 'list',
           items: [
-            '$n = 20$: Fast computation, suitable for exploration',
-            '$n = 50$: Good balance (EPCalculator default)',
-            '$n = 100+$: High precision for publication-quality results'
+            '$n = 20$: Good balance of speed and accuracy (EPCalculator default)',
+            '$n = 50$: Higher precision for detailed analysis',
+            '$n = 100+$: Maximum precision for publication-quality results'
           ]
         },
         {
@@ -1134,9 +1274,25 @@ export const articles = {
         },
         {
           type: 'try-it',
-          params: { snr: 10, modulation: 'psk', M: 8, n: 50 },
-          label: 'Try with n=50 quadrature points',
-          description: 'Compute E₀ for 8-PSK with default quadrature precision'
+          params: { snr: 10, modulation: 'psk', M: 8, n: 20 },
+          label: 'Try with n=20 quadrature points',
+          description: 'Compute E₀ for 8-PSK with the default quadrature precision'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // REFERENCES
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'References',
+          id: 'references'
+        },
+        {
+          type: 'numbered-list',
+          items: [
+            'P. Jäckel, "A Note on Multivariate Gaussian-Hermite Quadrature," 2005. Available: http://www.jaeckel.org/',
+            'M. Abramowitz and I. A. Stegun, *Handbook of Mathematical Functions*. Dover Publications, 1972.',
+            'W. H. Press et al., *Numerical Recipes: The Art of Scientific Computing*, 3rd ed. Cambridge University Press, 2007.'
+          ]
         },
         {
           type: 'cross-reference',
@@ -1158,11 +1314,11 @@ export const articles = {
 
     'optimization-algorithms': {
       title: 'Optimization Algorithms',
-      subtitle: 'Gradient descent, Nesterov acceleration, and interpolation-based initial guesses',
+      subtitle: 'Gradient descent with Nesterov acceleration and cubic Hermite interpolation',
       sections: [
         {
           type: 'paragraph',
-          text: 'Finding the error exponent $E(R)$ requires optimizing over the parameter $\\rho$. EPCalculator implements sophisticated optimization algorithms including gradient descent, Nesterov\'s accelerated gradient, and a novel cubic Hermite interpolation for initial guess selection.'
+          text: 'Finding the error exponent $E(R)$ requires optimizing over the parameter $\\rho$. EPCalculator uses **gradient descent with Nesterov\'s accelerated gradient (NAG)** combined with **cubic Hermite interpolation** for intelligent initial guess selection. This combination provides fast, reliable convergence across all SNR values and constellation sizes.'
         },
         // ─────────────────────────────────────────────────────────────────────
         // THE OPTIMIZATION PROBLEM
@@ -1253,29 +1409,25 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'Choosing the right learning rate $\\beta$ is crucial. For an $L$-smooth function (where the gradient is Lipschitz with constant $L$), theory guarantees convergence when $\\beta \\leq 2/L$.'
-        },
-        {
-          type: 'paragraph',
-          text: 'For the error exponent $E_0(\\rho)$, the smoothness constant is the maximum curvature, which occurs at $\\rho = 0$:'
+          text: 'For an $L$-smooth function (where the gradient is Lipschitz with constant $L$), theory guarantees convergence when $\\beta \\leq 2/L$. In practice, we simply set:'
         },
         {
           type: 'formula',
-          latex: 'L = \\left| \\frac{\\partial^2 E_0}{\\partial \\rho^2} \\bigg|_{\\rho=0} \\right|',
-          label: 'Smoothness Constant'
+          latex: '\\beta = \\frac{1}{L}',
+          label: 'Learning Rate'
         },
         {
           type: 'paragraph',
-          text: 'Therefore, EPCalculator sets the learning rate as:'
+          text: 'For our objective function $G(\\rho) = E_0(\\rho) - \\rho R$, the smoothness constant $L$ equals the maximum curvature. Since $E_0$ is concave with maximum curvature at $\\rho = 0$:'
         },
         {
           type: 'formula',
-          latex: '\\beta = \\frac{1}{\\left| E_0\'\'(0) \\right|}',
-          label: 'Optimal Learning Rate'
+          latex: 'L = \\left| E_0\'\'(0) \\right| \\quad \\Rightarrow \\quad \\beta = \\frac{1}{\\left| E_0\'\'(0) \\right|}',
+          label: 'Learning Rate for E₀ Optimization'
         },
         {
           type: 'note',
-          text: 'This adaptive learning rate ensures stable convergence regardless of SNR and modulation—the algorithm automatically adjusts to the curvature of $E_0$.',
+          text: 'This choice of $\\beta = 1/L$ provides simplicity and stability. The algorithm automatically adapts to different SNR values and modulation schemes by computing the second derivative at $\\rho = 0$.',
           variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
@@ -1353,28 +1505,33 @@ export const articles = {
           variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
-        // WHY NOT NEWTON'S METHOD?
+        // WHY GRADIENT DESCENT OVER NEWTON'S METHOD?
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Why Not Newton\'s Method?',
+          text: 'Why Gradient Descent Over Newton\'s Method?',
           id: 'newton'
         },
         {
           type: 'paragraph',
-          text: 'Newton\'s method has quadratic convergence (much faster than gradient descent), but requires computing and inverting the Hessian matrix. For the constant composition case with $|\\mathcal{X}|$ constellation points, this means:'
+          text: 'Newton\'s method has quadratic convergence (faster than gradient descent), but requires computing and inverting the Hessian matrix. For the constant composition case with $|\\mathcal{X}|$ constellation points:'
         },
         {
           type: 'list',
           items: [
             '**Hessian computation**: $\\mathcal{O}(|\\mathcal{X}|^2)$ second derivatives',
             '**Matrix inversion**: $\\mathcal{O}(|\\mathcal{X}|^3)$ operations',
-            '**Per-iteration cost**: Too expensive for large constellations'
+            '**Gradient descent (GD/NAG)**: Only $\\mathcal{O}(|\\mathcal{X}|)$ per iteration'
           ]
         },
         {
           type: 'paragraph',
-          text: 'In contrast, gradient descent has only $\\mathcal{O}(|\\mathcal{X}|)$ cost per iteration, making it preferable for all but the smallest constellations.'
+          text: 'For small constellations like BPSK ($|\\mathcal{X}| = 2$) or QPSK ($|\\mathcal{X}| = 4$), Newton\'s method could be viable. However, for larger constellations like 64-QAM or 256-QAM, the computational savings of gradient-based methods are substantial.'
+        },
+        {
+          type: 'note',
+          text: 'EPCalculator uses gradient descent with Nesterov acceleration (NAG) and cubic Hermite interpolation for initial guesses. This combination provides good convergence with low per-iteration cost across all constellation sizes.',
+          variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
         // COMPARISON TABLE
@@ -1385,15 +1542,39 @@ export const articles = {
           id: 'comparison'
         },
         {
+          type: 'paragraph',
+          text: 'The following table compares the optimization methods considered for EPCalculator:'
+        },
+        {
           type: 'code',
           language: 'text',
-          code: 'Method              | Convergence     | Per-Iteration | Best For\n--------------------|-----------------|---------------|------------------\nGradient Descent    | O(1/ε)          | O(n)          | Simple cases\nNesterov (NAG)      | O(1/√ε)         | O(n)          | Most cases ✓\nNewton\'s Method     | O(log log 1/ε)  | O(n² + n³)    | Very small n only'
+          code: 'Method              | Pros                              | Cons\n--------------------|-----------------------------------|----------------------------------\nGradient Descent    | Simple implementation, scalable   | Slow convergence, sensitive to β\nNewton\'s Method     | Fast convergence, accurate        | Requires Hessian, O(n²+n³) cost\nNesterov (NAG)      | Faster than GD, scalable         | More complex, requires κ tuning'
+        },
+        {
+          type: 'paragraph',
+          text: 'EPCalculator uses **NAG with cubic Hermite interpolation** as its primary optimization method, combining good convergence with the scalability needed for large constellations.'
         },
         {
           type: 'try-it',
           params: { snr: 10, modulation: 'qam', M: 16, rho: 0.5 },
           label: 'See optimization in action',
           description: 'Compute E₀ and observe the convergence behavior'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // REFERENCES
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'References',
+          id: 'references'
+        },
+        {
+          type: 'numbered-list',
+          items: [
+            'S. Bubeck, *Convex Optimization: Algorithms and Complexity*. Foundations and Trends in Machine Learning, vol. 8, no. 3-4, 2015.',
+            'Y. Nesterov, *Introductory Lectures on Convex Optimization: A Basic Course*. Springer, 2004.',
+            'S. Boyd and L. Vandenberghe, *Convex Optimization*. Cambridge University Press, 2004.'
+          ]
         },
         {
           type: 'cross-reference',
@@ -1765,7 +1946,7 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'With your first plot visible, change one or more parameters. For example, switch from QPSK (M=4) to 8-PSK (M=8) to compare these modulation schemes:'
+          text: 'With your first plot visible, change one or more parameters. For example, switch from [[concepts/modulation#psk|QPSK]] (M=4) to [[concepts/modulation#psk|8-PSK]] (M=8) to compare these [[concepts/modulation|modulation schemes]]:'
         },
         {
           type: 'screenshot',
@@ -2052,7 +2233,7 @@ export const articles = {
       sections: [
         {
           type: 'paragraph',
-          text: 'Contour plots show how the error exponent varies across two parameters simultaneously, using color to represent the third dimension. This visualization is powerful for understanding performance trade-offs across a parameter space.'
+          text: 'Contour plots show how the [[concepts/error-exponent#e0-formula|error exponent]] varies across two parameters simultaneously, using color to represent the third dimension. This visualization is powerful for understanding performance trade-offs across a parameter space.'
         },
         // ─────────────────────────────────────────────────────────────────────
         // WHAT CONTOUR PLOTS SHOW
@@ -2069,14 +2250,14 @@ export const articles = {
         {
           type: 'list',
           items: [
-            '**X-axis**: First parameter (e.g., SNR)',
-            '**Y-axis**: Second parameter (e.g., code rate R or ρ)',
-            '**Color**: The error exponent value, with contour lines connecting equal values'
+            '**X-axis**: First parameter (e.g., [[concepts/awgn-channel#snr|SNR]])',
+            '**Y-axis**: Second parameter (e.g., code rate R or [[concepts/error-exponent#rho|ρ]])',
+            '**Color**: The [[concepts/error-exponent#e0-formula|error exponent]] value, with contour lines connecting equal values'
           ]
         },
         {
           type: 'paragraph',
-          text: 'Contour lines (like elevation lines on a topographic map) connect points with equal error exponent values, making it easy to see "iso-performance" regions.'
+          text: 'Contour lines (like elevation lines on a topographic map) connect points with equal [[concepts/error-exponent#e0-formula|error exponent]] values, making it easy to see "iso-performance" regions.'
         },
         // ─────────────────────────────────────────────────────────────────────
         // SETTING UP
@@ -2091,11 +2272,21 @@ export const articles = {
           items: [
             'Switch to the "Plotting & Visualization" tab',
             'Select "Contour Plot" as the visualization mode',
-            'Configure the X-axis parameter range (e.g., SNR 0-20 dB)',
-            'Configure the Y-axis parameter range (e.g., ρ from 0 to 1)',
-            'Select your modulation scheme',
+            'Configure the X-axis parameter range (e.g., [[concepts/awgn-channel#snr|SNR]] 0-20 dB)',
+            'Configure the Y-axis parameter range (e.g., [[concepts/error-exponent#rho|ρ]] from 0 to 1)',
+            'Select your [[concepts/modulation|modulation scheme]]',
             'Click "Compute" to generate the contour plot'
           ]
+        },
+        {
+          type: 'paragraph',
+          text: 'After clicking "Compute", the calculation runs and displays your results:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-generated',
+          caption: 'A generated contour plot showing the error exponent E₀ across SNR and ρ for QPSK modulation',
+          alt: 'Contour plot with color gradient showing E₀ values and contour lines connecting equal values'
         },
         // ─────────────────────────────────────────────────────────────────────
         // READING THE PLOT
@@ -2115,9 +2306,90 @@ export const articles = {
           ]
         },
         {
-          type: 'note',
-          text: 'Hover over any point to see the exact SNR, ρ, and E₀ values at that location.',
-          variant: 'info'
+          type: 'paragraph',
+          text: 'Hover over any point to see the exact SNR, ρ, and E₀ values at that location:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-hover',
+          caption: 'Hovering on the contour plot displays a tooltip with the exact parameter values and error exponent',
+          alt: 'Contour plot with tooltip showing SNR, ρ, and E₀ values at cursor position'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // COMPARE/BENCHMARK WORKFLOW
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'Comparing Multiple Contour Plots',
+          id: 'comparing'
+        },
+        {
+          type: 'paragraph',
+          text: 'Unlike line plots which use a merge modal, contour plots use a **selection-based workflow** with checkboxes. This allows you to select multiple plots and then choose how to compare them.'
+        },
+        {
+          type: 'heading',
+          text: 'Step 1: Generate Your First Contour Plot',
+          id: 'compare-step1'
+        },
+        {
+          type: 'paragraph',
+          text: 'Start by configuring and generating your first contour plot. For this example, we\'ll use [[concepts/modulation#psk|QPSK]] modulation:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-step1-complete',
+          caption: 'The interface after generating the first contour plot: QPSK error exponent surface with controls on the left',
+          alt: 'Full EPCalculator interface showing a generated QPSK contour plot'
+        },
+        {
+          type: 'heading',
+          text: 'Step 2: Change Parameters and Generate Second Plot',
+          id: 'compare-step2'
+        },
+        {
+          type: 'paragraph',
+          text: 'With your first plot visible, change one or more parameters. For example, switch from [[concepts/modulation#psk|QPSK]] (M=4) to [[concepts/modulation#psk|8-PSK]] (M=8) to compare these [[concepts/modulation|modulation schemes]]:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-step2-params',
+          caption: 'After generating a QPSK contour plot, change the modulation order to M=8 (8-PSK) for comparison',
+          alt: 'Plotting controls with M=8 selected, ready to generate a second contour plot'
+        },
+        {
+          type: 'paragraph',
+          text: 'Click "Compute" again to generate the second contour plot. Both plots now appear in the results area.'
+        },
+        {
+          type: 'heading',
+          text: 'Step 3: Select Plots for Comparison',
+          id: 'compare-step3'
+        },
+        {
+          type: 'paragraph',
+          text: 'When you have multiple contour plots, selection checkboxes appear on each plot card. Click the checkbox to select plots for comparison:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-checkbox-selection',
+          caption: 'Checkboxes appear on contour plot cards allowing you to select plots for comparison or benchmarking',
+          alt: 'Two contour plots with selection checkboxes visible on each card'
+        },
+        {
+          type: 'heading',
+          text: 'Step 4: Use the Action Bar',
+          id: 'compare-step4'
+        },
+        {
+          type: 'paragraph',
+          text: 'Once you select at least one plot, an action bar appears at the bottom of the screen with **Compare** and **Benchmark** buttons:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-action-bar',
+          caption: 'The action bar shows selection count and provides Compare (2 plots) and Benchmark (2+ plots) options',
+          alt: 'Action bar at bottom of screen showing 2 plots selected with Comparison and Benchmark buttons'
         },
         // ─────────────────────────────────────────────────────────────────────
         // COMPARE FEATURE
@@ -2129,20 +2401,26 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'The Compare feature lets you view exactly **two** contour plots side-by-side to directly compare different configurations:'
+          text: 'The **Compare** feature requires exactly **two** contour plots. It creates a side-by-side view showing the **difference** between configurations:'
         },
         {
-          type: 'numbered-list',
+          type: 'list',
           items: [
-            'Generate your first contour plot',
-            'Change parameters (e.g., different modulation) and generate a second plot',
-            'Select both plots in the results panel',
-            'Click "Compare" to view them side-by-side'
+            '**Left panel**: First selected plot',
+            '**Middle panel**: Difference plot (Plot A - Plot B)',
+            '**Right panel**: Second selected plot'
           ]
         },
         {
-          type: 'paragraph',
-          text: 'Compare mode shows synchronized views—hovering on one plot highlights the corresponding point on the other, making direct comparison easy.'
+          type: 'screenshot',
+          name: 'contour-plot-comparison',
+          caption: 'The comparison view shows both plots side-by-side with a difference visualization in the center',
+          alt: 'Side-by-side comparison showing two contour plots and their difference'
+        },
+        {
+          type: 'note',
+          text: 'In comparison mode, hovering on one plot highlights the corresponding point on all three panels, making it easy to see how performance differs at specific parameter values.',
+          variant: 'tip'
         },
         // ─────────────────────────────────────────────────────────────────────
         // BENCHMARK FEATURE
@@ -2154,48 +2432,93 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'The Benchmark feature lets you compare **two or more** configurations quantitatively:'
+          text: 'The **Benchmark** feature works with **two or more** contour plots. It creates a 3D overlay visualization where all surfaces are rendered together:'
         },
         {
-          type: 'numbered-list',
-          items: [
-            'Generate multiple contour plots with different configurations',
-            'Select all plots you want to benchmark (minimum 2)',
-            'Click "Benchmark" to see comparative statistics'
-          ]
+          type: 'screenshot',
+          name: 'contour-plot-benchmark',
+          caption: 'The 3D benchmark overlay shows all selected surfaces together for visual comparison',
+          alt: '3D surface plot showing multiple modulation schemes overlaid for benchmarking'
         },
         {
           type: 'paragraph',
-          text: 'Benchmark provides metrics like:'
+          text: 'The 3D benchmark view is interactive:'
         },
         {
           type: 'list',
           items: [
-            'Average error exponent across the parameter space',
-            'Maximum and minimum values',
-            'Regions where each configuration outperforms others',
-            'SNR gain/loss at equivalent performance levels'
+            '**Rotate**: Click and drag to rotate the view angle',
+            '**Zoom**: Scroll to zoom in and out',
+            '**Pan**: Right-click and drag to pan the view',
+            '**Legend**: Each surface is color-coded and labeled for identification'
           ]
         },
+        {
+          type: 'note',
+          text: 'Benchmark mode is ideal for comparing 3 or more configurations simultaneously, as the 3D overlay clearly shows which surface is "on top" (better performance) at each point.',
+          variant: 'info'
+        },
         // ─────────────────────────────────────────────────────────────────────
-        // MERGING
+        // COMPATIBILITY
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Merge Compatibility for Contour Plots',
-          id: 'merge-compatibility'
+          text: 'Compatibility Requirements',
+          id: 'compatibility'
         },
         {
           type: 'paragraph',
-          text: 'Contour plots can be merged when they have identical:'
+          text: 'Contour plots can be compared or benchmarked when they have compatible axes:'
         },
         {
           type: 'list',
           items: [
             '**Visualization mode**: Both must be contour plots',
-            '**X-axis range and parameter**: Same SNR or ρ range',
-            '**Y-axis range and parameter**: Same second parameter range',
-            '**Resolution**: Same grid density'
+            '**X-axis parameter**: Same parameter type (e.g., both use SNR)',
+            '**Y-axis parameter**: Same parameter type (e.g., both use ρ)',
+            '**Resolution**: Same grid density (number of points)'
+          ]
+        },
+        {
+          type: 'note',
+          text: 'If the Compare or Benchmark button is disabled, hover over it to see which compatibility requirement is not met.',
+          variant: 'info'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // EXPORTING
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'Exporting Contour Plots',
+          id: 'exporting'
+        },
+        {
+          type: 'paragraph',
+          text: 'You can export individual contour plots or comparison/benchmark results. Look for the download icon in the plot header:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-export-button',
+          caption: 'The export button (download icon) allows exporting the contour plot as an image or data file',
+          alt: 'Contour plot card with export button highlighted'
+        },
+        {
+          type: 'paragraph',
+          text: 'Click the export button to see available formats:'
+        },
+        {
+          type: 'screenshot',
+          name: 'contour-plot-export-menu',
+          caption: 'Export your contour plot as images (SVG, PNG) or data files (CSV, JSON)',
+          alt: 'Export menu showing four format options with icons and descriptions'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: 'SVG', definition: 'Vector graphics format. Perfect for publications and documents where scalability matters.' },
+            { term: 'PNG', definition: 'High-resolution raster image. Best for presentations and web sharing.' },
+            { term: 'CSV', definition: 'Grid data with X, Y, and Z columns. Import into MATLAB, Python, Excel, or any data tool.' },
+            { term: 'JSON', definition: 'Complete plot data with metadata. Perfect for reimporting or automated processing.' }
           ]
         },
         {
@@ -2229,7 +2552,13 @@ export const articles = {
       sections: [
         {
           type: 'paragraph',
-          text: '3D surface plots provide an immersive view of how the error exponent varies across two parameters. The surface height represents the error exponent value, giving an intuitive understanding of the performance landscape.'
+          text: '3D surface plots provide an immersive view of how the [[concepts/error-exponent#e0-formula|error exponent]] varies across two parameters. The surface height represents the error exponent value, giving an intuitive understanding of the performance landscape.'
+        },
+        {
+          type: 'screenshot',
+          name: 'surface-plot-generated',
+          caption: 'A 3D surface plot showing the error exponent landscape for QPSK modulation',
+          alt: '3D surface visualization with error exponent as height'
         },
         // ─────────────────────────────────────────────────────────────────────
         // WHAT 3D PLOTS SHOW
@@ -2241,14 +2570,14 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'A 3D surface plot renders the error exponent as a physical surface:'
+          text: 'A 3D surface plot renders the [[concepts/error-exponent#e0-formula|error exponent]] as a physical surface:'
         },
         {
           type: 'list',
           items: [
-            '**X-axis**: First parameter (e.g., SNR)',
-            '**Y-axis**: Second parameter (e.g., code rate R or ρ)',
-            '**Z-axis (height)**: The error exponent value',
+            '**X-axis**: First parameter (e.g., [[concepts/awgn-channel#snr|SNR]])',
+            '**Y-axis**: Second parameter (e.g., code rate R or [[concepts/error-exponent#rho|ρ]])',
+            '**Z-axis (height)**: The [[concepts/error-exponent#e0-formula|error exponent]] value',
             '**Color**: Additional encoding of the Z value for clarity'
           ]
         },
@@ -2269,10 +2598,16 @@ export const articles = {
           items: [
             'Switch to the "Plotting & Visualization" tab',
             'Select "3D Surface" as the visualization mode',
-            'Configure both X and Y parameter ranges',
-            'Select your modulation scheme',
-            'Click "Compute" to generate the 3D surface'
+            'Configure both X1 ([[concepts/awgn-channel#snr|SNR]]) and X2 (Rate) parameter ranges',
+            'Select your [[concepts/modulation|modulation scheme]] (e.g., [[concepts/modulation#psk|QPSK]])',
+            'Click "Generate Plot" to compute the 3D surface'
           ]
+        },
+        {
+          type: 'screenshot',
+          name: 'surface-plot-step1-complete',
+          caption: 'The interface after generating a 3D surface: QPSK error exponent landscape with controls on the left',
+          alt: 'Full EPCalculator interface showing a generated QPSK 3D surface plot'
         },
         // ─────────────────────────────────────────────────────────────────────
         // INTERACTIONS
@@ -2302,84 +2637,173 @@ export const articles = {
           variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
+        // COMPARE AND BENCHMARK WORKFLOW
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'heading',
+          text: 'Compare and Benchmark Workflow',
+          id: 'compare-benchmark-workflow'
+        },
+        {
+          type: 'paragraph',
+          text: 'When you have **two or more 3D surfaces**, selection checkboxes appear automatically. This enables the Compare and Benchmark features:'
+        },
+        {
+          type: 'heading',
+          text: 'Step 1: Generate Multiple Surfaces',
+          level: 3
+        },
+        {
+          type: 'paragraph',
+          text: 'Create two or more 3D surface plots with different configurations. For example, generate [[concepts/modulation#psk|QPSK]] and [[concepts/modulation#psk|8-PSK]] surfaces to compare their performance:'
+        },
+        {
+          type: 'screenshot',
+          name: 'surface-plot-step2-params',
+          caption: 'After generating the first QPSK surface, change M to 8 to set up a second 8-PSK surface',
+          alt: 'Parameter controls showing M=8 being selected for the second surface'
+        },
+        {
+          type: 'heading',
+          text: 'Step 2: Select Surfaces',
+          level: 3
+        },
+        {
+          type: 'paragraph',
+          text: 'Once you have two surfaces, checkboxes appear next to each plot. Click the checkboxes to select the surfaces you want to compare or benchmark:'
+        },
+        {
+          type: 'screenshot',
+          name: 'surface-plot-checkbox-selection',
+          caption: 'Selection checkboxes appear when you have 2+ surfaces. Click to select surfaces for comparison.',
+          alt: 'Two 3D surface plots with selection checkboxes visible'
+        },
+        {
+          type: 'heading',
+          text: 'Step 3: Use the Action Bar',
+          level: 3
+        },
+        {
+          type: 'paragraph',
+          text: 'When surfaces are selected, a floating action bar appears at the bottom with your options:'
+        },
+        {
+          type: 'screenshot',
+          name: 'surface-plot-action-bar',
+          caption: 'The action bar shows "2 plots selected" with Compare and Benchmark buttons',
+          alt: 'Action bar with selection count and comparison action buttons'
+        },
+        {
+          type: 'list',
+          items: [
+            '**Comparison**: Creates a 3D difference surface (requires exactly 2 surfaces)',
+            '**Benchmark**: Creates an overlay visualization (requires 2+ surfaces)',
+            '**Select All Compatible**: Quickly select all surfaces with matching axes'
+          ]
+        },
+        // ─────────────────────────────────────────────────────────────────────
         // COMPARE FEATURE
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Compare Feature',
+          text: 'Comparison: 3D Difference Surface',
           id: 'compare'
         },
         {
           type: 'paragraph',
-          text: 'Compare exactly **two** 3D surfaces side-by-side:'
+          text: 'The **Comparison** feature (exactly 2 surfaces) creates a 3D difference surface showing where one configuration outperforms another:'
         },
         {
-          type: 'numbered-list',
+          type: 'screenshot',
+          name: 'surface-plot-comparison',
+          caption: 'The 3D comparison surface uses a diverging color scheme (blue-white-red) to show which configuration performs better at each point',
+          alt: '3D difference surface showing performance comparison between QPSK and 8-PSK'
+        },
+        {
+          type: 'list',
           items: [
-            'Generate two 3D surface plots with different configurations',
-            'Select both plots in the results panel',
-            'Click "Compare" to view them side-by-side'
+            '**Positive values (red)**: First surface has higher error exponent (better)',
+            '**Zero (white)**: Both surfaces have equal performance',
+            '**Negative values (blue)**: Second surface has higher error exponent (better)'
           ]
-        },
-        {
-          type: 'paragraph',
-          text: 'In Compare mode, rotation is synchronized—rotating one surface automatically rotates the other, making visual comparison straightforward.'
         },
         // ─────────────────────────────────────────────────────────────────────
         // BENCHMARK FEATURE
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Benchmark Feature',
+          text: 'Benchmark: 3D Overlay',
           id: 'benchmark'
         },
         {
           type: 'paragraph',
-          text: 'Benchmark **two or more** 3D surface plots for quantitative comparison:'
+          text: 'The **Benchmark** feature (2 or more surfaces) overlays all selected surfaces in a single 3D visualization. Each surface gets a distinct color:'
         },
         {
-          type: 'numbered-list',
-          items: [
-            'Generate multiple 3D surfaces (different modulations, parameters, etc.)',
-            'Select all surfaces to benchmark (minimum 2)',
-            'Click "Benchmark" to see comparative analysis'
-          ]
+          type: 'screenshot',
+          name: 'surface-plot-benchmark',
+          caption: 'The 3D benchmark overlay shows all surfaces together, making it easy to see which is "on top" at each point',
+          alt: '3D benchmark overlay with multiple colored surfaces'
         },
         {
           type: 'paragraph',
-          text: 'Benchmark provides:'
+          text: 'Benchmark mode lets you:'
         },
         {
           type: 'list',
           items: [
-            'Difference surfaces showing where one configuration beats another',
-            'Volume under surface comparisons',
-            'Cross-over boundaries where performance switches'
+            '**Rotate together**: All surfaces rotate in sync for consistent viewing',
+            '**Visual dominance**: See which configuration has the highest surface at each point',
+            '**Compare 3+ configurations**: Unlike Comparison (limited to 2), Benchmark handles multiple surfaces',
+            '**Identify crossover regions**: Where surfaces intersect shows where performance switches'
           ]
         },
+        {
+          type: 'note',
+          text: 'Benchmark mode is especially powerful for comparing 3 or more configurations—the 3D overlay instantly reveals which option dominates in different parameter regions.',
+          variant: 'info'
+        },
         // ─────────────────────────────────────────────────────────────────────
-        // MERGING
+        // EXPORTING
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Merge Compatibility for 3D Surfaces',
-          id: 'merge-compatibility'
+          text: 'Exporting 3D Surfaces',
+          id: 'export'
         },
         {
           type: 'paragraph',
-          text: '3D surface plots can be merged (overlaid) when they share:'
+          text: 'Export your 3D surface plots for presentations, papers, or further analysis:'
+        },
+        {
+          type: 'screenshot',
+          name: 'surface-plot-export-button',
+          caption: 'Click the export button (download icon) in the plot toolbar',
+          alt: '3D surface plot with export button highlighted'
+        },
+        {
+          type: 'paragraph',
+          text: 'Available export formats:'
         },
         {
           type: 'list',
           items: [
-            '**Visualization mode**: Both must be 3D surfaces',
-            '**X-axis and Y-axis ranges**: Identical parameter ranges',
-            '**Grid resolution**: Same number of sample points'
+            '**PNG**: High-resolution image of the current view angle',
+            '**SVG**: Vector format for scalable graphics (2D projection)',
+            '**CSV**: Raw data for external analysis',
+            '**JSON**: Complete data with metadata'
           ]
         },
         {
-          type: 'paragraph',
-          text: 'Merged 3D surfaces appear as semi-transparent layers, letting you see where they intersect.'
+          type: 'screenshot',
+          name: 'surface-plot-export-menu',
+          caption: 'The export menu provides multiple format options for your 3D surface',
+          alt: 'Export menu showing PNG, SVG, CSV, and JSON options'
+        },
+        {
+          type: 'note',
+          text: 'When exporting 3D surfaces as images, rotate to your preferred view angle first—the export captures the current perspective.',
+          variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
         // PERFORMANCE
@@ -2398,7 +2822,8 @@ export const articles = {
           items: [
             'Start with moderate resolution (20-30 points per axis)',
             'Increase resolution only when needed for publication',
-            'Consider using contour plots for initial exploration'
+            'Consider using contour plots for initial exploration',
+            'Close other browser tabs when working with high-resolution surfaces'
           ]
         },
         {
@@ -2424,7 +2849,16 @@ export const articles = {
       sections: [
         {
           type: 'paragraph',
-          text: 'Table mode displays computation results as raw numbers in a spreadsheet-like format. This is ideal for precise analysis, data export, and verification of computed values.'
+          text: 'Table mode displays computation results as raw numbers in a spreadsheet-like format. Unlike other visualization modes that show a single metric, tables display **all computed values at once** — [[concepts/error-exponent#e0-formula|error exponent]], error probability, optimal [[concepts/error-exponent#rho|ρ]], [[concepts/mutual-information#mutual-info|mutual information]], [[concepts/mutual-information#cutoff-rate|cutoff rate]], and critical rate — making it ideal for precise analysis and data export.'
+        },
+        // ─────────────────────────────────────────────────────────────────────
+        // GENERATED TABLE SCREENSHOT
+        // ─────────────────────────────────────────────────────────────────────
+        {
+          type: 'screenshot',
+          name: 'table-mode-generated',
+          caption: 'A generated table showing all metrics for QPSK modulation across SNR range',
+          alt: 'Table mode showing computed values including SNR, Error Exponent, Error Probability, Optimal ρ, Mutual Information, Cutoff Rate, and Critical Rate'
         },
         // ─────────────────────────────────────────────────────────────────────
         // WHEN TO USE TABLE MODE
@@ -2437,69 +2871,68 @@ export const articles = {
         {
           type: 'list',
           items: [
-            '**Precise values**: When you need exact numbers, not visual approximations',
-            '**Data export**: For importing into spreadsheets or analysis tools',
-            '**Verification**: Checking specific computed values',
-            '**Documentation**: Including exact numbers in reports or papers',
-            '**Comparison**: Directly comparing numerical values across configurations'
+            '**Precise values**: When you need exact numbers, not visual approximations from plots',
+            '**All metrics at once**: View E₀, Pe, ρ*, MI, Rcutoff, and Rcrit simultaneously',
+            '**Data export**: For importing into spreadsheets, MATLAB, or analysis tools',
+            '**Verification**: Cross-checking computed values against reference tables',
+            '**Documentation**: Including exact numbers in research papers or reports'
           ]
         },
         // ─────────────────────────────────────────────────────────────────────
-        // SETTING UP
+        // STEP-BY-STEP WORKFLOW
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Setting Up Table Mode',
-          id: 'setup'
+          text: 'Generating a Table',
+          id: 'workflow'
+        },
+        {
+          type: 'paragraph',
+          text: 'Follow these steps to generate a data table:'
         },
         {
           type: 'numbered-list',
           items: [
-            'Switch to the "Plotting & Visualization" tab',
-            'Select "Table" as the visualization mode',
-            'Configure your parameter range (SNR, modulation, etc.)',
-            'Click "Compute" to generate the table'
+            '**Switch to Plotting tab**: Click "Plotting & Visualization" to access the plotting controls',
+            '**Select Table mode**: In the Visualization dropdown, choose "Table"',
+            '**Configure parameters**: Set your [[concepts/awgn-channel#snr|SNR]] range, number of points, and [[concepts/modulation|modulation]] type',
+            '**Click Generate**: The computation runs and displays results in a table format'
           ]
         },
+        {
+          type: 'note',
+          text: 'Table mode uses an efficient batch API that computes all metrics (E₀, Pe, ρ*, MI, Rcutoff, Rcrit) in a single request, making it faster than generating separate plots for each metric.',
+          variant: 'info'
+        },
         // ─────────────────────────────────────────────────────────────────────
-        // TABLE STRUCTURE
+        // TABLE COLUMNS
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
-          text: 'Understanding the Table',
-          id: 'table-structure'
+          text: 'Understanding Table Columns',
+          id: 'columns'
         },
         {
-          type: 'paragraph',
-          text: 'The table displays:'
+          type: 'screenshot',
+          name: 'table-mode-columns',
+          caption: 'Table column headers showing all available metrics',
+          alt: 'Table header row with columns for Index, SNR, Error Exponent, Error Probability, Optimal rho, Mutual Information, Cutoff Rate, and Critical Rate'
         },
         {
           type: 'definitions',
           items: [
-            { term: 'Index Column', definition: 'Row number for reference' },
-            { term: 'Parameter Columns', definition: 'SNR, ρ, or other input parameters' },
-            { term: 'Result Columns', definition: 'Computed E₀ values' },
-            { term: 'Metadata', definition: 'Computation time, method used (optional)' }
+            { term: '#', definition: 'Row index for reference' },
+            { term: 'SNR (dB)', definition: '[[concepts/awgn-channel#snr|Signal-to-noise ratio]] in the configured unit' },
+            { term: 'E₀ (Error Exponent)', definition: '[[concepts/error-exponent#e0-formula|Gallager\'s random coding error exponent]]' },
+            { term: 'Pe (Error Probability)', definition: 'Upper bound on block error probability' },
+            { term: 'ρ* (Optimal ρ)', definition: 'Optimal value of the [[concepts/error-exponent#rho|Gallager parameter ρ]]' },
+            { term: 'MI (Mutual Information)', definition: '[[concepts/mutual-information#mutual-info|Channel capacity]] in bits per symbol' },
+            { term: 'R_cutoff (Cutoff Rate)', definition: '[[concepts/mutual-information#cutoff-rate|Rate below which error exponent is positive]]' },
+            { term: 'R_crit (Critical Rate)', definition: 'Rate at which sphere-packing and random coding exponents meet' }
           ]
         },
         // ─────────────────────────────────────────────────────────────────────
-        // SORTING AND FILTERING
-        // ─────────────────────────────────────────────────────────────────────
-        {
-          type: 'heading',
-          text: 'Sorting and Filtering',
-          id: 'sorting'
-        },
-        {
-          type: 'list',
-          items: [
-            '**Click column headers**: Sort ascending/descending by that column',
-            '**Filter rows**: Type in the filter box to show matching rows',
-            '**Select rows**: Click to select individual rows for export'
-          ]
-        },
-        // ─────────────────────────────────────────────────────────────────────
-        // MERGE IN TABLE MODE
+        // MERGING TABLES
         // ─────────────────────────────────────────────────────────────────────
         {
           type: 'heading',
@@ -2508,7 +2941,13 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'Tables can be merged when they have the same parameter columns. Merged tables show all configurations side-by-side, with result columns differentiated by modulation or configuration name.'
+          text: 'When you generate a second table with compatible parameters (same [[concepts/awgn-channel#snr|SNR]] range), EPCalculator detects this and offers to merge them. Merged tables show all configurations side-by-side, making comparison easy.'
+        },
+        {
+          type: 'screenshot',
+          name: 'table-mode-merge-modal',
+          caption: 'Merge modal appears when a compatible table is detected',
+          alt: 'Modal dialog asking whether to merge the new table with existing one or create a separate table'
         },
         {
           type: 'paragraph',
@@ -2517,10 +2956,21 @@ export const articles = {
         {
           type: 'list',
           items: [
-            '**Same visualization mode**: All must be tables',
-            '**Same parameter range**: Identical SNR values',
-            '**Compatible columns**: Same structure (may differ in result values)'
+            '**Same visualization mode**: Both must be tables',
+            '**Same [[concepts/awgn-channel#snr|SNR]] range**: Identical X-axis values',
+            '**Same SNR unit**: Both linear or both dB'
           ]
+        },
+        {
+          type: 'screenshot',
+          name: 'table-mode-merged',
+          caption: 'Merged table showing QPSK and 8-PSK data with columns grouped by modulation',
+          alt: 'Merged table with columns for each modulation type showing all metrics side-by-side'
+        },
+        {
+          type: 'note',
+          text: 'Merged tables group columns by [[concepts/modulation|modulation]] type. Each metric appears multiple times — once per configuration — allowing direct numerical comparison.',
+          variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
         // EXPORTING
@@ -2532,19 +2982,30 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'Table mode excels at data export:'
+          text: 'Tables are ideal for data export. Click the export button to access format options:'
         },
         {
-          type: 'list',
+          type: 'screenshot',
+          name: 'table-mode-export-button',
+          caption: 'Export button in the table header toolbar',
+          alt: 'Table with export button highlighted in the toolbar'
+        },
+        {
+          type: 'screenshot',
+          name: 'table-mode-export-menu',
+          caption: 'Export menu showing available formats: CSV and JSON',
+          alt: 'Dropdown menu showing CSV and JSON export options'
+        },
+        {
+          type: 'definitions',
           items: [
-            '**CSV**: Comma-separated values for Excel, Google Sheets, etc.',
-            '**JSON**: Structured data for programmatic access',
-            '**Copy to clipboard**: Paste directly into other applications'
+            { term: 'CSV', definition: 'Comma-separated values — opens in Excel, Google Sheets, MATLAB. Preserves full numerical precision.' },
+            { term: 'JSON', definition: 'Structured data format — ideal for programmatic access, Python scripts, or web applications.' }
           ]
         },
         {
           type: 'note',
-          text: 'For large datasets, CSV export is recommended as it preserves full precision and is universally compatible.',
+          text: 'Exported data maintains full double-precision accuracy. The display in the browser may show rounded values, but exports contain the complete computed precision.',
           variant: 'info'
         },
         // ─────────────────────────────────────────────────────────────────────
@@ -2557,20 +3018,21 @@ export const articles = {
         },
         {
           type: 'paragraph',
-          text: 'EPCalculator displays values with configurable precision. The underlying computation maintains full double-precision accuracy; display precision only affects viewing.'
+          text: 'EPCalculator computes values using IEEE 754 double-precision arithmetic (64-bit floats). The table displays a reasonable number of decimal places for readability, but exports preserve the full computed precision (~15-17 significant digits).'
         },
         {
           type: 'try-it',
           params: { mode: 'table', snrRange: [0, 20], modulation: 'psk-4' },
           label: 'Generate QPSK Data Table',
-          description: 'View E₀ values for QPSK across SNR range'
+          description: 'View all metrics for QPSK across SNR range'
         },
         {
           type: 'cross-reference',
           variant: 'tutorial',
           links: [
-            { path: 'tutorials/line-plots', label: 'Line Plots', description: 'Visualize the same data as curves' },
-            { path: 'tutorials/exporting', label: 'Exporting Results', description: 'More export options and formats' }
+            { path: 'tutorials/line-plots', label: 'Line Plots', description: 'Visualize metrics as curves' },
+            { path: 'tutorials/contour-plots', label: 'Contour Plots', description: '2D heatmaps for two-variable analysis' },
+            { path: 'tutorials/exporting', label: 'Citing EPCalculator', description: 'Reference EPCalculator in academic work' }
           ]
         }
       ]
@@ -2853,43 +3315,9 @@ export const articles = {
     },
 
     'exporting': {
-      title: 'Exporting Results',
-      subtitle: 'Save your calculations for reports and further analysis',
+      title: 'Citing EPCalculator',
+      subtitle: 'Reference EPCalculator in your academic work',
       sections: [
-        {
-          type: 'paragraph',
-          text: 'EPCalculator provides several ways to export your computation results for use in reports, papers, or other tools.'
-        },
-        {
-          type: 'heading',
-          text: 'Export Formats',
-          id: 'formats'
-        },
-        {
-          type: 'definitions',
-          items: [
-            {
-              term: 'CSV',
-              definition: 'Comma-separated values, opens in Excel/Google Sheets. Contains SNR values and corresponding error exponents.'
-            },
-            {
-              term: 'JSON',
-              definition: 'Complete data including all parameters used. Good for reproducibility.'
-            },
-            {
-              term: 'PNG',
-              definition: 'High-resolution image of your plot'
-            },
-            {
-              term: 'SVG',
-              definition: 'Vector graphics, scales perfectly for publications'
-            }
-          ]
-        },
-        {
-          type: 'heading',
-          text: 'Citing Your Results'
-        },
         {
           type: 'paragraph',
           text: 'If you use EPCalculator in academic work, you can cite it as:'
@@ -3088,7 +3516,7 @@ export const articles = {
           type: 'cross-reference',
           variant: 'tutorial',
           links: [
-            { path: 'tutorials/exporting', label: 'Exporting Results', description: 'Export computed data for use elsewhere' },
+            { path: 'tutorials/exporting', label: 'Citing EPCalculator', description: 'Reference EPCalculator in academic work' },
             { path: 'tutorials/line-plots', label: 'Line Plots', description: 'Visualize imported data as curves' }
           ]
         },
@@ -3109,45 +3537,58 @@ export const articles = {
   api: {
     'overview': {
       title: 'API Overview',
-      subtitle: 'Integrating EPCalculator into your applications',
+      subtitle: 'REST API for computing error exponents programmatically',
       sections: [
         {
           type: 'paragraph',
-          text: 'EPCalculator provides a REST API that lets you compute error exponents programmatically. This is useful for batch processing, integration with other tools, or building your own interfaces.'
+          text: 'EPCalculator provides a powerful REST API that lets you compute [[concepts/error-exponent#e0-formula|error exponents]] programmatically. The API uses a unified design where each parameter can accept multiple input formats, enabling everything from single-point calculations to complex multi-dimensional sweeps over [[concepts/awgn-channel#snr|SNR]], [[concepts/modulation|modulation schemes]], and other parameters.'
         },
         {
           type: 'heading',
-          text: 'Base URL'
+          text: 'Base URL',
+          id: 'base-url'
         },
         {
           type: 'code',
           language: 'text',
-          code: 'http://localhost:8000/api/v1'
-        },
-        {
-          type: 'paragraph',
-          text: 'For the deployed version, replace localhost with the server address.'
+          code: 'https://epcalculator.matcom.sb.upf.edu/api/v1'
         },
         {
           type: 'heading',
-          text: 'Available Endpoints'
+          text: 'Endpoints',
+          id: 'endpoints'
         },
         {
           type: 'definitions',
           items: [
-            { term: 'POST /compute/single/standard', definition: 'Single point calculation for standard constellations' },
-            { term: 'POST /compute/single/custom', definition: 'Single point with custom constellation' },
-            { term: 'POST /compute/range/standard', definition: 'Calculate over SNR range (for plotting)' },
+            { term: 'POST /compute/standard', definition: 'Compute error metrics for standard modulations ([[concepts/modulation#pam|PAM]], [[concepts/modulation#psk|PSK]], [[concepts/modulation#qam|QAM]])' },
+            { term: 'POST /compute/custom', definition: 'Compute error metrics for [[concepts/probabilistic-shaping#custom-constellations|custom constellation]] points' },
             { term: 'GET /health', definition: 'Health check endpoint' }
           ]
         },
         {
           type: 'heading',
-          text: 'Interactive Documentation'
+          text: 'Key Features',
+          id: 'features'
+        },
+        {
+          type: 'list',
+          items: [
+            '**Polymorphic parameters**: Each numeric parameter accepts single values, arrays, or ranges',
+            '**Multi-dimensional sweeps**: Combine multiple varying parameters (Cartesian product)',
+            '**Flexible output**: Choose which metrics to compute and response format (flat or matrix)',
+            '**Caching**: Results are cached for faster repeated queries',
+            '**Cancellation**: Long-running computations can be cancelled'
+          ]
+        },
+        {
+          type: 'heading',
+          text: 'Interactive Documentation',
+          id: 'swagger'
         },
         {
           type: 'paragraph',
-          text: 'Full API documentation with interactive examples is available at the Swagger UI:'
+          text: 'Full interactive API documentation is available at the Swagger UI:'
         },
         {
           type: 'code',
@@ -3156,102 +3597,537 @@ export const articles = {
         },
         {
           type: 'note',
-          text: 'The Swagger UI lets you try API calls directly from your browser — no coding required!',
+          text: 'The Swagger UI lets you try API calls directly from your browser with auto-generated examples!',
           variant: 'info'
+        },
+        {
+          type: 'cross-reference',
+          variant: 'concept',
+          links: [
+            { path: 'concepts/error-exponent', label: 'Error Exponent E₀(ρ)', description: 'The main metric computed by the API' },
+            { path: 'concepts/modulation', label: 'Modulation Schemes', description: 'Understanding PAM, PSK, and QAM' },
+            { path: 'concepts/awgn-channel', label: 'AWGN Channel & SNR', description: 'The channel model underlying all computations' }
+          ]
         }
       ]
     },
 
-    'endpoints': {
-      title: 'Endpoints Reference',
-      subtitle: 'Detailed API endpoint documentation',
+    'parameters': {
+      title: 'Parameter Formats',
+      subtitle: 'Understanding the polymorphic parameter system',
       sections: [
         {
-          type: 'heading',
-          text: 'POST /compute/single/standard'
-        },
-        {
           type: 'paragraph',
-          text: 'Computes the error exponent for a standard constellation at a single SNR point.'
-        },
-        {
-          type: 'code',
-          language: 'json',
-          code: '{\n  "snr": 10.0,\n  "rho": 0.5,\n  "modulation": "qam",\n  "order": 16\n}'
-        },
-        {
-          type: 'paragraph',
-          text: 'Response:'
-        },
-        {
-          type: 'code',
-          language: 'json',
-          code: '{\n  "e0": 1.234,\n  "computeTime": 0.015,\n  "method": "wasm"\n}'
+          text: 'The API uses a polymorphic parameter system where each numeric parameter can be specified in four different ways. This enables everything from single-point calculations to complex multi-dimensional sweeps with a single API call.'
         },
         {
           type: 'heading',
-          text: 'POST /compute/single/custom'
+          text: 'The Four Parameter Formats',
+          id: 'formats'
+        },
+        // Format 1: Single Value
+        {
+          type: 'heading',
+          text: '1. Single Value',
+          id: 'single-value'
         },
         {
           type: 'paragraph',
-          text: 'Computes error exponent for a custom constellation.'
+          text: 'The simplest format — just provide a number:'
         },
         {
           type: 'code',
           language: 'json',
-          code: '{\n  "snr": 10.0,\n  "rho": 0.5,\n  "points": [\n    {"re": 1.0, "im": 1.0, "prob": 0.25},\n    {"re": 1.0, "im": -1.0, "prob": 0.25},\n    {"re": -1.0, "im": 1.0, "prob": 0.25},\n    {"re": -1.0, "im": -1.0, "prob": 0.25}\n  ]\n}'
+          code: '"SNR": 10'
+        },
+        {
+          type: 'paragraph',
+          text: 'Use this when you want to compute at exactly one value for this parameter.'
+        },
+        // Format 2: Array
+        {
+          type: 'heading',
+          text: '2. Array of Values',
+          id: 'array'
+        },
+        {
+          type: 'paragraph',
+          text: 'Provide an explicit list of values to compute:'
+        },
+        {
+          type: 'code',
+          language: 'json',
+          code: '"SNR": [0, 5, 10, 15, 20]'
+        },
+        {
+          type: 'paragraph',
+          text: 'Use this when you need specific non-uniform values, like [1, 2, 4, 8, 16] for comparing different modulation orders.'
+        },
+        // Format 3: Range with Step
+        {
+          type: 'heading',
+          text: '3. Range with Step',
+          id: 'range-step'
+        },
+        {
+          type: 'paragraph',
+          text: 'Generate values from min to max with a fixed step (like Python\'s `range` or NumPy\'s `arange`):'
+        },
+        {
+          type: 'code',
+          language: 'json',
+          code: '"SNR": { "min": 0, "max": 20, "step": 2 }'
+        },
+        {
+          type: 'paragraph',
+          text: 'This generates: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]. Use this when you need uniform spacing with a specific step size.'
+        },
+        // Format 4: Range with Points
+        {
+          type: 'heading',
+          text: '4. Range with Points',
+          id: 'range-points'
+        },
+        {
+          type: 'paragraph',
+          text: 'Generate exactly N evenly-spaced values between min and max (like NumPy\'s `linspace`):'
+        },
+        {
+          type: 'code',
+          language: 'json',
+          code: '"SNR": { "min": 0, "max": 20, "points": 11 }'
+        },
+        {
+          type: 'paragraph',
+          text: 'This generates: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]. Use this when you need a specific number of points, common for plotting.'
+        },
+        // Cartesian Product
+        {
+          type: 'heading',
+          text: 'Multi-Parameter Sweeps',
+          id: 'cartesian'
+        },
+        {
+          type: 'paragraph',
+          text: 'When multiple parameters have multiple values, the API computes the Cartesian product — all combinations. For example:'
+        },
+        {
+          type: 'code',
+          language: 'json',
+          code: '{\n  "M": [4, 16, 64],\n  "SNR": { "min": 0, "max": 20, "points": 5 }\n}'
+        },
+        {
+          type: 'paragraph',
+          text: 'This computes 3 × 5 = 15 points: all combinations of M ∈ {4, 16, 64} and SNR ∈ {0, 5, 10, 15, 20}.'
+        },
+        {
+          type: 'note',
+          text: 'Maximum 10,000 total points per request. Maximum 1,000 values per individual parameter.',
+          variant: 'warning'
+        },
+        // Parameter Reference
+        {
+          type: 'heading',
+          text: 'Parameter Reference',
+          id: 'reference'
+        },
+        {
+          type: 'paragraph',
+          text: '**Standard modulation parameters:**'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: 'M', definition: '[[concepts/modulation|Modulation order]]. Range: 2–64. Default: 4' },
+            { term: 'typeModulation', definition: '[[concepts/modulation|Modulation type]]: "[[concepts/modulation#pam|PAM]]", "[[concepts/modulation#psk|PSK]]", or "[[concepts/modulation#qam|QAM]]". Default: "QAM"' },
+            { term: 'SNR', definition: '[[concepts/awgn-channel#snr|Signal-to-noise ratio]]. Range: -30 to 10²⁰ (depends on unit). Default: 10' },
+            { term: 'R', definition: '[[concepts/error-exponent#code-rate|Code rate]]. Range: 0 to 10²⁰. Default: 0.5' },
+            { term: 'N', definition: '[[concepts/numerical-methods#gauss-hermite|Gauss-Hermite quadrature]] order. Range: 2–40. Default: 20' },
+            { term: 'n', definition: '[[concepts/error-exponent#block-length|Block length]] (codeword length). Range: 1 to 1,000,000. Default: 128' },
+            { term: 'threshold', definition: '[[concepts/optimization-algorithms|Convergence threshold]] for optimization. Range: 10⁻¹⁵ to 0.1. Default: 10⁻⁹' }
+          ]
+        },
+        {
+          type: 'paragraph',
+          text: '**Options:**'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: 'snrUnit', definition: '"dB" (default) or "linear". Determines how SNR values are interpreted.' },
+            { term: 'metrics', definition: 'Array of metrics to compute. Default: ["error_probability", "error_exponent"]' },
+            { term: 'format', definition: '"flat" (default) or "matrix". Response format for multi-dimensional results.' }
+          ]
+        },
+        // Metrics
+        {
+          type: 'heading',
+          text: 'Available Metrics',
+          id: 'metrics'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: 'error_probability', definition: 'Pₑ — [[concepts/error-exponent#error-probability|Probability of decoding error]]' },
+            { term: 'error_exponent', definition: 'E₀(ρ) — [[concepts/error-exponent#e0-formula|Random coding error exponent]] (bits)' },
+            { term: 'optimal_rho', definition: 'ρ* — [[concepts/error-exponent#rho|Optimal Gallager parameter]]' },
+            { term: 'mutual_information', definition: 'I(X;Y) — [[concepts/mutual-information#mutual-info|Channel mutual information]] (bits/symbol)' },
+            { term: 'cutoff_rate', definition: 'R₀ — [[concepts/mutual-information#cutoff-rate|Cutoff rate]] (bits/symbol)' },
+            { term: 'critical_rate', definition: 'Rᶜʳⁱᵗ — [[concepts/mutual-information#critical-rate|Critical rate]] (bits/symbol)' }
+          ]
+        },
+        {
+          type: 'cross-reference',
+          variant: 'concept',
+          links: [
+            { path: 'concepts/error-exponent', label: 'Error Exponent Formula', description: 'Mathematical derivation of E₀(ρ) and its parameters' },
+            { path: 'concepts/numerical-methods', label: 'Gauss-Hermite Quadrature', description: 'How the N parameter affects computation accuracy' },
+            { path: 'concepts/mutual-information', label: 'Mutual Information & Cutoff Rate', description: 'Understanding the metrics returned by the API' }
+          ]
+        }
+      ]
+    },
+
+    'standard': {
+      title: 'Standard Modulation Endpoint',
+      subtitle: 'POST /api/v1/compute/standard',
+      sections: [
+        {
+          type: 'paragraph',
+          text: 'Computes [[concepts/error-exponent#e0-formula|error metrics]] for standard digital [[concepts/modulation|modulation schemes]]: [[concepts/modulation#pam|PAM]] (Pulse Amplitude Modulation), [[concepts/modulation#psk|PSK]] (Phase Shift Keying), and [[concepts/modulation#qam|QAM]] (Quadrature Amplitude Modulation).'
         },
         {
           type: 'heading',
-          text: 'POST /compute/range/standard'
-        },
-        {
-          type: 'paragraph',
-          text: 'Computes error exponents across an SNR range for plotting.'
+          text: 'Request Format',
+          id: 'request'
         },
         {
           type: 'code',
           language: 'json',
-          code: '{\n  "snrStart": 0.0,\n  "snrEnd": 20.0,\n  "snrPoints": 100,\n  "rho": 0.5,\n  "modulation": "psk",\n  "order": 8\n}'
+          code: '{\n  "M": 16,\n  "typeModulation": "QAM",\n  "SNR": { "min": 0, "max": 20, "points": 21 },\n  "R": 0.5,\n  "N": 20,\n  "n": 128,\n  "threshold": 1e-9,\n  "snrUnit": "dB",\n  "metrics": ["error_probability", "error_exponent", "mutual_information"],\n  "format": "flat"\n}'
+        },
+        {
+          type: 'heading',
+          text: 'Response Format (flat)',
+          id: 'response-flat'
+        },
+        {
+          type: 'code',
+          language: 'json',
+          code: '{\n  "format": "flat",\n  "axes": [\n    { "name": "SNR", "values": [0, 1, 2, ...], "unit": "dB" }\n  ],\n  "results": [\n    {\n      "params": { "SNR": 0, "M": 16, "R": 0.5, ... },\n      "metrics": {\n        "error_probability": 0.156,\n        "error_exponent": 0.023,\n        "mutual_information": 1.245\n      },\n      "cached": false,\n      "computation_time_ms": 45.2\n    },\n    ...\n  ],\n  "meta": {\n    "total_points": 21,\n    "cached_points": 0,\n    "total_computation_time_ms": 892.5\n  }\n}'
+        },
+        {
+          type: 'heading',
+          text: 'Optional Parameters & Defaults',
+          id: 'defaults'
+        },
+        {
+          type: 'paragraph',
+          text: 'Three parameters are optional and will use sensible defaults if omitted:'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: 'snrUnit', definition: 'Default: "dB". Set to "linear" if providing SNR as a power ratio instead of decibels.' },
+            { term: 'metrics', definition: 'Default: ["error_probability", "error_exponent"]. Available metrics: error_probability, error_exponent, optimal_rho, mutual_information, cutoff_rate, critical_rate.' },
+            { term: 'format', definition: 'Default: "flat". Response format — "flat" returns a simple list of results, "matrix" returns nested arrays matching the parameter grid structure.' }
+          ]
+        },
+        {
+          type: 'note',
+          text: 'The examples below omit these optional parameters for brevity — they use the defaults shown above.',
+          variant: 'info'
+        },
+        {
+          type: 'heading',
+          text: 'Example: Single Point Calculation',
+          id: 'example-single'
+        },
+        {
+          type: 'paragraph',
+          text: 'Compute error exponent for 16-QAM at SNR = 10 dB:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "M": 16,\n    "typeModulation": "QAM",\n    "SNR": 10,\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9\n  }\''
+        },
+        {
+          type: 'heading',
+          text: 'Example: SNR Sweep for Plotting',
+          id: 'example-sweep'
+        },
+        {
+          type: 'paragraph',
+          text: 'Compute error probability vs SNR curve with 51 points from 0 to 25 dB:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "M": 16,\n    "typeModulation": "QAM",\n    "SNR": { "min": 0, "max": 25, "points": 51 },\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9,\n    "metrics": ["error_probability"]\n  }\''
+        },
+        {
+          type: 'heading',
+          text: 'Example: Compare Modulation Orders',
+          id: 'example-compare'
+        },
+        {
+          type: 'paragraph',
+          text: 'Compare 4-QAM, 16-QAM, and 64-QAM across an SNR range:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "M": [4, 16, 64],\n    "typeModulation": "QAM",\n    "SNR": { "min": 0, "max": 30, "points": 31 },\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9\n  }\''
+        },
+        {
+          type: 'note',
+          text: 'This returns 3 × 31 = 93 points — all combinations of M and SNR values.',
+          variant: 'info'
+        },
+        {
+          type: 'cross-reference',
+          variant: 'concept',
+          links: [
+            { path: 'concepts/modulation', label: 'Modulation Schemes', description: 'Deep dive into PAM, PSK, and QAM constellation diagrams' },
+            { path: 'concepts/awgn-channel', label: 'AWGN Channel', description: 'Understanding SNR and the Gaussian channel model' },
+            { path: 'concepts/error-exponent', label: 'Error Exponent E₀(ρ)', description: 'What the returned metrics mean' }
+          ]
+        }
+      ]
+    },
+
+    'custom': {
+      title: 'Custom Constellation Endpoint',
+      subtitle: 'POST /api/v1/compute/custom',
+      sections: [
+        {
+          type: 'paragraph',
+          text: 'Computes [[concepts/error-exponent#e0-formula|error metrics]] for user-defined [[concepts/probabilistic-shaping#custom-constellations|constellation points]]. Each point is specified with its complex coordinates (real/imaginary) and probability, enabling [[concepts/probabilistic-shaping|probabilistic shaping]] experiments.'
+        },
+        {
+          type: 'heading',
+          text: 'Constellation Point Format',
+          id: 'point-format'
+        },
+        {
+          type: 'paragraph',
+          text: 'Each constellation point has three properties:'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: 'real', definition: 'Real (in-phase) component of the symbol' },
+            { term: 'imag', definition: 'Imaginary (quadrature) component of the symbol' },
+            { term: 'prob', definition: 'Probability of transmitting this symbol (must sum to 1.0 across all points)' }
+          ]
+        },
+        {
+          type: 'note',
+          text: 'Probabilities must sum to exactly 1.0. Minimum 2 points, maximum 256 points.',
+          variant: 'warning'
+        },
+        {
+          type: 'heading',
+          text: 'Request Format',
+          id: 'request'
+        },
+        {
+          type: 'code',
+          language: 'json',
+          code: '{\n  "customConstellation": {\n    "points": [\n      { "real": 1, "imag": 0, "prob": 0.5 },\n      { "real": -1, "imag": 0, "prob": 0.5 }\n    ]\n  },\n  "SNR": { "min": 0, "max": 15, "points": 16 },\n  "R": 0.5,\n  "N": 20,\n  "n": 128,\n  "threshold": 1e-9\n}'
+        },
+        {
+          type: 'heading',
+          text: 'Optional Parameters & Defaults',
+          id: 'defaults'
+        },
+        {
+          type: 'paragraph',
+          text: 'Three parameters are optional and will use sensible defaults if omitted:'
+        },
+        {
+          type: 'definitions',
+          items: [
+            { term: 'snrUnit', definition: 'Default: "dB". Set to "linear" if providing SNR as a power ratio instead of decibels.' },
+            { term: 'metrics', definition: 'Default: ["error_probability", "error_exponent"]. Available metrics: error_probability, error_exponent, optimal_rho, mutual_information, cutoff_rate, critical_rate.' },
+            { term: 'format', definition: 'Default: "flat". Response format — "flat" returns a simple list of results, "matrix" returns nested arrays matching the parameter grid structure.' }
+          ]
+        },
+        {
+          type: 'note',
+          text: 'The examples below omit these optional parameters for brevity — they use the defaults shown above.',
+          variant: 'info'
+        },
+        {
+          type: 'heading',
+          text: 'Example: BPSK Constellation',
+          id: 'example-bpsk'
+        },
+        {
+          type: 'paragraph',
+          text: 'BPSK uses two points on the real axis with equal probability:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/custom \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "customConstellation": {\n      "points": [\n        { "real": 1, "imag": 0, "prob": 0.5 },\n        { "real": -1, "imag": 0, "prob": 0.5 }\n      ]\n    },\n    "SNR": { "min": 0, "max": 15, "points": 16 },\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9\n  }\''
+        },
+        {
+          type: 'heading',
+          text: 'Example: 4-QAM (QPSK) Constellation',
+          id: 'example-qpsk'
+        },
+        {
+          type: 'paragraph',
+          text: '4-QAM has four points at the corners of a square:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/custom \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "customConstellation": {\n      "points": [\n        { "real": 1, "imag": 1, "prob": 0.25 },\n        { "real": 1, "imag": -1, "prob": 0.25 },\n        { "real": -1, "imag": 1, "prob": 0.25 },\n        { "real": -1, "imag": -1, "prob": 0.25 }\n      ]\n    },\n    "SNR": 10,\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9\n  }\''
+        },
+        {
+          type: 'heading',
+          text: 'Example: Non-Uniform Probabilities',
+          id: 'example-nonuniform'
+        },
+        {
+          type: 'paragraph',
+          text: '[[concepts/probabilistic-shaping|Probabilistic shaping]] assigns higher probabilities to lower-energy symbols. This 4-point constellation uses [[concepts/probabilistic-shaping#maxwell-boltzmann|Maxwell-Boltzmann-like shaping]]:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/custom \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "customConstellation": {\n      "points": [\n        { "real": 0.5, "imag": 0.5, "prob": 0.4 },\n        { "real": 0.5, "imag": -0.5, "prob": 0.4 },\n        { "real": 1.5, "imag": 0, "prob": 0.1 },\n        { "real": -1.5, "imag": 0, "prob": 0.1 }\n      ]\n    },\n    "SNR": { "min": 0, "max": 20, "points": 21 },\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9\n  }\''
+        },
+        {
+          type: 'cross-reference',
+          variant: 'concept',
+          links: [
+            { path: 'concepts/probabilistic-shaping', label: 'Probabilistic Shaping', description: 'Understanding non-uniform probability distributions' },
+            { path: 'concepts/modulation', label: 'Constellation Diagrams', description: 'How points are arranged in the complex plane' },
+            { path: 'tutorials/custom-constellation', label: 'Custom Constellation Tutorial', description: 'Step-by-step guide to creating custom constellations in the UI' }
+          ]
         }
       ]
     },
 
     'examples': {
-      title: 'Code Examples',
-      subtitle: 'Sample code for common API tasks',
+      title: 'Practical Examples',
+      subtitle: 'Copy-paste examples for common use cases',
       sections: [
         {
-          type: 'heading',
-          text: 'Python Example'
-        },
-        {
-          type: 'code',
-          language: 'python',
-          code: 'import requests\n\nresponse = requests.post(\n    "http://localhost:8000/api/v1/compute/single/standard",\n    json={\n        "snr": 10.0,\n        "rho": 0.5,\n        "modulation": "qam",\n        "order": 16\n    }\n)\n\nresult = response.json()\nprint(f"E₀(ρ) = {result[\'e0\']:.4f} nats")'
+          type: 'paragraph',
+          text: 'These examples use curl and can be run directly in your terminal. All requests go to the production server.'
         },
         {
           type: 'heading',
-          text: 'JavaScript/Fetch Example'
+          text: 'Example 1: Quick Single Point',
+          id: 'ex-single'
         },
         {
-          type: 'code',
-          language: 'javascript',
-          code: 'const response = await fetch(\n  "http://localhost:8000/api/v1/compute/single/standard",\n  {\n    method: "POST",\n    headers: { "Content-Type": "application/json" },\n    body: JSON.stringify({\n      snr: 10.0,\n      rho: 0.5,\n      modulation: "qam",\n      order: 16\n    })\n  }\n);\n\nconst result = await response.json();\nconsole.log(`E₀(ρ) = ${result.e0.toFixed(4)} nats`);'
-        },
-        {
-          type: 'heading',
-          text: 'cURL Example'
+          type: 'paragraph',
+          text: 'The simplest possible request — compute one point for [[concepts/modulation#qam|16-QAM]] at 10 dB:'
         },
         {
           type: 'code',
           language: 'bash',
-          code: 'curl -X POST http://localhost:8000/api/v1/compute/single/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{"snr": 10, "rho": 0.5, "modulation": "qam", "order": 16}\''
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{"M": 16, "typeModulation": "QAM", "SNR": 10, "R": 0.5, "N": 20, "n": 128, "threshold": 1e-9}\''
+        },
+        {
+          type: 'heading',
+          text: 'Example 2: Generate Plot Data',
+          id: 'ex-plot'
+        },
+        {
+          type: 'paragraph',
+          text: 'Generate 101 points for a smooth [[concepts/error-exponent#error-probability|error probability]] vs [[concepts/awgn-channel#snr|SNR]] curve:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "M": 16,\n    "typeModulation": "QAM",\n    "SNR": { "min": 0, "max": 30, "points": 101 },\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9,\n    "metrics": ["error_probability"]\n  }\''
+        },
+        {
+          type: 'heading',
+          text: 'Example 3: Compare All QAM Orders',
+          id: 'ex-compare-qam'
+        },
+        {
+          type: 'paragraph',
+          text: 'Compare [[concepts/modulation#qam|4-QAM through 64-QAM]] in one request (uses array format for M):'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "M": [4, 16, 64],\n    "typeModulation": "QAM",\n    "SNR": { "min": 0, "max": 25, "step": 1 },\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9\n  }\''
+        },
+        {
+          type: 'heading',
+          text: 'Example 4: 2D Parameter Sweep',
+          id: 'ex-2d'
+        },
+        {
+          type: 'paragraph',
+          text: 'Sweep both [[concepts/awgn-channel#snr|SNR]] and [[concepts/error-exponent#code-rate|code rate R]] (creates a 2D grid of results):'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "M": 16,\n    "typeModulation": "QAM",\n    "SNR": { "min": 0, "max": 20, "points": 21 },\n    "R": { "min": 0.1, "max": 0.9, "points": 9 },\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9,\n    "format": "matrix"\n  }\''
         },
         {
           type: 'note',
-          text: 'All examples assume the server is running locally. Adjust the URL for your deployment.',
+          text: 'Using format: "matrix" organizes results as a nested array matching the axes order.',
           variant: 'info'
+        },
+        {
+          type: 'heading',
+          text: 'Example 5: Get All Metrics',
+          id: 'ex-all-metrics'
+        },
+        {
+          type: 'paragraph',
+          text: 'Request all available metrics at once:'
+        },
+        {
+          type: 'code',
+          language: 'bash',
+          code: 'curl -X POST https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "M": 16,\n    "typeModulation": "QAM",\n    "SNR": 10,\n    "R": 0.5,\n    "N": 20,\n    "n": 128,\n    "threshold": 1e-9,\n    "metrics": ["error_probability", "error_exponent", "optimal_rho", "mutual_information", "cutoff_rate", "critical_rate"]\n  }\''
+        },
+        {
+          type: 'heading',
+          text: 'Example 6: Python Script',
+          id: 'ex-python'
+        },
+        {
+          type: 'paragraph',
+          text: 'Complete Python example for generating and plotting data:'
+        },
+        {
+          type: 'code',
+          language: 'python',
+          code: 'import requests\nimport matplotlib.pyplot as plt\n\n# Request error probability vs SNR\nresponse = requests.post(\n    "https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard",\n    json={\n        "M": 16,\n        "typeModulation": "QAM",\n        "SNR": {"min": 0, "max": 25, "points": 51},\n        "R": 0.5,\n        "N": 20,\n        "n": 128,\n        "threshold": 1e-9,\n        "metrics": ["error_probability"]\n    }\n)\n\ndata = response.json()\n\n# Extract SNR values and error probabilities\nsnr_values = data["axes"][0]["values"]\nerror_probs = [r["metrics"]["error_probability"] for r in data["results"]]\n\n# Plot\nplt.semilogy(snr_values, error_probs)\nplt.xlabel("SNR (dB)")\nplt.ylabel("Error Probability")\nplt.title("16-QAM Error Probability")\nplt.grid(True)\nplt.show()'
+        },
+        {
+          type: 'heading',
+          text: 'Example 7: JavaScript/Fetch',
+          id: 'ex-javascript'
+        },
+        {
+          type: 'code',
+          language: 'javascript',
+          code: 'const response = await fetch(\n  "https://epcalculator.matcom.sb.upf.edu/api/v1/compute/standard",\n  {\n    method: "POST",\n    headers: { "Content-Type": "application/json" },\n    body: JSON.stringify({\n      M: 16,\n      typeModulation: "QAM",\n      SNR: { min: 0, max: 20, points: 21 },\n      R: 0.5,\n      N: 20,\n      n: 128,\n      threshold: 1e-9\n    })\n  }\n);\n\nconst data = await response.json();\nconsole.log(`Computed ${data.meta.total_points} points`);\nconsole.log(`Total time: ${data.meta.total_computation_time_ms}ms`);'
+        },
+        {
+          type: 'cross-reference',
+          variant: 'concept',
+          links: [
+            { path: 'concepts/error-exponent', label: 'Error Exponent Theory', description: 'Understanding what the API computes' },
+            { path: 'concepts/modulation', label: 'Modulation Schemes', description: 'PAM, PSK, and QAM explained' },
+            { path: 'tutorials/line-plots', label: 'Line Plot Tutorial', description: 'Visualize API results in the EPCalculator UI' }
+          ]
         }
       ]
     }

@@ -64,31 +64,53 @@
 
   /**
    * Scroll to a section by ID.
-   * Uses smooth scrolling and highlights the target briefly.
+   * Uses instant scrolling and highlights the target briefly.
    * Accounts for the fixed header height to avoid covering the section.
+   * Retries if element not found (DOM may not be ready yet).
+   *
+   * IMPORTANT: The learn page uses a nested scroll container (.learn-content-wrapper)
+   * instead of window scrolling, so we must scroll that container, not the window.
    */
-  async function scrollToSection(sectionId) {
+  async function scrollToSection(sectionId, retryCount = 0) {
+    const MAX_RETRIES = 20;   // More retries for initial page load
+    const RETRY_DELAY = 150;  // Slightly longer delay between retries
+
     // Wait for DOM to update (tick ensures Svelte has rendered)
     await tick();
 
     const element = document.getElementById(sectionId);
     if (element) {
-      // Get the header height to offset the scroll position
-      // The header is fixed, so we need to scroll a bit less to avoid covering the title
-      const header = document.querySelector('header.site-header, .header, header');
-      const headerHeight = header ? header.offsetHeight : 60; // fallback to 60px
-      const extraPadding = 16; // additional breathing room
 
-      // Calculate the target scroll position
-      const elementRect = element.getBoundingClientRect();
-      const absoluteElementTop = elementRect.top + window.pageYOffset;
-      const targetScrollPosition = absoluteElementTop - headerHeight - extraPadding;
+      // Find the scrollable container - the learn page uses .learn-content-wrapper
+      // which has overflow-y: auto, not window scrolling
+      const scrollContainer = document.querySelector('.learn-content-wrapper');
 
-      // Scroll instantly to the target position
-      window.scrollTo({
-        top: targetScrollPosition,
-        behavior: 'instant'
-      });
+      if (scrollContainer) {
+        // Calculate scroll position relative to the container
+        // The element's offsetTop is relative to its offset parent,
+        // but we need the position relative to the scroll container
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+
+        // Current scroll position of the container
+        const currentScroll = scrollContainer.scrollTop;
+
+        // Element's position relative to the container's visible area
+        const elementRelativeTop = elementRect.top - containerRect.top;
+
+        // Target scroll position (with some padding at top)
+        const padding = 24; // breathing room from top
+        const targetScroll = currentScroll + elementRelativeTop - padding;
+
+        // Scroll the container
+        scrollContainer.scrollTo({
+          top: targetScroll,
+          behavior: 'instant'
+        });
+      } else {
+        // Fallback to window scroll if no container found
+        element.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
 
       // Force animation restart by removing and re-adding class
       element.classList.remove('scroll-highlight');
@@ -99,27 +121,50 @@
       setTimeout(() => {
         element.classList.remove('scroll-highlight');
       }, 2500);
-    }
 
-    // Clear the scroll target so it doesn't re-scroll
-    clearScrollTarget();
+      // Only clear the scroll target after successful scroll
+      clearScrollTarget();
+    } else if (retryCount < MAX_RETRIES) {
+      // Element not found yet, retry after a short delay (DOM may still be rendering)
+      setTimeout(() => {
+        scrollToSection(sectionId, retryCount + 1);
+      }, RETRY_DELAY);
+    } else {
+      // Max retries reached, clear target to prevent infinite attempts
+      console.warn(`[LearnArticle] Could not find section #${sectionId} after ${MAX_RETRIES} retries`);
+      clearScrollTarget();
+    }
   }
+
+  /**
+   * Track if component has mounted (DOM is ready for scrolling).
+   */
+  let hasMounted = false;
 
   /**
    * Watch for scrollTarget changes and scroll when set.
-   * This reactive statement runs whenever $scrollTarget changes.
+   * This reactive statement runs whenever $scrollTarget or currentArticle changes.
+   *
+   * Key insight: We need BOTH conditions:
+   * 1. hasMounted - ensures DOM is ready
+   * 2. currentArticle - ensures article content exists
+   * 3. $scrollTarget - the section ID to scroll to
+   *
+   * This handles the race condition when opening a new tab with ?section=xxx
    */
-  $: if ($scrollTarget && currentArticle) {
-    scrollToSection($scrollTarget);
+  $: if (hasMounted && $scrollTarget && currentArticle) {
+    // Use setTimeout to ensure DOM has fully rendered after Svelte's reactive update
+    const targetId = $scrollTarget; // Capture current value
+    setTimeout(() => {
+      scrollToSection(targetId);
+    }, 50); // Small delay to let DOM settle
   }
 
   /**
-   * Also check on mount in case we navigated directly with a scroll target.
+   * Mark component as mounted so reactive scroll can proceed.
    */
   onMount(() => {
-    if ($scrollTarget) {
-      scrollToSection($scrollTarget);
-    }
+    hasMounted = true;
   });
 
   function getNavigation(section, articleId) {
@@ -340,7 +385,7 @@
             <div class="screenshot-container">
               {#if !failedImages.has(section.name)}
                 <img
-                  src="/src/frontend/assets/tutorial-images/{section.name}.png"
+                  src="/tutorial-images/{section.name}.png"
                   alt={section.alt || section.caption || section.name}
                   loading="lazy"
                   on:error={() => handleImageError(section.name)}

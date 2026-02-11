@@ -3,6 +3,7 @@
   import { simulationParams, paramValidation, updateParam, showAdvancedParams, useCustomConstellation, customConstellation } from '../../stores/simulation.js';
   import { debounce } from '../../utils/cache.js';
   import CustomConstellation from './CustomConstellation.svelte';
+  import { docHover } from '../../actions/documentation.js';
 
   export let onCompute = () => {};
   export let disabled = false;
@@ -120,7 +121,7 @@
 
       {#if !$useCustomConstellation}
         <div class="form-row">
-          <div class="form-group inline">
+          <div class="form-group inline" use:docHover={{ key: 'param-M', position: 'bottom' }}>
             <label for="M">{$_('params.modulationSize')}:</label>
             <select
               id="M"
@@ -144,7 +145,7 @@
             {/if}
           </div>
 
-          <div class="form-group inline">
+          <div class="form-group inline" use:docHover={{ key: `param-type-${$simulationParams.typeModulation}`, position: 'bottom' }}>
             <label for="typeModulation">{$_('params.modulationType')}:</label>
             <select
               id="typeModulation"
@@ -182,7 +183,7 @@
       {/if}
 
       <div class="form-row">
-        <div class="form-group inline">
+        <div class="form-group inline" use:docHover={{ key: 'param-SNR', position: 'bottom' }}>
           <label for="SNR">{$_('params.snr')}:</label>
           <div class="input-with-unit">
             <input
@@ -211,7 +212,7 @@
           {/if}
         </div>
 
-        <div class="form-group inline">
+        <div class="form-group inline" use:docHover={{ key: 'param-R', position: 'bottom' }}>
           <label for="R">{$_('params.codeRate')}:</label>
           <input
             type="number"
@@ -231,7 +232,7 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group inline">
+        <div class="form-group inline" use:docHover={{ key: 'param-n', position: 'bottom' }}>
           <label for="n">{$_('params.codeLength')}:</label>
           <input
             type="number"
@@ -257,7 +258,7 @@
         <h4>{$_('params.advanced')}</h4>
 
         <div class="form-row">
-          <div class="form-group inline">
+          <div class="form-group inline" use:docHover={{ key: 'param-N', position: 'bottom' }}>
             <label for="N">{$_('params.quadraturePoints')}:</label>
             <input
               type="number"
@@ -276,7 +277,7 @@
             <small>{$_('params.quadraturePointsHelp')}</small>
           </div>
 
-          <div class="form-group inline">
+          <div class="form-group inline" use:docHover={{ key: 'param-threshold', position: 'bottom' }}>
             <label for="threshold">{$_('params.threshold')}:</label>
             <input
               type="text"
@@ -302,6 +303,7 @@
         type="submit"
         class="button-primary compute-button"
         disabled={!$paramValidation.isValid || disabled}
+        use:docHover={{ key: 'compute', position: 'top' }}
       >
         {disabled ? $_('params.computing') : $_('params.compute')}
       </button>

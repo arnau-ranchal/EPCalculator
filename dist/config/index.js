@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import { createRequire } from 'module';
+// Import version from package.json
+const require = createRequire(import.meta.url);
+const pkg = require('../../package.json');
+export const APP_VERSION = pkg.version;
 // Environment variable schema
 const configSchema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('production'),
@@ -10,8 +15,11 @@ const configSchema = z.object({
     DATABASE_WAL_MODE: z.coerce.boolean().default(true),
     // Security
     ALLOWED_ORIGINS: z.string().transform(str => str.split(',')).default('http://localhost:3000,http://localhost:8000'),
-    RATE_LIMIT_MAX: z.coerce.number().default(100),
+    RATE_LIMIT_MAX: z.coerce.number().default(1000), // Requests per minute per key
     RATE_LIMIT_WINDOW: z.string().default('1 minute'),
+    // API Key Authentication
+    API_KEY_REQUIRED: z.coerce.boolean().default(false), // Set to true to require API keys
+    API_KEY_HEADER: z.string().default('x-api-key'),
     // Computation
     MAX_COMPUTATION_TIME: z.coerce.number().default(30000), // 30 seconds
     MAX_CONCURRENT_COMPUTATIONS: z.coerce.number().default(10),
@@ -23,7 +31,10 @@ const configSchema = z.object({
     ENABLE_USAGE_ANALYTICS: z.coerce.boolean().default(false),
     // WebAssembly
     WASM_MEMORY_LIMIT: z.coerce.number().default(128), // MB
-    ENABLE_WASM_THREADS: z.coerce.boolean().default(false)
+    ENABLE_WASM_THREADS: z.coerce.boolean().default(false),
+    // API Documentation
+    ENABLE_API_DOCS: z.coerce.boolean().default(false), // Enable Swagger UI in production
+    PUBLIC_URL: z.string().optional() // Public URL for API docs (e.g., https://epcalculator.upf.edu)
 });
 // Parse and validate environment variables
 function parseConfig() {
@@ -83,3 +94,4 @@ console.log(`🏫 University: ${universityConfig.name}`);
 console.log(`🚀 Environment: ${config.NODE_ENV}`);
 console.log(`🔧 Port: ${config.PORT}`);
 console.log(`📊 Max Users: ${universityConfig.maxUsers}`);
+//# sourceMappingURL=index.js.map

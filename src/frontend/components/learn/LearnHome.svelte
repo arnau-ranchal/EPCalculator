@@ -8,7 +8,27 @@
    * This is what users see when they visit /#/learn (without a specific article).
    */
 
-  import { navigateToLearn, contentIndex } from '../../stores/learn.js';
+  import { navigateToLearn, contentIndex, expandSection } from '../../stores/learn.js';
+
+  // Map section IDs to their first article
+  const firstArticles = {
+    concepts: 'awgn-channel',
+    tutorials: 'getting-started',
+    api: 'overview'
+  };
+
+  // Navigate to the first article of a section and expand it in the sidebar
+  function goToFirstArticle(sectionId) {
+    // Expand the selected section in the sidebar
+    expandSection(sectionId);
+
+    const firstArticle = firstArticles[sectionId];
+    if (firstArticle) {
+      navigateToLearn(`${sectionId}/${firstArticle}`);
+    } else {
+      navigateToLearn(sectionId);
+    }
+  }
 </script>
 
 <div class="learn-home">
@@ -26,9 +46,38 @@
     {#each Object.entries(contentIndex) as [sectionId, section]}
       <button
         class="section-card"
-        on:click={() => navigateToLearn(sectionId)}
+        on:click={() => goToFirstArticle(sectionId)}
       >
-        <span class="card-icon">{section.icon}</span>
+        <span class="card-icon">
+          {#if sectionId === 'concepts'}
+            <!-- Mathematical Concepts - Ruler/Triangle icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 21L21 3" />
+              <path d="M3 21V11h10v10H3z" />
+              <path d="M7 21v-4" />
+              <path d="M11 21v-2" />
+              <path d="M3 17h4" />
+              <path d="M3 13h2" />
+              <path d="M13 3l8 8" />
+              <path d="M17 3h4v4" />
+            </svg>
+          {:else if sectionId === 'tutorials'}
+            <!-- Tutorials - Book/Guide icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              <path d="M8 7h8" />
+              <path d="M8 11h6" />
+            </svg>
+          {:else if sectionId === 'api'}
+            <!-- API Reference - Code/Terminal icon -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+              <line x1="12" y1="2" x2="12" y2="22" />
+            </svg>
+          {/if}
+        </span>
         <h2 class="card-title">{section.title}</h2>
         <p class="card-description">
           {#if sectionId === 'concepts'}
@@ -43,52 +92,17 @@
       </button>
     {/each}
   </div>
-
-  <!-- Quick links -->
-  <section class="quick-start">
-    <h2>Quick Start</h2>
-    <div class="quick-links">
-      <a
-        href="#/learn/tutorials/getting-started"
-        class="quick-link"
-        on:click|preventDefault={() => navigateToLearn('tutorials/getting-started')}
-      >
-        <span class="quick-icon">🚀</span>
-        <div>
-          <strong>Getting Started</strong>
-          <span>New to EPCalculator? Start here!</span>
-        </div>
-      </a>
-      <a
-        href="#/learn/concepts/error-exponent"
-        class="quick-link"
-        on:click|preventDefault={() => navigateToLearn('concepts/error-exponent')}
-      >
-        <span class="quick-icon">📐</span>
-        <div>
-          <strong>Error Exponents</strong>
-          <span>Learn the core mathematical concept</span>
-        </div>
-      </a>
-      <a
-        href="#/learn/api/overview"
-        class="quick-link"
-        on:click|preventDefault={() => navigateToLearn('api/overview')}
-      >
-        <span class="quick-icon">⚡</span>
-        <div>
-          <strong>API Overview</strong>
-          <span>Integrate EPCalculator into your projects</span>
-        </div>
-      </a>
-    </div>
-  </section>
 </div>
 
 <style>
   .learn-home {
+    width: 100%;
     max-width: 800px;
-    margin: 0 auto;
+    margin: auto;         /* Centers both vertically and horizontally in flex parent */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--spacing-xl, 32px) 0;
   }
 
   /* Welcome header */
@@ -141,9 +155,21 @@
   }
 
   .card-icon {
-    font-size: 2.5rem;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-bottom: var(--spacing-md, 16px);
+  }
+
+  .card-icon svg {
+    width: 48px;
+    height: 48px;
+    stroke: var(--primary-color, #C8102E);
+    transition: stroke 0.2s ease;
+  }
+
+  .section-card:hover .card-icon svg {
+    stroke: var(--primary-color-dark, #a00d25);
   }
 
   .card-title {
@@ -165,69 +191,6 @@
     background: var(--surface-color, #f5f5f5);
     padding: 4px 12px;
     border-radius: 12px;
-  }
-
-  /* Quick start section */
-  .quick-start {
-    background: var(--card-background, white);
-    border: 1px solid var(--border-color, #e5e5e5);
-    border-radius: 12px;
-    padding: var(--spacing-xl, 32px);
-  }
-
-  .quick-start h2 {
-    font-size: var(--font-size-lg, 1.125rem);
-    color: var(--text-color, #333);
-    margin: 0 0 var(--spacing-lg, 24px) 0;
-  }
-
-  .quick-links {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md, 16px);
-  }
-
-  .quick-link {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md, 16px);
-    padding: var(--spacing-md, 16px);
-    background: var(--surface-color, #f5f5f5);
-    border-radius: 8px;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.2s ease;
-  }
-
-  .quick-link:hover {
-    background: color-mix(in srgb, var(--primary-color, #C8102E) 8%, var(--surface-color, #f5f5f5));
-  }
-
-  .quick-icon {
-    font-size: 1.5rem;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--card-background, white);
-    border-radius: 8px;
-  }
-
-  .quick-link div {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .quick-link strong {
-    color: var(--text-color, #333);
-    font-size: var(--font-size-base, 1rem);
-  }
-
-  .quick-link span {
-    color: var(--text-color-secondary, #666);
-    font-size: var(--font-size-sm, 0.875rem);
   }
 
   /* Responsive */

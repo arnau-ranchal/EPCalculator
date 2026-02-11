@@ -68,59 +68,275 @@ async function apiRequest<T>(
   }
 }
 
-// Single computation
+// =============================================================================
+// UNIFIED API TYPES
+// =============================================================================
+
+/** Polymorphic parameter value (single, list, or range) */
+type ParameterValue = number | number[] | { min: number; max: number; step: number } | { min: number; max: number; points: number }
+
+/** Output metrics available from the API */
+type OutputMetric = 'error_probability' | 'error_exponent' | 'optimal_rho' | 'mutual_information' | 'cutoff_rate' | 'critical_rate'
+
+/** Unified API request for standard modulation */
+interface UnifiedStandardRequest {
+  M: ParameterValue
+  typeModulation: 'PAM' | 'PSK' | 'QAM'
+  SNR: ParameterValue
+  R: ParameterValue
+  N: ParameterValue
+  n: ParameterValue
+  threshold: ParameterValue
+  snrUnit?: 'dB' | 'linear'
+  metrics?: OutputMetric[]
+  format?: 'flat' | 'matrix'
+}
+
+/** Unified API request for custom constellation */
+interface UnifiedCustomRequest {
+  customConstellation: {
+    points: Array<{ real: number; imag: number; prob: number }>
+  }
+  SNR: ParameterValue
+  R: ParameterValue
+  N: ParameterValue
+  n: ParameterValue
+  threshold: ParameterValue
+  snrUnit?: 'dB' | 'linear'
+  metrics?: OutputMetric[]
+  format?: 'flat' | 'matrix'
+}
+
+/** Axis info in unified response */
+interface AxisInfo {
+  name: string
+  values: number[]
+  unit?: string
+}
+
+/** Result point in flat format */
+interface ResultPoint {
+  params: Record<string, number>
+  metrics: Partial<Record<OutputMetric, number>>
+  cached: boolean
+  computation_time_ms: number
+}
+
+/** Unified API response */
+interface UnifiedResponse {
+  format: 'flat' | 'matrix'
+  axes: AxisInfo[]
+  results: ResultPoint[] | any[][] // flat or matrix
+  meta: {
+    total_points: number
+    cached_points: number
+    total_computation_time_ms: number
+    incomplete?: boolean
+    requested_points?: number
+  }
+}
+
+// =============================================================================
+// UNIFIED API FUNCTIONS
+// =============================================================================
+
+/**
+ * Execute unified computation
+ * Works for both single-point and multi-point (range/sweep) computations
+ */
+export async function computeUnified(
+  parameters: UnifiedStandardRequest | UnifiedCustomRequest
+): Promise<UnifiedResponse> {
+  const isCustom = 'customConstellation' in parameters
+  const endpoint = isCustom ? '/compute/custom' : '/compute/standard'
+
+  const result = await apiRequest<UnifiedResponse>(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(parameters)
+  })
+
+  sessionStore.incrementComputations()
+  return result
+}
+
+/**
+ * Single computation (wraps unified API)
+ */
 export async function computeSingle(
   parameters: ComputationParameters
 ): Promise<ComputationResult> {
-  const result = await apiRequest<ComputationResult>('/compute/single/standard', {
+  // Build unified request with single values
+  const unifiedParams: UnifiedStandardRequest = {
+    M: parameters.M,
+    typeModulation: parameters.typeModulation as 'PAM' | 'PSK' | 'QAM',
+    SNR: parameters.SNR,
+    R: parameters.R,
+    N: parameters.N,
+    n: parameters.n,
+    threshold: parameters.threshold,
+    metrics: ['error_probability', 'error_exponent', 'optimal_rho'],
+    format: 'flat'
+  }
+
+  const response = await apiRequest<UnifiedResponse>('/compute/standard', {
     method: 'POST',
-    body: JSON.stringify(parameters)
+    body: JSON.stringify(unifiedParams)
   })
 
-  // Update computation count
   sessionStore.incrementComputations()
 
-  return result
+  // Extract single result
+  if (response.results && (response.results as ResultPoint[]).length > 0) {
+    const r = (response.results as ResultPoint[])[0]
+    return {
+      error_probability: r.metrics.error_probability!,
+      error_exponent: r.metrics.error_exponent!,
+      optimal_rho: r.metrics.optimal_rho!,
+      computation_time_ms: r.computation_time_ms,
+      cached: r.cached
+    }
+  }
+
+  throw new Error('No results returned from computation')
 }
 
-// Batch computation
+/**
+ * Batch computation (wraps unified API with list parameters)
+ * Note: The unified API handles batching through parameter expansion
+ */
 export async function computeBatch(
   parameters: ComputationParameters[]
 ): Promise<{ results: ComputationResult[]; total_computation_time_ms: number }> {
-  const result = await apiRequest<{
-    results: ComputationResult[]
-    total_computation_time_ms: number
-  }>('/compute/batch/standard', {
-    method: 'POST',
-    body: JSON.stringify({ parameters })
-  })
+  // For true batch of different configurations, we need multiple calls
+  // or we can use the unified API if parameters follow a pattern
+  const results: ComputationResult[] = []
+  let totalTime = 0
 
-  // Update computation count
-  for (let i = 0; i < parameters.length; i++) {
-    sessionStore.incrementComputations()
+  for (const params of parameters) {
+    const result = await computeSingle(params)
+    results.push(result)
+    totalTime += result.computation_time_ms
   }
 
-  return result
+  return { results, total_computation_time_ms: totalTime }
 }
 
-// Plot generation (range computation)
+/**
+ * Plot generation using unified API
+ */
 export async function generatePlot(
   parameters: PlotParameters
 ): Promise<PlotResult> {
-  return await apiRequest<PlotResult>('/compute/range/standard', {
+  // Convert to unified format with polymorphic x-axis
+  const xVar = parameters.x as keyof UnifiedStandardRequest
+  const unifiedParams: UnifiedStandardRequest = {
+    M: parameters.M,
+    typeModulation: parameters.typeModulation as 'PAM' | 'PSK' | 'QAM',
+    SNR: parameters.SNR,
+    R: parameters.R,
+    N: parameters.N,
+    n: parameters.n,
+    threshold: parameters.threshold,
+    snrUnit: parameters.snrUnit as 'dB' | 'linear' || 'dB',
+    metrics: [parameters.y as OutputMetric],
+    format: 'flat'
+  }
+
+  // Override x-axis parameter with range
+  ;(unifiedParams as any)[xVar] = {
+    min: parameters.x_range[0],
+    max: parameters.x_range[1],
+    points: parameters.points
+  }
+
+  const response = await apiRequest<UnifiedResponse>('/compute/standard', {
     method: 'POST',
-    body: JSON.stringify(parameters)
+    body: JSON.stringify(unifiedParams)
   })
+
+  // Convert to old format
+  const xAxis = response.axes.find(a => a.name === xVar)
+  const results = response.results as ResultPoint[]
+
+  return {
+    x_values: xAxis?.values || [],
+    y_values: results.map(r => r.metrics[parameters.y as OutputMetric]!),
+    computation_time_ms: response.meta.total_computation_time_ms,
+    cached: response.meta.cached_points === response.meta.total_points
+  }
 }
 
-// Contour plot generation
+/**
+ * Contour plot generation using unified API
+ */
 export async function generateContour(
   parameters: ContourParameters
 ): Promise<ContourResult> {
-  return await apiRequest<ContourResult>('/compute/contour/standard', {
+  const x1Var = parameters.x1 as keyof UnifiedStandardRequest
+  const x2Var = parameters.x2 as keyof UnifiedStandardRequest
+
+  const unifiedParams: UnifiedStandardRequest = {
+    M: parameters.M,
+    typeModulation: parameters.typeModulation as 'PAM' | 'PSK' | 'QAM',
+    SNR: parameters.SNR,
+    R: parameters.R,
+    N: parameters.N,
+    n: parameters.n,
+    threshold: parameters.threshold,
+    snrUnit: parameters.snrUnit as 'dB' | 'linear' || 'dB',
+    metrics: [parameters.y as OutputMetric],
+    format: 'matrix'
+  }
+
+  // Override both axes with ranges
+  ;(unifiedParams as any)[x1Var] = {
+    min: parameters.x1_range[0],
+    max: parameters.x1_range[1],
+    points: parameters.points1
+  }
+  ;(unifiedParams as any)[x2Var] = {
+    min: parameters.x2_range[0],
+    max: parameters.x2_range[1],
+    points: parameters.points2
+  }
+
+  const response = await apiRequest<UnifiedResponse>('/compute/standard', {
     method: 'POST',
-    body: JSON.stringify(parameters)
+    body: JSON.stringify(unifiedParams)
   })
+
+  // Convert to old format
+  const x1Axis = response.axes.find(a => a.name === x1Var)
+  const x2Axis = response.axes.find(a => a.name === x2Var)
+  const metric = parameters.y as OutputMetric
+
+  // Extract z matrix
+  let zMatrix: number[][]
+  if (response.format === 'matrix') {
+    zMatrix = (response.results as any[][]).map(row =>
+      row.map(cell => cell[metric])
+    )
+  } else {
+    // Reconstruct from flat
+    const rows = x1Axis?.values.length || 0
+    const cols = x2Axis?.values.length || 0
+    zMatrix = []
+    const flat = response.results as ResultPoint[]
+    for (let i = 0; i < rows; i++) {
+      const row: number[] = []
+      for (let j = 0; j < cols; j++) {
+        row.push(flat[i * cols + j]?.metrics[metric] ?? 0)
+      }
+      zMatrix.push(row)
+    }
+  }
+
+  return {
+    x1_values: x1Axis?.values || [],
+    x2_values: x2Axis?.values || [],
+    z_matrix: zMatrix,
+    computation_time_ms: response.meta.total_computation_time_ms
+  }
 }
 
 // Legacy endpoint compatibility

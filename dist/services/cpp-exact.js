@@ -70,17 +70,20 @@ export class EPCalculatorCPP {
             throw new Error('C++ library not available - FFI loading failed');
         }
         try {
-            // Allocate output array for results [Pe, E0, rho] - CHANGED: double size (8 bytes)
-            const results = Buffer.alloc(3 * ref.types.double.size);
+            // Allocate output array for results [Pe, E0, rho, mutual_info, cutoff_rate, critical_rate] - 6 doubles
+            const results = Buffer.alloc(6 * ref.types.double.size);
             // Call the exact C++ implementation
             const resultPtr = cppLib.exponents(M, typeModulation, SNR, R, N, n, threshold, distribution, shaping_param, results);
             if (resultPtr.isNull()) {
                 throw new Error('C++ computation returned null pointer');
             }
-            // Extract results from the output array - CHANGED: Read as double
+            // Extract results from the output array - 6 doubles at 8-byte offsets
             const Pe = results.readDoubleLE(0);
-            let errorExponent = results.readDoubleLE(8); // Offset 8 (was 4) - use 'let' for clamping
-            const optimalRho = results.readDoubleLE(16); // Offset 16 (was 8)
+            let errorExponent = results.readDoubleLE(8); // Offset 8 - use 'let' for clamping
+            const optimalRho = results.readDoubleLE(16); // Offset 16
+            const mutualInformation = results.readDoubleLE(24); // Offset 24 - I(X;Y) = E0'(0)
+            const cutoffRate = results.readDoubleLE(32); // Offset 32 - R0 = E0(1)
+            const criticalRate = results.readDoubleLE(40); // Offset 40 - R_crit = E0'(1)
             // Check for error marker (-1.0 indicates overflow/numerical error)
             // Only trigger on actual error markers (< -0.5), not on tiny negative values from floating point noise
             if (errorExponent < -0.5) {
@@ -103,6 +106,9 @@ export class EPCalculatorCPP {
                 error_probability: Pe,
                 error_exponent: errorExponent,
                 optimal_rho: optimalRho,
+                mutual_information: mutualInformation,
+                cutoff_rate: cutoffRate,
+                critical_rate: criticalRate,
                 success: true,
                 computation_method: 'cpp_exact'
             };
@@ -141,17 +147,20 @@ export class EPCalculatorCPP {
                 imagParts.writeDoubleLE(points[i].imag, i * ref.types.double.size);
                 probabilities.writeDoubleLE(points[i].prob, i * ref.types.double.size);
             }
-            // Allocate output array
-            const results = Buffer.alloc(3 * ref.types.double.size);
+            // Allocate output array - 6 doubles: [Pe, E0, rho, mutual_info, cutoff_rate, critical_rate]
+            const results = Buffer.alloc(6 * ref.types.double.size);
             // Call the C++ implementation
             const resultPtr = cppLib.exponents_custom(realParts, imagParts, probabilities, numPoints, SNR, R, N, n, threshold, results);
             if (resultPtr.isNull()) {
                 throw new Error('C++ computation returned null pointer');
             }
-            // Extract results
+            // Extract results - 6 doubles at 8-byte offsets
             const Pe = results.readDoubleLE(0);
             let errorExponent = results.readDoubleLE(8);
             const optimalRho = results.readDoubleLE(16);
+            const mutualInformation = results.readDoubleLE(24); // I(X;Y) = E0'(0)
+            const cutoffRate = results.readDoubleLE(32); // R0 = E0(1)
+            const criticalRate = results.readDoubleLE(40); // R_crit = E0'(1)
             // Check for error marker
             if (errorExponent < -0.5) {
                 throw new Error(`Numerical overflow detected in C++ computation (SNR=${SNR}, N=${N})`);
@@ -171,6 +180,9 @@ export class EPCalculatorCPP {
                 error_probability: Pe,
                 error_exponent: errorExponent,
                 optimal_rho: optimalRho,
+                mutual_information: mutualInformation,
+                cutoff_rate: cutoffRate,
+                critical_rate: criticalRate,
                 success: true,
                 computation_method: 'cpp_custom'
             };
@@ -228,3 +240,4 @@ if (cppCalculator.isReady()) {
 else {
     console.log('⚠️ C++ library not available - will fall back to JavaScript approximations');
 }
+//# sourceMappingURL=cpp-exact.js.map

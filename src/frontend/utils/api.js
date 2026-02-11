@@ -102,16 +102,72 @@ async function apiRequest(endpoint, options = {}) {
   }
 }
 
-// Simulation API functions
+// =============================================================================
+// UNIFIED API FUNCTIONS
+// =============================================================================
+// The new unified API uses polymorphic parameters:
+// - Single value: `SNR: 10`
+// - List: `SNR: [5, 10, 15]`
+// - Range with step: `SNR: { min: 0, max: 20, step: 2 }`
+// - Range with points: `SNR: { min: 0, max: 20, points: 11 }`
+
+/**
+ * Execute computation using unified API
+ * Handles both single-point and multi-point (range/sweep) computations
+ */
+export async function computeUnified(params, abortSignal = null) {
+  const isCustom = params.customConstellation &&
+                   params.customConstellation.points &&
+                   params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/custom' : '/compute/standard';
+
+  const options = {
+    method: 'POST',
+    body: JSON.stringify(params)
+  };
+
+  if (abortSignal) {
+    options.signal = abortSignal;
+  }
+
+  return apiRequest(endpoint, options);
+}
+
+/**
+ * Single-point computation (simulation panel)
+ * Wraps unified API and extracts the single result point
+ */
 export async function computeExponents(params) {
   // Determine endpoint based on whether custom constellation is used
   const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
-  const endpoint = isCustom ? '/compute/single/custom' : '/compute/single/standard';
+  const endpoint = isCustom ? '/compute/custom' : '/compute/standard';
 
-  return apiRequest(endpoint, {
+  // For single computation, all params are single values
+  // Request all standard metrics
+  const unifiedParams = {
+    ...params,
+    metrics: ['error_probability', 'error_exponent', 'optimal_rho'],
+    format: 'flat'
+  };
+
+  const response = await apiRequest(endpoint, {
     method: 'POST',
-    body: JSON.stringify(params)
+    body: JSON.stringify(unifiedParams)
   });
+
+  // Extract single result from unified response
+  if (response.results && response.results.length > 0) {
+    const result = response.results[0];
+    return {
+      error_probability: result.metrics.error_probability,
+      error_exponent: result.metrics.error_exponent,
+      optimal_rho: result.metrics.optimal_rho,
+      computation_time_ms: result.computation_time_ms,
+      cached: result.cached
+    };
+  }
+
+  throw new Error('No results returned from computation');
 }
 
 export async function computeExponentsLegacy(params) {
@@ -125,66 +181,305 @@ export async function computeExponentsLegacy(params) {
   return apiRequest(`/exponents?${queryParams.toString()}`);
 }
 
-// Plotting API functions with cancellation support
+// =============================================================================
+// PLOTTING API FUNCTIONS (using unified API)
+// =============================================================================
+
+/**
+ * Get plot data (line plot) using unified API
+ * Converts old params format to unified polymorphic format
+ */
 export async function getPlotData(params, abortSignal = null) {
-  // Determine endpoint based on whether custom constellation is used
-  const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
-  const endpoint = isCustom ? '/compute/range/custom' : '/compute/range/standard';
+  const isCustom = params.customConstellation &&
+                   params.customConstellation.points &&
+                   params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/custom' : '/compute/standard';
+
+  // Convert old format to unified format with polymorphic x-axis parameter
+  const unifiedParams = convertToUnifiedPlotParams(params);
 
   const options = {
     method: 'POST',
-    body: JSON.stringify(params)
+    body: JSON.stringify(unifiedParams)
   };
 
-  // Add abort signal if provided
   if (abortSignal) {
     options.signal = abortSignal;
   }
 
-  return apiRequest(endpoint, options);
+  const response = await apiRequest(endpoint, options);
+
+  // Convert unified response back to old format for compatibility
+  return convertFromUnifiedPlotResponse(response, params);
 }
 
+/**
+ * Get contour/surface plot data using unified API
+ * Converts old params format to unified polymorphic format with 2 axes
+ */
 export async function getContourData(params, abortSignal = null) {
-  // Determine endpoint based on whether custom constellation is used
-  const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
-  const endpoint = isCustom ? '/compute/contour/custom' : '/compute/contour/standard';
+  const isCustom = params.customConstellation &&
+                   params.customConstellation.points &&
+                   params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/custom' : '/compute/standard';
+
+  // Convert old format to unified format with 2 polymorphic axes
+  const unifiedParams = convertToUnifiedContourParams(params);
 
   const options = {
     method: 'POST',
-    body: JSON.stringify(params)
+    body: JSON.stringify(unifiedParams)
   };
 
-  // Add abort signal if provided
   if (abortSignal) {
     options.signal = abortSignal;
   }
 
-  return apiRequest(endpoint, options);
+  const response = await apiRequest(endpoint, options);
+
+  // Convert unified response back to old contour format
+  return convertFromUnifiedContourResponse(response, params);
 }
 
-// Get table data with all Y values (y='all' mode)
+/**
+ * Get table data with all metrics using unified API
+ */
 export async function getRangeAllData(params, abortSignal = null) {
-  // Determine endpoint based on whether custom constellation is used
-  const isCustom = params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0;
-  const endpoint = isCustom ? '/compute/range/custom' : '/compute/range/standard';
+  const isCustom = params.customConstellation &&
+                   params.customConstellation.points &&
+                   params.customConstellation.points.length > 0;
+  const endpoint = isCustom ? '/compute/custom' : '/compute/standard';
 
-  // Set y='all' to get all Y values
-  const requestParams = {
-    ...params,
-    y: 'all'
-  };
+  // Convert to unified format requesting all metrics
+  const unifiedParams = convertToUnifiedPlotParams(params, true); // true = all metrics
 
   const options = {
     method: 'POST',
-    body: JSON.stringify(requestParams)
+    body: JSON.stringify(unifiedParams)
   };
 
-  // Add abort signal if provided
   if (abortSignal) {
     options.signal = abortSignal;
   }
 
-  return apiRequest(endpoint, options);
+  const response = await apiRequest(endpoint, options);
+
+  // Convert unified response to table format
+  return convertFromUnifiedTableResponse(response, params);
+}
+
+// =============================================================================
+// UNIFIED API CONVERSION HELPERS
+// =============================================================================
+
+/**
+ * Convert old plot params to unified polymorphic format
+ */
+function convertToUnifiedPlotParams(params, allMetrics = false) {
+  const xVar = params.x;
+  const [xMin, xMax] = params.x_range;
+  const points = params.points;
+
+  // Build base params with single values for non-x-axis parameters
+  const baseParams = {
+    M: params.M,
+    typeModulation: params.typeModulation,
+    SNR: params.SNR,
+    R: params.R,
+    N: params.N,
+    n: params.n,
+    threshold: params.threshold,
+    snrUnit: params.snrUnit || 'dB',
+    format: 'flat'
+  };
+
+  // Override the x-axis parameter with a range
+  baseParams[xVar] = { min: xMin, max: xMax, points: points };
+
+  // Set metrics based on requested y variable or all
+  if (allMetrics) {
+    baseParams.metrics = [
+      'error_probability',
+      'error_exponent',
+      'optimal_rho',
+      'mutual_information',
+      'cutoff_rate',
+      'critical_rate'
+    ];
+  } else {
+    // Map y variable to metric name
+    const yVar = params.y;
+    const metricMap = {
+      'error_probability': 'error_probability',
+      'error_exponent': 'error_exponent',
+      'optimal_rho': 'optimal_rho',
+      'rho': 'optimal_rho',
+      'mutual_information': 'mutual_information',
+      'cutoff_rate': 'cutoff_rate',
+      'critical_rate': 'critical_rate'
+    };
+    baseParams.metrics = [metricMap[yVar] || yVar];
+  }
+
+  // Handle custom constellation
+  if (params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0) {
+    baseParams.customConstellation = params.customConstellation;
+    // Remove M and typeModulation for custom
+    delete baseParams.M;
+    delete baseParams.typeModulation;
+  }
+
+  return baseParams;
+}
+
+/**
+ * Convert old contour params to unified polymorphic format with 2 axes
+ */
+function convertToUnifiedContourParams(params) {
+  const x1Var = params.x1;
+  const x2Var = params.x2;
+  const [x1Min, x1Max] = params.x1_range;
+  const [x2Min, x2Max] = params.x2_range;
+  const points1 = params.points1;
+  const points2 = params.points2;
+
+  // Build base params with single values
+  const baseParams = {
+    M: params.M,
+    typeModulation: params.typeModulation,
+    SNR: params.SNR,
+    R: params.R,
+    N: params.N,
+    n: params.n,
+    threshold: params.threshold,
+    snrUnit: params.snrUnit || 'dB',
+    format: 'matrix' // Use matrix format for contour data
+  };
+
+  // Override the two axis parameters with ranges
+  baseParams[x1Var] = { min: x1Min, max: x1Max, points: points1 };
+  baseParams[x2Var] = { min: x2Min, max: x2Max, points: points2 };
+
+  // Map y variable to metric
+  const yVar = params.y;
+  const metricMap = {
+    'error_probability': 'error_probability',
+    'error_exponent': 'error_exponent',
+    'optimal_rho': 'optimal_rho',
+    'rho': 'optimal_rho',
+    'mutual_information': 'mutual_information',
+    'cutoff_rate': 'cutoff_rate',
+    'critical_rate': 'critical_rate'
+  };
+  baseParams.metrics = [metricMap[yVar] || yVar];
+
+  // Handle custom constellation
+  if (params.customConstellation && params.customConstellation.points && params.customConstellation.points.length > 0) {
+    baseParams.customConstellation = params.customConstellation;
+    delete baseParams.M;
+    delete baseParams.typeModulation;
+  }
+
+  return baseParams;
+}
+
+/**
+ * Convert unified response back to old plot format
+ */
+function convertFromUnifiedPlotResponse(response, originalParams) {
+  const xVar = originalParams.x;
+  const yMetric = originalParams.y;
+
+  // Find the x-axis in response
+  const xAxis = response.axes.find(a => a.name === xVar);
+  const xValues = xAxis ? xAxis.values : [];
+
+  // Extract y values from results
+  const metricKey = yMetric === 'rho' ? 'optimal_rho' : yMetric;
+  const yValues = response.results.map(r => r.metrics[metricKey]);
+
+  return {
+    x_values: xValues,
+    y_values: yValues,
+    computation_time_ms: response.meta.total_computation_time_ms,
+    cached: response.meta.cached_points === response.meta.total_points
+  };
+}
+
+/**
+ * Convert unified response back to old contour format
+ */
+function convertFromUnifiedContourResponse(response, originalParams) {
+  const x1Var = originalParams.x1;
+  const x2Var = originalParams.x2;
+  const yMetric = originalParams.y;
+
+  // Find axes in response
+  const x1Axis = response.axes.find(a => a.name === x1Var);
+  const x2Axis = response.axes.find(a => a.name === x2Var);
+
+  const x1Values = x1Axis ? x1Axis.values : [];
+  const x2Values = x2Axis ? x2Axis.values : [];
+
+  // Extract z matrix from results (matrix format)
+  const metricKey = yMetric === 'rho' ? 'optimal_rho' : yMetric;
+
+  // For matrix format, results is a 2D array of metric objects
+  let zMatrix;
+  if (response.format === 'matrix' && Array.isArray(response.results)) {
+    zMatrix = response.results.map(row =>
+      Array.isArray(row)
+        ? row.map(cell => cell[metricKey])
+        : [row[metricKey]] // Single row case
+    );
+  } else {
+    // Fall back to flat format - reconstruct matrix
+    const rows = x1Values.length;
+    const cols = x2Values.length;
+    zMatrix = [];
+    for (let i = 0; i < rows; i++) {
+      const row = [];
+      for (let j = 0; j < cols; j++) {
+        const flatIdx = i * cols + j;
+        if (flatIdx < response.results.length) {
+          row.push(response.results[flatIdx].metrics[metricKey]);
+        }
+      }
+      zMatrix.push(row);
+    }
+  }
+
+  return {
+    x1_values: x1Values,
+    x2_values: x2Values,
+    z_matrix: zMatrix,
+    computation_time_ms: response.meta.total_computation_time_ms
+  };
+}
+
+/**
+ * Convert unified response to table format (all metrics)
+ */
+function convertFromUnifiedTableResponse(response, originalParams) {
+  const xVar = originalParams.x;
+  const xAxis = response.axes.find(a => a.name === xVar);
+  const xValues = xAxis ? xAxis.values : [];
+
+  // Build results array with all metrics per point
+  const results = response.results.map(r => ({
+    error_probability: r.metrics.error_probability,
+    error_exponent: r.metrics.error_exponent,
+    optimal_rho: r.metrics.optimal_rho,
+    mutual_information: r.metrics.mutual_information,
+    cutoff_rate: r.metrics.cutoff_rate,
+    critical_rate: r.metrics.critical_rate
+  }));
+
+  return {
+    x_values: xValues,
+    results: results,
+    computation_time_ms: response.meta.total_computation_time_ms
+  };
 }
 
 // Health check
@@ -215,18 +510,28 @@ export async function cancelSession() {
   }
 }
 
-// Parameter mapping for API compatibility
+// =============================================================================
+// PARAMETER MAPPING FOR API COMPATIBILITY
+// =============================================================================
+
+/**
+ * Map simulation parameters for unified API
+ * NOTE: The unified API now handles SNR unit conversion internally via snrUnit parameter
+ */
 export function mapSimulationParams(params, customConstellation = null) {
+  // Base parameters - SNR stays in its original unit (dB or linear)
+  // The backend handles conversion based on snrUnit
   const baseParams = {
     SNR: params.SNR,
     R: params.R,
     N: params.N,
     n: params.n,
-    threshold: params.threshold
+    threshold: params.threshold,
+    snrUnit: params.SNRUnit || 'dB'  // Pass the unit so backend can convert
   };
 
-  // If custom constellation is provided, include it
-  if (customConstellation && customConstellation.points) {
+  // If custom constellation is provided, use /compute/custom endpoint format
+  if (customConstellation && customConstellation.points && customConstellation.points.length > 0) {
     return {
       ...baseParams,
       customConstellation: {
@@ -235,33 +540,22 @@ export function mapSimulationParams(params, customConstellation = null) {
     };
   }
 
-  // Otherwise, include standard modulation parameters
+  // Otherwise, use /compute/standard endpoint format
   return {
     ...baseParams,
     M: params.M,
-    typeModulation: params.typeModulation,
-    distribution: params.distribution || 'uniform',
-    shaping_param: params.shaping_param || 0
+    typeModulation: params.typeModulation
   };
 }
 
+/**
+ * Map plot parameters for unified API
+ * Creates the intermediate format expected by getPlotData/getContourData
+ * which then gets converted to unified polymorphic format internally
+ */
 export function mapPlotParams(plotParams, simulationParams, customConstellation = null) {
   let xVar = plotParams.xVar;
   let xVar2 = plotParams.xVar2;
-
-  // Convert SNR to linear for backend (always send it even if on an axis)
-  // Backend will override it for the varying axis parameter, but we need it as a default
-  // Backend always expects linear SNR values
-  let snrValue = undefined;
-  if (simulationParams.SNR !== undefined) {
-    if (simulationParams.SNRUnit === 'dB') {
-      // Convert dB to linear: linear = 10^(dB/10)
-      snrValue = Math.pow(10, simulationParams.SNR / 10);
-    } else {
-      // Already linear
-      snrValue = simulationParams.SNR;
-    }
-  }
 
   // Ensure code length (n) range values are integers when n is on an axis
   let xRange = plotParams.xRange;
@@ -274,17 +568,19 @@ export function mapPlotParams(plotParams, simulationParams, customConstellation 
     xRange2 = [Math.round(plotParams.xRange2[0]), Math.round(plotParams.xRange2[1])];
   }
 
+  // Build params in intermediate format that convertToUnifiedPlotParams expects
+  // NOTE: SNR is now passed in its display unit - backend converts via snrUnit
   const baseParams = {
     y: plotParams.yVar,
     x: xVar,
     x_range: xRange,
     points: plotParams.points,
-    snrUnit: plotParams.snrUnit || 'dB',  // Pass SNR unit to backend
+    snrUnit: plotParams.snrUnit || 'dB',
 
-    // Fixed parameters from simulation (SNR is sent even if on axis - backend will override it)
+    // Fixed parameters from simulation
     M: simulationParams.M,
     typeModulation: simulationParams.typeModulation,
-    SNR: snrValue,
+    SNR: simulationParams.SNR,  // Keep in display unit (dB or linear)
     R: simulationParams.R,
     N: simulationParams.N,
     n: simulationParams.n,

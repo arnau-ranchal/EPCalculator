@@ -421,6 +421,52 @@ function areYVarsCompatible(yVar1, yVar2) {
   return false;
 }
 
+// =============================================================================
+// SNR UNIT CONVERSION HELPERS
+// =============================================================================
+
+/**
+ * Convert SNR value from dB to linear
+ * linear = 10^(dB/10)
+ */
+function snrDbToLinear(dB) {
+  return Math.pow(10, dB / 10);
+}
+
+/**
+ * Convert SNR value from linear to dB
+ * dB = 10 * log10(linear)
+ */
+function snrLinearToDb(linear) {
+  if (linear <= 0) return -Infinity;
+  return 10 * Math.log10(linear);
+}
+
+/**
+ * Convert plot data x-values from one SNR unit to another
+ * Returns a new data array with converted x-values
+ */
+function convertPlotDataSnrUnit(data, fromUnit, toUnit) {
+  if (fromUnit === toUnit) return data;
+
+  const converter = fromUnit === 'dB' ? snrDbToLinear : snrLinearToDb;
+
+  return data.map(point => ({
+    ...point,
+    x: converter(point.x)
+  }));
+}
+
+/**
+ * Convert an xRange array from one SNR unit to another
+ */
+function convertXRangeSnrUnit(xRange, fromUnit, toUnit) {
+  if (!xRange || xRange.length !== 2 || fromUnit === toUnit) return xRange;
+
+  const converter = fromUnit === 'dB' ? snrDbToLinear : snrLinearToDb;
+  return [converter(xRange[0]), converter(xRange[1])];
+}
+
 // Check if all simulation and plot parameters match between two plots
 // (excluding xRange, points which can differ for range extension)
 function checkAllParamsMatch(existingPlot, newPlotData) {
@@ -1108,13 +1154,55 @@ export function confirmMerge() {
   const { newPlotData, existingPlot, mergeType, relationship } = pending;
   let targetPlotId = existingPlot.plotId;
 
+  // ==========================================================================
+  // SNR UNIT CONVERSION: Convert new plot data to match existing plot's unit
+  // ==========================================================================
+  let convertedNewPlotData = newPlotData;
+
+  const existingXVar = existingPlot.plotParams?.xVar || existingPlot.metadata?.xVar;
+  const newXVar = newPlotData.plotParams?.xVar || newPlotData.metadata?.xVar;
+
+  // Only convert if x-axis is SNR and units differ
+  if (existingXVar === 'SNR' && newXVar === 'SNR') {
+    const existingSnrUnit = existingPlot.plotParams?.snrUnit || 'dB';
+    const newSnrUnit = newPlotData.plotParams?.snrUnit || 'dB';
+
+    if (existingSnrUnit !== newSnrUnit) {
+      console.log(`[confirmMerge] Converting SNR x-values from ${newSnrUnit} to ${existingSnrUnit}`);
+
+      // Convert the data points' x-values
+      const convertedData = convertPlotDataSnrUnit(newPlotData.data, newSnrUnit, existingSnrUnit);
+
+      // Convert the xRange
+      const convertedXRange = convertXRangeSnrUnit(
+        newPlotData.plotParams?.xRange,
+        newSnrUnit,
+        existingSnrUnit
+      );
+
+      // Create converted plot data object
+      convertedNewPlotData = {
+        ...newPlotData,
+        data: convertedData,
+        plotParams: {
+          ...newPlotData.plotParams,
+          xRange: convertedXRange,
+          snrUnit: existingSnrUnit  // Update unit to match existing
+        }
+      };
+
+      console.log(`[confirmMerge] Converted ${newPlotData.data.length} data points`);
+    }
+  }
+  // ==========================================================================
+
   activePlots.update(plots => {
     return plots.map(plot => {
       if (plot.plotId !== existingPlot.plotId) return plot;
 
       if (mergeType === 'exactMatch' || mergeType === 'rangeExtension') {
-        // Merge data points
-        const mergedData = mergeRangeData(plot.data, newPlotData.data);
+        // Merge data points (using converted data)
+        const mergedData = mergeRangeData(plot.data, convertedNewPlotData.data);
         const mergedPlotData = { ...plot, data: mergedData };
         const mergedUseLogY = shouldUseLogY(mergedPlotData);
         const mergedRecommendedScale = mergedUseLogY ? 'logY' : 'linear';
@@ -1147,16 +1235,16 @@ export function confirmMerge() {
           simulationParams: plot.simulationParams,
           isMultiSeries: plot.isMultiSeries
         });
-        console.log('[confirmMerge] newPlotData:', {
-          plotParams: newPlotData.plotParams,
-          simulationParams: newPlotData.simulationParams
+        console.log('[confirmMerge] convertedNewPlotData:', {
+          plotParams: convertedNewPlotData.plotParams,
+          simulationParams: convertedNewPlotData.simulationParams
         });
-        const allParamsMatch = checkAllParamsMatch(plot, newPlotData);
+        const allParamsMatch = checkAllParamsMatch(plot, convertedNewPlotData);
         console.log('[confirmMerge] allParamsMatch:', allParamsMatch);
 
         if (allParamsMatch && !plot.isMultiSeries) {
           // All params match - merge as single series (like rangeExtension)
-          const mergedData = mergeRangeData(plot.data, newPlotData.data);
+          const mergedData = mergeRangeData(plot.data, convertedNewPlotData.data);
           const mergedPlotData = { ...plot, data: mergedData };
           const mergedUseLogY = shouldUseLogY(mergedPlotData);
           const mergedRecommendedScale = mergedUseLogY ? 'logY' : 'linear';
@@ -1166,7 +1254,7 @@ export function confirmMerge() {
 
           // Update xRange to cover both ranges
           const existingXRange = plot.plotParams?.xRange || [];
-          const newXRange = newPlotData.plotParams?.xRange || [];
+          const newXRange = convertedNewPlotData.plotParams?.xRange || [];
           let mergedXRange = existingXRange;
           if (existingXRange.length === 2 && newXRange.length === 2) {
             mergedXRange = [
@@ -1191,7 +1279,7 @@ export function confirmMerge() {
         // If so, merge into that series instead of adding a new one
         if (plot.isMultiSeries && plot.series) {
           const matchingSeriesIndex = plot.series.findIndex(series =>
-            checkAllParamsMatch(series, newPlotData)
+            checkAllParamsMatch(series, convertedNewPlotData)
           );
 
           if (matchingSeriesIndex !== -1) {
@@ -1199,11 +1287,11 @@ export function confirmMerge() {
             const matchingSeries = plot.series[matchingSeriesIndex];
 
             // Merge data into the matching series
-            const mergedData = mergeRangeData(matchingSeries.data, newPlotData.data);
+            const mergedData = mergeRangeData(matchingSeries.data, convertedNewPlotData.data);
 
             // Update xRange to cover both ranges
             const existingXRange = matchingSeries.plotParams?.xRange || [];
-            const newXRange = newPlotData.plotParams?.xRange || [];
+            const newXRange = convertedNewPlotData.plotParams?.xRange || [];
             let mergedXRange = existingXRange;
             if (existingXRange.length === 2 && newXRange.length === 2) {
               mergedXRange = [
@@ -1249,7 +1337,7 @@ export function confirmMerge() {
         if (plot.type === 'rawData') {
           // Find differing parameters between existing and new data
           const existingSeriesForComparison = plot.series ? plot.series[0] : plot;
-          const differingParams = findDifferingParams(existingSeriesForComparison, newPlotData);
+          const differingParams = findDifferingParams(existingSeriesForComparison, convertedNewPlotData);
 
           // Create series array (for storing multiple data sets)
           const existingSeries = plot.series || [{
@@ -1264,10 +1352,10 @@ export function confirmMerge() {
           }];
 
           const newSeriesData = {
-            ...newPlotData,
+            ...convertedNewPlotData,
             plotId: `plot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             timestamp: Date.now(),
-            metadata: { ...newPlotData.metadata }
+            metadata: { ...convertedNewPlotData.metadata }
           };
 
           console.log(`Adding table data with parameter columns:`, differingParams);
@@ -1364,11 +1452,11 @@ export function confirmMerge() {
 
         // Don't assign a specific color - let PlotContainer handle it based on index
         const newSeriesData = {
-          ...newPlotData,
+          ...convertedNewPlotData,
           plotId: `plot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now(),
           metadata: {
-            ...newPlotData.metadata,
+            ...convertedNewPlotData.metadata,
             lineColor: undefined // Will be resolved by PlotContainer based on index
           }
         };

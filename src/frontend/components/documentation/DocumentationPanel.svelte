@@ -14,10 +14,11 @@
    * @param {string} [section] - Optional section ID to scroll to (e.g., 'pam')
    */
   function handleLearnMore(url, section) {
-    // Build full URL with optional section anchor
+    // Build full URL with optional section query parameter
+    // Using ?section=xxx instead of #xxx because hash-based routing can't have two #
     let fullUrl = url;
     if (section) {
-      fullUrl += `#${section}`;
+      fullUrl += `?section=${section}`;
     }
 
     // Open in new tab
@@ -220,7 +221,15 @@
             class="learn-more-link"
             on:click={() => handleLearnMore(content.learnMoreUrl, content.learnMoreSection)}
           >
-            📚 Learn More
+            <svg class="learn-more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+            <span>Learn More</span>
+            <svg class="learn-more-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
           </button>
         {/if}
         <span class="doc-hint">Press Esc or click outside to close</span>
@@ -439,10 +448,12 @@
   }
 
   .learn-more-link {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-md);
+    justify-content: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--primary-color);
     color: white;
     text-decoration: none;
@@ -457,6 +468,25 @@
   .learn-more-link:hover {
     background: var(--primary-color-dark);
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3);
+  }
+
+  .learn-more-link:hover .learn-more-arrow {
+    transform: translateX(3px);
+  }
+
+  .learn-more-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .learn-more-arrow {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-left: auto;
+    transition: transform 0.2s ease;
   }
 
   .doc-hint {

@@ -5,6 +5,7 @@
   import { simulationParams, useCustomConstellation } from '../../stores/simulation.js';
   import { currentColorTheme } from '../../stores/theme.js';
   import DataImportModal from './DataImportModal.svelte';
+  import { docHover } from '../../actions/documentation.js';
   import ParameterReference from './ParameterReference.svelte';
 
   export let onPlot = () => {};
@@ -261,7 +262,7 @@
 
   <form on:submit={handleSubmit} class="controls-form">
     <!-- Output Type Selection -->
-    <div class="form-section compact-section">
+    <div class="form-section compact-section" use:docHover={{ key: 'plot-type', position: 'right' }}>
       <h4>{$_('plotting.outputType')}</h4>
       <select
         id="plotType"
@@ -283,7 +284,7 @@
       <!-- Y-Axis Selection (output variable) -->
       {#if $plotParams.plotType !== 'rawData'}
         <div class="variable-block">
-          <div class="form-group inline">
+          <div class="form-group inline" use:docHover={{ key: 'plot-yVar', position: 'right' }}>
             <label for="yVar">{$_('plotting.yAxis')}:</label>
             <select
               id="yVar"
@@ -301,7 +302,7 @@
 
       <!-- X-Axis Variable with its Range and Points -->
       <div class="variable-block">
-        <div class="form-group inline">
+        <div class="form-group inline" use:docHover={{ key: `plot-xVar-${$plotParams.xVar}`, position: 'right' }}>
           <label for="xVar">{($plotParams.plotType === 'contour' || $plotParams.plotType === 'surface') ? $_('plotting.x1Axis') : $_('plotting.xAxis')}:</label>
           <select
             id="xVar"
@@ -356,7 +357,7 @@
           {/if}
         </div>
 
-        <div class="form-group inline sub-option">
+        <div class="form-group inline sub-option" use:docHover={{ key: 'plot-points', position: 'right' }}>
           <label for="points">
             {#if $plotParams.plotType === 'contour'}
               {$_('plotting.levels')}:
@@ -497,6 +498,7 @@
         type="submit"
         class="button-primary plot-button"
         disabled={!$plotValidation.isValid || disabled}
+        use:docHover={{ key: 'plot-generate', position: 'top' }}
       >
         {#if disabled}
           {$plotParams.plotType === 'rawData' ? $_('plotting.generatingData') : $_('plotting.generating')}
@@ -514,7 +516,7 @@
 
     <!-- Data Import Section -->
     <div class="import-section">
-      <button type="button" class="button-secondary import-button" on:click={openModal} disabled={disabled}>
+      <button type="button" class="button-secondary import-button" on:click={openModal} disabled={disabled} use:docHover={{ key: 'plot-import', position: 'top' }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />

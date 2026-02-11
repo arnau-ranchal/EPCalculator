@@ -121,8 +121,7 @@ export const documentationContent = {
       { name: 'JSON', desc: 'Full data with metadata, re-importable' }
     ],
     behavior: 'Click to open the export menu with format options.',
-    learnMoreUrl: '#/learn/tutorials/exporting',
-    learnMoreSection: 'formats'
+    learnMoreUrl: '#/learn/tutorials/exporting'
   },
   // Remove button
   'remove': {
@@ -139,7 +138,7 @@ export const documentationContent = {
     theory: 'Uses Gallager\'s random coding bound with Hermite-Gauss quadrature for numerical integration. Optimizes over the parameter ρ ∈ [0,1] to find the tightest bound.',
     behavior: 'Click to start computation. Results appear in the panel on the right.',
     learnMoreUrl: '#/learn/concepts/error-exponent',
-    learnMoreSection: 'formula'
+    learnMoreSection: 'computable-form'
   },
   // Generate plot button
   'generate-plot': {
@@ -148,7 +147,7 @@ export const documentationContent = {
     description: 'Creates a new plot with the current settings.',
     theory: 'Computes error probability at multiple points across the specified range, then renders an interactive visualization.',
     behavior: 'Click to generate. If a compatible plot exists, you\'ll be asked to merge or create new.',
-    learnMoreUrl: '#/learn/tutorials/plotting',
+    learnMoreUrl: '#/learn/tutorials/line-plots',
     learnMoreSection: 'setup'
   },
   // Modulation type
@@ -215,7 +214,7 @@ export const documentationContent = {
     theory: 'A fundamental quantity in information theory. Higher E(R) means error probability decreases faster with code length. E(R) > 0 for rates R < C (channel capacity).',
     formula: 'E(R) = \\max_{\\rho \\in [0,1]} \\left[ E_0(\\rho) - \\rho R \\right]',
     learnMoreUrl: '#/learn/concepts/error-exponent',
-    learnMoreSection: 'formula'
+    learnMoreSection: 'computable-form'
   },
   'yvar-rho': {
     title: 'Optimal ρ',
@@ -233,8 +232,7 @@ export const documentationContent = {
     description: '2D plot showing Y variable vs one X variable.',
     theory: 'Best for showing trends and comparing curves. Multiple series can be overlaid for comparison.',
     behavior: 'Creates a standard X-Y plot with the selected variables.',
-    learnMoreUrl: '#/learn/tutorials/plotting',
-    learnMoreSection: 'line-plot'
+    learnMoreUrl: '#/learn/tutorials/line-plots'
   },
   'plot-contour': {
     title: 'Contour Plot',
@@ -242,8 +240,7 @@ export const documentationContent = {
     description: '3D visualization showing Z variable vs two X variables.',
     theory: 'Contour lines connect points of equal value. Color indicates magnitude. Essential for understanding how error probability depends on two parameters simultaneously.',
     behavior: 'Creates a 2D heatmap (or 3D surface) with two independent variables.',
-    learnMoreUrl: '#/learn/tutorials/plotting',
-    learnMoreSection: 'contour-plot'
+    learnMoreUrl: '#/learn/tutorials/contour-plots'
   },
   'plot-table': {
     title: 'Data Table',
@@ -251,7 +248,7 @@ export const documentationContent = {
     description: 'Raw numerical data in tabular format.',
     theory: 'Useful when exact values are needed or for export to other analysis tools.',
     behavior: 'Displays computed values in a scrollable table format.',
-    learnMoreUrl: '#/learn/tutorials/exporting'
+    learnMoreUrl: '#/learn/tutorials/table-mode'
   },
   // Custom Constellation buttons
   'constellation-lucky': {
@@ -277,7 +274,7 @@ export const documentationContent = {
     theory: 'The table allows exact coordinate and probability entry. The plot provides visual feedback and drag-to-edit capability.',
     behavior: 'Click to show/hide the points table. The constellation plot remains visible.',
     learnMoreUrl: '#/learn/tutorials/custom-constellation',
-    learnMoreSection: 'table'
+    learnMoreSection: 'table-controls'
   },
 
   // Clear all button
@@ -293,8 +290,7 @@ export const documentationContent = {
     category: 'Data Export',
     description: 'Exports all plots as PNG images.',
     behavior: 'Click to download each plot as a separate PNG file.',
-    learnMoreUrl: '#/learn/tutorials/exporting',
-    learnMoreSection: 'formats'
+    learnMoreUrl: '#/learn/tutorials/exporting'
   },
   // Reset defaults
   'reset-defaults': {
@@ -406,9 +402,9 @@ export const documentationContent = {
     title: 'PAM (Pulse Amplitude Modulation)',
     category: 'Modulation Type',
     description: 'One-dimensional modulation using amplitude levels.',
-    theory: 'M-PAM places M points on a line at positions ±1, ±3, ..., ±(M-1). Normalized for unit average energy. Simple but less efficient than 2D schemes.',
-    formula: 'x_k = 2k - 1 - M, \\quad k = 1, 2, \\ldots, M',
-    example: '2-PAM: $\\{-1, +1\\}$, 4-PAM: $\\{-3, -1, +1, +3\\}$',
+    theory: 'M-PAM uses a one-dimensional constellation where symbols differ only in amplitude. M equally-spaced points are placed on a line.',
+    formula: 'x_k = (2k - 1 - M) \\cdot d, \\quad k = 1, 2, \\ldots, M',
+    example: '2-PAM (BPSK): two points at -1, +1. 4-PAM: four amplitude levels.',
     learnMoreUrl: '#/learn/concepts/modulation',
     learnMoreSection: 'pam'
   },
@@ -416,9 +412,9 @@ export const documentationContent = {
     title: 'PSK (Phase Shift Keying)',
     category: 'Modulation Type',
     description: 'Two-dimensional modulation with constant amplitude.',
-    theory: 'M-PSK places M points uniformly on a circle. All symbols have equal energy, making it robust to amplitude variations. Phase detection required.',
-    formula: 'x_k = e^{\\,j\\frac{2\\pi k}{M}}, \\quad k = 0, 1, \\ldots, M-1',
-    example: 'BPSK: $\\{-1, +1\\}$, QPSK: $\\{\\pm 1 \\pm j\\}/\\sqrt{2}$',
+    theory: 'M-PSK places symbols on a circle (constant amplitude), differing only in phase angle. Points are equally spaced around the unit circle.',
+    formula: 'x_k = e^{j \\cdot 2\\pi k / M}, \\quad k = 0, 1, \\ldots, M-1',
+    example: 'BPSK (2-PSK): 0° and 180°. QPSK (4-PSK): 45°, 135°, 225°, 315°.',
     learnMoreUrl: '#/learn/concepts/modulation',
     learnMoreSection: 'psk'
   },
@@ -426,9 +422,9 @@ export const documentationContent = {
     title: 'QAM (Quadrature Amplitude Modulation)',
     category: 'Modulation Type',
     description: 'Two-dimensional grid modulation.',
-    theory: 'Square M-QAM arranges √M × √M points in a grid. Combines amplitude and phase modulation. Optimal for AWGN channels. Requires M to be a perfect square.',
+    theory: 'QAM combines amplitude and phase modulation, placing points on a 2D grid. This allows more bits per symbol but requires higher SNR.',
     formula: 'x_k = a_k + j \\cdot b_k, \\quad a_k, b_k \\in \\{\\pm 1, \\pm 3, \\ldots\\}',
-    example: '16-QAM: $4 \\times 4$ grid, 64-QAM: $8 \\times 8$ grid',
+    example: '4-QAM ≡ QPSK. 16-QAM: 4×4 grid (4 bits/symbol). 64-QAM: 8×8 grid.',
     learnMoreUrl: '#/learn/concepts/modulation',
     learnMoreSection: 'qam'
   },
@@ -436,8 +432,9 @@ export const documentationContent = {
     title: 'Signal-to-Noise Ratio',
     category: 'Simulation Parameters',
     description: 'Current SNR value for computation.',
-    theory: 'SNR = Es/N₀ determines the reliability of detection. In dB: SNR_dB = 10·log₁₀(Es/N₀). Higher SNR exponentially reduces error probability.',
-    formula: '\\text{BER} \\approx Q\\left(\\sqrt{2 \\cdot \\text{SNR}}\\right) \\text{ for BPSK}',
+    theory: 'The SNR γ measures how much stronger the signal is compared to noise. Higher SNR exponentially reduces error probability.',
+    formula: '\\gamma = \\frac{E_s}{N_0}',
+    example: 'dB conversion: $\\text{SNR}_{\\text{dB}} = 10 \\log_{10}(\\gamma)$',
     learnMoreUrl: '#/learn/concepts/awgn-channel',
     learnMoreSection: 'snr'
   },
@@ -445,8 +442,8 @@ export const documentationContent = {
     title: 'Code Rate',
     category: 'Simulation Parameters',
     description: 'Current code rate for error exponent computation.',
-    theory: 'Rate R bits/channel use. Error exponent E(R) > 0 only when R < C (capacity). E(R) decreases as R approaches C.',
-    formula: 'E(R) = \\max_\\rho \\left[ E_0(\\rho) - \\rho R \\right]',
+    theory: 'The code rate R = k/n is the ratio of information bits (k) to total coded bits (n). Reliable communication requires R < C (capacity).',
+    formula: 'R = \\frac{k}{n}, \\quad 0 < R \\leq C',
     learnMoreUrl: '#/learn/concepts/error-exponent',
     learnMoreSection: 'code-rate'
   },
@@ -454,9 +451,161 @@ export const documentationContent = {
     title: 'Code Length',
     category: 'Simulation Parameters',
     description: 'Codeword length for error probability computation.',
-    theory: 'Error probability bounded by Pe ≤ exp(-n·E(R)). Doubling n roughly squares the error probability (in log scale, it doubles the exponent).',
-    formula: '\\log_{10}(P_e) \\approx \\frac{-n \\cdot E(R)}{\\ln(10)}',
+    theory: 'Longer codes achieve better error performance. Doubling n roughly squares the reliability (in log scale, the exponent doubles). However, longer codes increase latency and decoding complexity.',
+    formula: 'P_e \\leq 2^{-n \\cdot E(R)}',
     learnMoreUrl: '#/learn/concepts/error-exponent',
     learnMoreSection: 'code-length'
+  },
+  'param-N': {
+    title: 'Quadrature Points (N)',
+    category: 'Simulation Parameters',
+    description: 'Number of points for Gauss-Hermite numerical integration.',
+    theory: 'The nodes are roots of the physicist\'s Hermite polynomial H_n(z). With n nodes, Gauss-Hermite exactly integrates polynomials of degree up to 2n-1.',
+    formula: 'w_z = \\frac{2^{n-1} \\cdot n! \\cdot \\sqrt{\\pi}}{n^2 \\cdot [H_{n-1}(z)]^2}',
+    behavior: 'Recommended: N=20 for exploration, N=50 for default, N=100+ for high precision.',
+    learnMoreUrl: '#/learn/concepts/numerical-methods',
+    learnMoreSection: 'hermite'
+  },
+  'param-threshold': {
+    title: 'Weight Threshold (τ)',
+    category: 'Simulation Parameters',
+    description: 'Threshold for skipping negligible quadrature nodes.',
+    theory: 'The 2D quadrature grid has n² nodes, but corner points have tiny weights. Thresholding keeps only significant nodes, reducing computation by ~21% with negligible accuracy loss.',
+    formula: '\\mathcal{F} = \\{z \\in \\mathcal{D} \\mid W(z) \\leq \\theta\\}',
+    example: 'Default threshold: $\\theta = \\max(\\mathcal{W}) - \\min(\\mathcal{W})$',
+    learnMoreUrl: '#/learn/concepts/numerical-methods',
+    learnMoreSection: 'thresholding'
+  },
+  // Plotting controls
+  'plot-type': {
+    title: 'Plot Type',
+    category: 'Plotting Controls',
+    description: 'Choose how to visualize your computation results.',
+    patterns: [
+      { name: 'Line Plot', desc: 'Shows how a metric varies along one parameter axis' },
+      { name: 'Contour Plot', desc: 'Heat map showing metric values across two parameters' },
+      { name: '3D Surface', desc: 'Interactive 3D visualization of two-parameter sweeps' },
+      { name: 'Raw Data', desc: 'Export numerical data as a table' }
+    ],
+    learnMoreUrl: '#/learn/tutorials/line-plots',
+    learnMoreSection: 'what-line-plots-show'
+  },
+  'plot-yVar': {
+    title: 'Y-Axis Variable',
+    category: 'Plotting Controls',
+    description: 'Select the output metric to compute and display.',
+    patterns: [
+      { name: 'Error Exponent E(R)', desc: 'Rate of exponential decay of error probability' },
+      { name: 'Error Probability Pe', desc: 'Upper bound on decoding error probability' },
+      { name: 'Optimal ρ', desc: 'The ρ value that maximizes E₀(ρ) - ρR' },
+      { name: 'Mutual Information I', desc: 'Channel capacity metric in bits/channel use' },
+      { name: 'Cutoff Rate R₀', desc: 'Rate threshold for reliable communication' },
+      { name: 'Critical Rate Rcrit', desc: 'Rate where exponent changes character' }
+    ],
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'special-values'
+  },
+  // X-Axis Variable entries (one per variable type)
+  // Formulas match those in the referenced Learn More article sections
+  'plot-xVar-M': {
+    title: 'Sweep: Modulation Size (M)',
+    category: 'X-Axis Variable',
+    description: 'Vary the number of constellation points from 2 to 512.',
+    theory: 'Sweeping M reveals how constellation size affects performance. For M-PAM, symbols are placed at equally-spaced amplitude levels. Larger M increases spectral efficiency but requires higher SNR.',
+    formula: 'x_k = (2k - 1 - M) \\cdot d, \\quad k = 1, 2, \\ldots, M',
+    example: 'Compare 4-PAM vs 16-PAM vs 64-PAM performance curves',
+    learnMoreUrl: '#/learn/concepts/modulation',
+    learnMoreSection: 'pam'
+  },
+  'plot-xVar-SNR': {
+    title: 'Sweep: Signal-to-Noise Ratio',
+    category: 'X-Axis Variable',
+    description: 'Vary SNR to see how channel quality affects performance.',
+    theory: 'The SNR γ measures signal strength relative to noise. Error exponent increases with SNR, showing diminishing returns at high values. The slope reveals how efficiently the modulation uses power.',
+    formula: '\\gamma = \\frac{E_s}{N_0}',
+    example: 'Sweep 0-20 dB to see the full performance curve',
+    learnMoreUrl: '#/learn/concepts/awgn-channel',
+    learnMoreSection: 'snr'
+  },
+  'plot-xVar-R': {
+    title: 'Sweep: Code Rate (R)',
+    category: 'X-Axis Variable',
+    description: 'Vary the code rate to explore the rate-reliability tradeoff.',
+    theory: 'Code rate R = k/n is the ratio of information bits to coded bits. Reliable communication requires R < C (capacity). The error exponent E(R) determines how quickly errors decrease.',
+    formula: 'R = \\frac{k}{n}, \\quad 0 < R \\leq C',
+    example: 'Sweep R from 0 to capacity to see the exponent curve',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'code-rate'
+  },
+  'plot-xVar-N': {
+    title: 'Sweep: Quadrature Points (N)',
+    category: 'X-Axis Variable',
+    description: 'Vary N to analyze numerical integration accuracy.',
+    theory: 'Gauss-Hermite quadrature uses N weighted nodes from Hermite polynomial roots. With N nodes, it exactly integrates polynomials of degree 2N-1. Results typically stabilize around N=20-50.',
+    formula: 'w_z = \\frac{2^{n-1} \\cdot n! \\cdot \\sqrt{\\pi}}{n^2 \\cdot [H_{n-1}(z)]^2}',
+    example: 'Sweep N from 5 to 40 to find convergence point',
+    learnMoreUrl: '#/learn/concepts/numerical-methods',
+    learnMoreSection: 'hermite'
+  },
+  'plot-xVar-n': {
+    title: 'Sweep: Code Length (n)',
+    category: 'X-Axis Variable',
+    description: 'Vary codeword length to see error probability decay.',
+    theory: 'Error probability decreases exponentially with code length n. Doubling n roughly squares the reliability. Only available when Y-axis is Error Probability.',
+    formula: 'P_e \\leq 2^{-n \\cdot E(R)}',
+    example: 'Sweep n from 100 to 10000 to see exponential decay',
+    learnMoreUrl: '#/learn/concepts/error-exponent',
+    learnMoreSection: 'code-length'
+  },
+  'plot-xVar-threshold': {
+    title: 'Sweep: Convergence Threshold (τ)',
+    category: 'X-Axis Variable',
+    description: 'Vary the weight threshold for quadrature optimization.',
+    theory: 'EPCalculator uses thresholding to skip nodes with negligibly small weights, reducing computation while maintaining accuracy. The threshold determines which nodes to include.',
+    formula: '\\mathcal{F} = \\{z \\in \\mathcal{D} \\mid W(z) \\leq \\theta\\}',
+    example: 'Sweep τ from 10⁻³ to 10⁻¹² to find accuracy plateau',
+    learnMoreUrl: '#/learn/concepts/numerical-methods',
+    learnMoreSection: 'thresholding'
+  },
+  'plot-xVar-shaping_param': {
+    title: 'Sweep: Shaping Parameter (λ)',
+    category: 'X-Axis Variable',
+    description: 'Vary the Maxwell-Boltzmann distribution parameter.',
+    theory: 'The parameter λ controls how probability mass concentrates on inner constellation points. λ=0 gives uniform distribution. Higher λ reduces average energy while maintaining minimum distance.',
+    formula: 'P(x_k) = \\frac{e^{-\\lambda |x_k|^2}}{\\sum_j e^{-\\lambda |x_j|^2}}',
+    example: 'Sweep λ from 0 to 2 to find optimal shaping gain',
+    learnMoreUrl: '#/learn/concepts/probabilistic-shaping',
+    learnMoreSection: 'maxwell-boltzmann'
+  },
+  'plot-points': {
+    title: 'Number of Points',
+    category: 'Plotting Controls',
+    description: 'How many computation points along the X-axis.',
+    theory: 'More points give smoother curves but take longer to compute. For line plots, 20-50 points typically provide good visual quality. For contour/surface plots, 10-30 points per axis is common.',
+    behavior: 'Integer between 1 and 101. Higher values increase computation time linearly.',
+    learnMoreUrl: '#/learn/tutorials/line-plots',
+    learnMoreSection: 'setup'
+  },
+  'plot-generate': {
+    title: 'Generate Plot',
+    category: 'Plotting Controls',
+    description: 'Compute results and render the visualization.',
+    theory: 'This will sweep the X-axis parameter(s) through the specified range, computing the selected metric at each point using the base parameters from the Simulation panel.',
+    behavior: 'Disabled when validation errors exist or a computation is in progress.',
+    learnMoreUrl: '#/learn/tutorials/line-plots',
+    learnMoreSection: 'setup'
+  },
+  'plot-import': {
+    title: 'Import Data',
+    category: 'Plotting Controls',
+    description: 'Import external data to overlay on your plots.',
+    theory: 'Compare your computed results against simulation data, experimental measurements, or reference curves from literature.',
+    formats: [
+      { name: 'CSV', desc: 'Comma-separated values with headers' },
+      { name: 'JSON', desc: 'Array of {x, y} objects' },
+      { name: 'TXT', desc: 'Space or tab-separated columns' }
+    ],
+    learnMoreUrl: '#/learn/tutorials/import-data',
+    learnMoreSection: 'accessing'
   }
 };

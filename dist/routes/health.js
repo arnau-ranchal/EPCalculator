@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox';
 import { ComputationService } from '../services/computation.js';
 import { DatabaseService } from '../services/database.js';
-import { universityConfig } from '../config/index.js';
+import { universityConfig, APP_VERSION } from '../config/index.js';
 export async function healthRoutes(fastify) {
     // Detailed health check
     fastify.get('/health', {
@@ -49,7 +49,7 @@ export async function healthRoutes(fastify) {
         const healthStatus = {
             status: dbHealth ? 'healthy' : 'degraded',
             timestamp: new Date().toISOString(),
-            version: '2.0.0',
+            version: APP_VERSION,
             uptime: Math.round(process.uptime()),
             services: {
                 database: dbHealth,
@@ -113,3 +113,4 @@ export async function healthRoutes(fastify) {
         return { status: 'ready' };
     });
 }
+//# sourceMappingURL=health.js.map

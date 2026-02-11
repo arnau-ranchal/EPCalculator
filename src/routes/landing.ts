@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { config } from '../config/index.js'
+import { config, APP_VERSION } from '../config/index.js'
 
 /**
  * API Landing page - provides quick reference for researchers
@@ -117,7 +117,7 @@ export async function landingRoutes(fastify: FastifyInstance): Promise<void> {
   <div class="header">
     <h1>EPCalculator API</h1>
     <p class="subtitle">Error Probability Calculator for Digital Communications</p>
-    <span class="version">v2.0.0</span>
+    <span class="version">v${APP_VERSION}</span>
   </div>
 
   <div class="card">

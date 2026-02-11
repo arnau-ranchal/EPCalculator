@@ -16,9 +16,10 @@
   // =========================================================================
   // LEARN MODE (Documentation Hub) - Hash-based routing
   // =========================================================================
-  import { learnRoute, initializeFromHash } from './stores/learn.js';
-  // We'll import LearnLayout once we create it:
-  // import LearnLayout from './components/learn/LearnLayout.svelte';
+  import { learnRoute, initializeFromHash, routeParts } from './stores/learn.js';
+  import LearnLayout from './components/learn/LearnLayout.svelte';
+  import LearnHome from './components/learn/LearnHome.svelte';
+  import LearnArticle from './components/learn/LearnArticle.svelte';
 
   // This variable controls whether we show the documentation hub or calculator
   let isInLearnMode = false;
@@ -40,12 +41,12 @@
    */
   function handleHashChange() {
     const hash = window.location.hash;
-    {#if hash.startsWith('#/learn')}
+    if (hash.startsWith('#/learn')) {
       isInLearnMode = true;
       initializeFromHash();
-    {:else}
+    } else {
       isInLearnMode = false;
-    {\if}
+    }
   }
 
   // Tutorial state
@@ -285,13 +286,23 @@
   onDestroy(() => {
     disableSparkles();
   });
-
+</script>
 
 {#if $isLoading}
   <div class="loading-container">
     <div class="loading-spinner"></div>
   </div>
+{:else if isInLearnMode}
+  <!-- Learn Mode: Documentation Hub -->
+  <LearnLayout>
+    {#if $routeParts.isHome}
+      <LearnHome />
+    {:else}
+      <LearnArticle />
+    {/if}
+  </LearnLayout>
 {:else}
+  <!-- Calculator Mode -->
   <MainLayout title={$_('app.title')}>
     <div class="app-content">
       <TabContainer {tabs} bind:activeTab bind:this={tabContainerRef} let:activeTab={currentTab}>
@@ -376,3 +387,4 @@
     }
   }
 </style>
+

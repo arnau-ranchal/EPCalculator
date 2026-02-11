@@ -24,30 +24,7 @@ COPY Makefile ./
 RUN make clean && make
 
 # =============================================================================
-# Stage 2: Build frontend with Vite
-# =============================================================================
-FROM node:18.17-bookworm AS frontend-builder
-
-WORKDIR /build
-
-# Copy package files first (better layer caching)
-COPY package*.json ./
-COPY vite.config.ts ./
-
-# Install ALL dependencies (including devDependencies for build)
-# Use --ignore-scripts to skip native addon builds (not needed for frontend)
-RUN npm ci --ignore-scripts
-
-# Copy frontend source and services (some frontend code imports services)
-COPY index.html ./
-COPY src/frontend ./src/frontend
-COPY src/services ./src/services
-
-# Build frontend (outputs to public/)
-RUN npm run build:frontend
-
-# =============================================================================
-# Stage 3: Production runtime
+# Stage 2: Production runtime
 # =============================================================================
 FROM node:18.17-bookworm-slim AS production
 
@@ -71,13 +48,21 @@ COPY package*.json ./
 # ffi-napi requires native compilation, so we need build tools
 RUN npm ci --omit=dev
 
-# Copy server application
-COPY server ./server
-COPY src/services ./src/services
+# Copy pre-built application (built on host with npm run build)
+COPY dist ./dist
+COPY public ./public
 
-# Copy built artifacts from previous stages
-COPY --from=frontend-builder /build/public ./public
+# Copy worker files (these are JS, not compiled by TypeScript)
+COPY src/workers ./dist/workers
+
+# Copy tutorial images (served statically, not bundled by Vite)
+COPY src/frontend/assets/tutorial-images ./dist/frontend/assets/tutorial-images
+
+# Copy C++ library from build stage
 COPY --from=cpp-builder /build/build/libfunctions.so ./build/libfunctions.so
+
+# Create data directory for SQLite database
+RUN mkdir -p /app/data
 
 # Create non-root user for security
 RUN groupadd -g 1001 nodejs && \
@@ -86,16 +71,21 @@ RUN groupadd -g 1001 nodejs && \
 
 USER nodeuser
 
-# Environment variables
+# Environment variables (defaults - override in Rancher/Kubernetes)
 ENV NODE_ENV=production
 ENV PORT=8000
+
+# API Documentation - set these to enable Swagger UI in production:
+# ENV ENABLE_API_DOCS=true
+# ENV PUBLIC_URL=https://your-domain.com
 
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8000/api/health || exit 1
+# Health check - use lightweight liveness endpoint
+# Increased start-period for database initialization
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8000/health || exit 1
 
 # Start the application
-CMD ["node", "server/simple-server-working.js"]
+CMD ["node", "dist/server.js"]

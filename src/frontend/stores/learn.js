@@ -60,8 +60,8 @@ export const routeParts = derived(learnRoute, ($route) => {
  * - false = section is collapsed
  */
 export const sidebarExpanded = writable({
-  concepts: true,
-  tutorials: true,
+  concepts: false,
+  tutorials: false,
   api: false
 });
 
@@ -74,6 +74,18 @@ export function toggleSection(section) {
   sidebarExpanded.update(state => ({
     ...state,
     [section]: !state[section]
+  }));
+}
+
+/**
+ * Expand a specific section (used when navigating from landing page).
+ *
+ * @param {string} section - The section to expand ('concepts', 'tutorials', 'api')
+ */
+export function expandSection(section) {
+  sidebarExpanded.update(state => ({
+    ...state,
+    [section]: true
   }));
 }
 
@@ -161,6 +173,8 @@ export function tryInCalculator(params = {}) {
 /**
  * Initialize the learn store from the current URL.
  * This is called when the app loads to sync the store with the URL.
+ *
+ * Supports section deep-linking via query param: #/learn/concepts/modulation?section=pam
  */
 export function initializeFromHash() {
   const hash = window.location.hash;
@@ -168,7 +182,17 @@ export function initializeFromHash() {
   // Check if we're in learn mode: hash starts with #/learn
   if (hash.startsWith('#/learn')) {
     // Extract the route part after #/learn/
-    const route = hash.replace('#/learn/', '').replace('#/learn', '');
+    let route = hash.replace('#/learn/', '').replace('#/learn', '');
+
+    // Check for section parameter: ?section=xxx
+    const sectionMatch = route.match(/\?section=([^&]+)/);
+    if (sectionMatch) {
+      const section = sectionMatch[1];
+      scrollTarget.set(section);
+      // Remove the query string from route
+      route = route.replace(/\?section=[^&]+/, '');
+    }
+
     learnRoute.set(route);
     return true; // We are in learn mode
   }
@@ -211,7 +235,7 @@ export const contentIndex = {
       { id: 'table-mode', title: 'Table Mode' },
       { id: 'custom-constellation', title: 'Custom Constellations' },
       { id: 'import-data', title: 'Importing Data' },
-      { id: 'exporting', title: 'Exporting Results' }
+      { id: 'exporting', title: 'Citing EPCalculator' }
     ]
   },
   api: {
@@ -219,8 +243,10 @@ export const contentIndex = {
     icon: '⚡',
     articles: [
       { id: 'overview', title: 'API Overview' },
-      { id: 'endpoints', title: 'Endpoints Reference' },
-      { id: 'examples', title: 'Code Examples' }
+      { id: 'parameters', title: 'Parameter Formats' },
+      { id: 'standard', title: 'Standard Modulation Endpoint' },
+      { id: 'custom', title: 'Custom Constellation Endpoint' },
+      { id: 'examples', title: 'Practical Examples' }
     ]
   }
 };

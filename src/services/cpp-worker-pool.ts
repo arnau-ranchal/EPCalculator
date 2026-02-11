@@ -22,17 +22,43 @@ export interface WorkerTask {
   params: any[]
 }
 
+/** Task item within a batch */
+export interface BatchTaskItem {
+  taskId: string
+  type: 'compute' | 'compute_custom'
+  params: any[]
+}
+
+/** Batch task sent to worker */
+export interface BatchWorkerTask {
+  id: string
+  type: 'compute_batch'
+  tasks: BatchTaskItem[]
+}
+
+/** Result from a single computation */
+export interface ComputationData {
+  error_probability: number
+  error_exponent: number
+  optimal_rho: number
+  mutual_information: number
+  cutoff_rate: number
+  critical_rate: number
+}
+
+/** Result item within a batch response */
+export interface BatchResultItem {
+  taskId: string
+  success: boolean
+  data?: ComputationData
+  error?: string
+}
+
 interface WorkerResponse {
   id: string
   success: boolean
-  data?: {
-    error_probability: number
-    error_exponent: number
-    optimal_rho: number
-    mutual_information: number
-    cutoff_rate: number
-    critical_rate: number
-  }
+  data?: ComputationData
+  batchResults?: BatchResultItem[]
   error?: string
 }
 
@@ -84,10 +110,15 @@ export class CPPWorkerPool extends EventEmitter {
 
     // Handle stdout/stderr from child (for debugging)
     child.stdout?.on('data', (data) => {
-      // Suppress verbose C++ output in production
-      const msg = data.toString().trim()
-      if (msg && !msg.includes('DEBUG') && !msg.includes('INFO:')) {
-        this.logger?.info(`[Process ${workerId}] ${msg}`)
+      // Process each line separately - stdout chunks can contain multiple lines
+      // If we don't split, a C++ "INFO:" message in the same chunk would filter out everything
+      const lines = data.toString().split('\n')
+      for (const line of lines) {
+        const msg = line.trim()
+        // Suppress verbose C++ debug output, but keep worker batch logs
+        if (msg && !msg.includes('DEBUG') && !msg.startsWith('INFO:')) {
+          this.logger?.info(`[Process ${workerId}] ${msg}`)
+        }
       }
     })
 
@@ -118,8 +149,15 @@ export class CPPWorkerPool extends EventEmitter {
     this.pendingTasks.delete(msg.id)
     this.busyWorkers.delete(workerId)
 
-    if (msg.success && msg.data) {
-      pending.resolve(msg.data)
+    if (msg.success) {
+      // Check if this is a batch response
+      if (msg.batchResults) {
+        pending.resolve(msg.batchResults)
+      } else if (msg.data) {
+        pending.resolve(msg.data)
+      } else {
+        pending.reject(new Error('Worker returned success but no data'))
+      }
     } else {
       pending.reject(new Error(msg.error || 'Unknown worker error'))
     }
@@ -207,6 +245,143 @@ export class CPPWorkerPool extends EventEmitter {
 
       this.processQueue()
     })
+  }
+
+  /**
+   * Execute multiple computation tasks in batches across workers.
+   * This dramatically reduces IPC overhead by sending multiple tasks per message.
+   *
+   * @param tasks Array of tasks to execute
+   * @param cancellationToken Optional cancellation token
+   * @returns Array of results in the same order as input tasks
+   */
+  async executeBatch(
+    tasks: Array<{ id: string; type: 'compute' | 'compute_custom'; params: any[] }>,
+    cancellationToken?: CancellationToken
+  ): Promise<Array<{ success: boolean; data?: ComputationData; error?: string }>> {
+    // Check cancellation before starting
+    if (cancellationToken?.isCancelled) {
+      throw new Error('Batch cancelled before execution')
+    }
+
+    if (tasks.length === 0) {
+      return []
+    }
+
+    // Get available workers
+    const availableWorkerIds = Array.from(this.workers.keys())
+      .filter(id => !this.busyWorkers.has(id))
+
+    if (availableWorkerIds.length === 0) {
+      // Fall back to sequential execution if no workers available
+      this.logger?.warn('[ProcessPool] No workers available for batch, falling back to sequential')
+      const results: Array<{ success: boolean; data?: ComputationData; error?: string }> = []
+      for (const task of tasks) {
+        if (cancellationToken?.isCancelled) {
+          break
+        }
+        try {
+          const data = await this.execute(task, cancellationToken)
+          results.push({ success: true, data })
+        } catch (error) {
+          results.push({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+        }
+      }
+      return results
+    }
+
+    // Distribute tasks across workers
+    const numWorkers = Math.min(availableWorkerIds.length, tasks.length)
+    const tasksPerWorker = Math.ceil(tasks.length / numWorkers)
+
+    // Create task-to-index mapping for result ordering
+    const taskIndexMap = new Map<string, number>()
+    tasks.forEach((task, index) => taskIndexMap.set(task.id, index))
+
+    // Prepare batch promises
+    const batchPromises: Promise<BatchResultItem[]>[] = []
+
+    for (let w = 0; w < numWorkers; w++) {
+      const startIdx = w * tasksPerWorker
+      const endIdx = Math.min(startIdx + tasksPerWorker, tasks.length)
+      const workerTasks = tasks.slice(startIdx, endIdx)
+
+      if (workerTasks.length === 0) continue
+
+      // Create batch task
+      const batchId = `batch_${Date.now()}_${w}`
+      const batchTask: BatchWorkerTask = {
+        id: batchId,
+        type: 'compute_batch',
+        tasks: workerTasks.map(t => ({
+          taskId: t.id,
+          type: t.type,
+          params: t.params
+        }))
+      }
+
+      // Execute batch on worker
+      const batchPromise = new Promise<BatchResultItem[]>((resolve, reject) => {
+        const pending: PendingTask = {
+          task: batchTask as any, // Type cast for compatibility
+          resolve,
+          reject,
+          cancellationToken
+        }
+
+        this.pendingTasks.set(batchId, pending)
+
+        // Setup cancellation
+        if (cancellationToken) {
+          const checkInterval = setInterval(() => {
+            if (cancellationToken.isCancelled) {
+              clearInterval(checkInterval)
+              this.handleCancellation(pending)
+            }
+          }, 10)
+          pending.checkInterval = checkInterval
+        }
+
+        // Find available worker and dispatch
+        const workerId = availableWorkerIds[w]
+        const child = this.workers.get(workerId)
+
+        if (!child) {
+          this.pendingTasks.delete(batchId)
+          reject(new Error(`Worker ${workerId} not available`))
+          return
+        }
+
+        this.busyWorkers.add(workerId)
+        pending.workerId = workerId
+
+        this.logger?.info(`[ProcessPool] Dispatching batch ${batchId} (${workerTasks.length} tasks) to process ${workerId}`)
+        child.send(batchTask)
+      })
+
+      batchPromises.push(batchPromise)
+    }
+
+    // Wait for all batches to complete
+    const batchResults = await Promise.all(batchPromises)
+
+    // Flatten and reorder results to match input order
+    const results: Array<{ success: boolean; data?: ComputationData; error?: string }> = new Array(tasks.length)
+
+    for (const batch of batchResults) {
+      for (const item of batch) {
+        const originalIndex = taskIndexMap.get(item.taskId)
+        if (originalIndex !== undefined) {
+          results[originalIndex] = {
+            success: item.success,
+            data: item.data,
+            error: item.error
+          }
+        }
+      }
+    }
+
+    return results
   }
 
   /**

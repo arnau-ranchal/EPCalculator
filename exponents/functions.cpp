@@ -8,6 +8,7 @@
 #include <complex>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <iomanip>
 #include <algorithm>
@@ -379,8 +380,7 @@ void normalizeX_for_Q() {
                 X_mat(i) *= scale_factor;
             }
 
-            std::cout << "INFO: X normalized for uniform Q, avg_power=" << avg_power
-                      << ", scale=" << scale_factor << "\n";
+            { std::ostringstream oss; oss << "INFO: X normalized for uniform Q, avg_power=" << avg_power << ", scale=" << scale_factor << "\n"; std::cout << oss.str() << std::flush; }
         } else {
             std::cerr << "WARNING: Average power too small (avg_power=" << avg_power
                       << "), X normalization skipped\n";
@@ -918,7 +918,7 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         double F0 = m / PI;
         double Fder0 = mp / PI;
 
-        std::cout << "DEBUG hybrid log-space: m=" << m << ", PI=" << PI << ", F0=" << F0 << "\n";
+        // std::cout << "DEBUG hybrid log-space: m=" << m << ", PI=" << PI << ", F0=" << F0 << "\n";
 
         if (!std::isfinite(F0) || F0 <= 0) {
             std::cerr << "ERROR: Invalid F0 in log-space computation: F0=" << F0 << "\n";
@@ -945,7 +945,7 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         // is the mutual information I(X;Y), which should remain valid even when E0
         // needs clamping due to numerical precision issues at high SNR.
         if (E0 < 0) {
-            std::cerr << "WARNING: Negative E0=" << E0 << " (SNR=" << SNR << ", rho=" << rho << ") - clamping to 0.\n";
+            { std::ostringstream oss; oss << "WARNING: Negative E0=" << E0 << " (SNR=" << SNR << ", rho=" << rho << ") - clamping to 0.\n"; std::cerr << oss.str() << std::flush; }
             E0 = 0.0;
             // grad_rho intentionally NOT zeroed - it contains valid derivative info
         }
@@ -953,8 +953,7 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         return E0;
     } else {
         // Extreme SNR case - compute E0 in pure log-space without exponentiating
-        std::cout << "INFO: Extreme overflow detected (max_pig_arg=" << max_pig_arg
-                  << ", max_qg2_arg=" << max_qg2_arg << "), using pure log-space E0 computation\n";
+        { std::ostringstream oss; oss << "INFO: Extreme overflow detected (max_pig_arg=" << max_pig_arg << ", max_qg2_arg=" << max_qg2_arg << "), using pure log-space E0 computation\n"; std::cout << oss.str() << std::flush; }
 
         // Compute log_m (already done above in logqg2 computation)
         // log_m = log(sum_j [ (sum_i Q_i * pig1[i,j]) * qg2rho[j] ])
@@ -973,8 +972,8 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         double log2_PI = std::log(PI) / std::log(2);
         E0 = -log2_m + log2_PI;
 
-        std::cout << "DEBUG pure log-space: log_m=" << log_m << ", log2_m=" << log2_m
-                  << ", log2_PI=" << log2_PI << ", E0=" << E0 << "\n";
+        // std::cout << "DEBUG pure log-space: log_m=" << log_m << ", log2_m=" << log2_m
+        //           << ", log2_PI=" << log2_PI << ", E0=" << E0 << "\n";
 
         // Compute gradient numerically using finite differences
         // This is more robust than analytical gradient in extreme overflow case
@@ -1004,8 +1003,8 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         // Numerical gradient: dE0/drho ≈ (E0(rho+δ) - E0(rho)) / δ
         grad_rho = (E0_plus - E0) / delta_rho;
 
-        std::cout << "DEBUG pure log-space gradient: E0=" << E0 << ", E0_plus=" << E0_plus
-                  << ", grad_rho=" << grad_rho << "\n";
+        // std::cout << "DEBUG pure log-space gradient: E0=" << E0 << ", E0_plus=" << E0_plus
+        //           << ", grad_rho=" << grad_rho << "\n";
 
         if (!std::isfinite(E0)) {
             std::cerr << "ERROR: Non-finite E0 in pure log-space: " << E0 << "\n";
@@ -1018,7 +1017,7 @@ double E_0_co_log_space(double r, double rho, double &grad_rho, double &E0) {
         // with the current number of quadrature points (N).
         // For now, we clamp to 0 as a fallback, but this means results may be inaccurate.
         if (E0 < 0) {
-            std::cerr << "WARNING: Negative E0=" << E0 << " at high SNR - clamping to 0. Consider increasing N or using asymptotic approximation.\n";
+            { std::ostringstream oss; oss << "WARNING: Negative E0=" << E0 << " at high SNR - clamping to 0. Consider increasing N or using asymptotic approximation.\n"; std::cerr << oss.str() << std::flush; }
             E0 = 0.0;
         }
 
@@ -1045,9 +1044,9 @@ double E_0_co(double r, double rho, double &grad_rho, double &E0) {
 
     if (use_log_space) {
         // Only print message if actually switching due to overflow (not forced)
-        if (!force_log_space_mode && (max_exp_arg > OVERFLOW_THRESHOLD || min_exp_arg > OVERFLOW_THRESHOLD)) {
-            std::cout << "\n=== Switching to log-space computation (SNR=" << SNR << ", rho=" << rho << ") ===\n";
-        }
+        // if (!force_log_space_mode && (max_exp_arg > OVERFLOW_THRESHOLD || min_exp_arg > OVERFLOW_THRESHOLD)) {
+        //     std::cout << "\n=== Switching to log-space computation (SNR=" << SNR << ", rho=" << rho << ") ===\n";
+        // }
 
         // Use log-space version
         return E_0_co_log_space(r, rho, grad_rho, E0);
@@ -1243,14 +1242,14 @@ double E_0_co_vec(double r, double rho, double &grad_rho, double e0, int nn,
     e0 = -log2(F0);
 
     // DEBUG: Print same intermediates
-    std::cout << "\n==== Vector Version ====\n";
+    // std::cout << "\n==== Vector Version ====\n";
     /*
     std::cout << "logqg2[0]: " << logqg2[0] << std::endl;
     std::cout << "qg2rho[0]: " << qg2rho[0] << std::endl;
     std::cout << "pig1_mat[0]: " << pig1_mat[0] << std::endl;
     */
-    std::cout << "m: " << m << " | mp: " << mp << std::endl;
-    std::cout << "F0: " << F0 << " | Fder0: " << Fder0 << std::endl;
+    // std::cout << "m: " << m << " | mp: " << mp << std::endl;
+    // std::cout << "F0: " << F0 << " | Fder0: " << Fder0 << std::endl;
     /*
     cout << "Q_mat:" << endl;
     for(int i = 0; i < Q_mat.size(); i++){ cout << Q_mat[i] << " "; }
@@ -1937,8 +1936,8 @@ double GD_co(double &r, double &rho, double &rho_interpolated, int num_iteration
     double threshold_check = std::abs(-1.0 * max_D_check);  // Worst case at rho=0
     force_log_space_mode = (threshold_check > 650.0);  // Use 650 for safety margin (50 below overflow threshold)
 
-    std::cout << "DEBUG GD_co: max_D=" << max_D_check << ", threshold=" << threshold_check
-              << ", force_log_space=" << (force_log_space_mode ? "YES" : "NO") << "\n";
+    // std::cout << "DEBUG GD_co: max_D=" << max_D_check << ", threshold=" << threshold_check
+    //           << ", force_log_space=" << (force_log_space_mode ? "YES" : "NO") << "\n";
 
     if (force_log_space_mode) {
         std::cout << "INFO: Using log-space mode for entire optimization\n";

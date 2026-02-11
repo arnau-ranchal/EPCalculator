@@ -191,3 +191,4 @@ export async function analyticsRoutes(fastify) {
         }
     });
 }
+//# sourceMappingURL=analytics.js.map

@@ -1,13 +1,19 @@
 // exponents.cpp
 #include <cmath>
-#include <cstring> 
+#include <cstring>
 #include "functions.h"
 #include <iostream>
+#include <sstream>
 
 extern "C" {
 
     // Custom constellation version
     double* exponents_custom(const double* real_parts, const double* imag_parts, const double* probabilities, int num_points, double SNR, double R, double N, double n, double threshold, double* results) {
+        // Worker point assignment log - now handled in JavaScript layer
+        // std::ostringstream oss;
+        // oss << "[WORKER] CUSTOM: pts=" << num_points << " SNR=" << SNR << " N=" << N << "\n";
+        // std::cout << oss.str() << std::flush;
+
         int it = 20;
         setCustomConstellation(real_parts, imag_parts, probabilities, num_points);
         setR(R);
@@ -60,6 +66,10 @@ extern "C" {
     }
 
     double* exponents(double M, const char* typeM, double SNR, double R, double N, double n, double threshold, const char* distribution, double shaping_param, double* results) {
+        // Worker point assignment log - now handled in JavaScript layer
+        // std::ostringstream oss;
+        // oss << "[WORKER] STANDARD: M=" << M << " " << typeM << " SNR=" << SNR << " N=" << N << "\n";
+        // std::cout << oss.str() << std::flush;
 
         int it = 20;
         setMod(static_cast<int>(M), typeM);

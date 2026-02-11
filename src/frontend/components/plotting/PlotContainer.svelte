@@ -569,9 +569,11 @@
     // Helper to create a card
     const createCard = (label, value, isPrimary = false) => {
       const card = document.createElement('div');
-      const borderColor = isPrimary ? '#C8102E' : '#DCDCDC';
+      const borderColor = isPrimary ? emphasisColor : '#DCDCDC';
+      // Create a light version of emphasis color for gradient
+      const lightEmphasis = emphasisColor + '05'; // 5% opacity hex
       const bgGradient = isPrimary
-        ? 'linear-gradient(135deg, rgba(200, 16, 46, 0.02) 0%, white 100%)'
+        ? `linear-gradient(135deg, ${lightEmphasis} 0%, white 100%)`
         : 'white';
 
       card.style.cssText = `
@@ -611,7 +613,7 @@
       valueEl.style.cssText = `
         font-size: 1.5em;
         font-weight: 700;
-        color: ${isPrimary ? '#C8102E' : '#222222'};
+        color: ${isPrimary ? emphasisColor : '#222222'};
         margin-bottom: 10px;
         word-break: break-all;
         font-family: 'Courier New', monospace;
@@ -1525,12 +1527,12 @@
       };
     } else {
       // Regular sequential color scheme for normal contour plots
+      // Use theme-based color range instead of fixed 'reds' scheme
       colorConfig = {
+        type: 'linear',
         legend: true,
         label: isLogZ ? `log₁₀(${translatedZLabel})` : translatedZLabel,
-        // Use a red-based scheme to match website theme (primary color: #C8102E)
-        scheme: 'reds',
-        reverse: false
+        range: createObservableColorRange(emphasisColor)
       };
     }
 
@@ -1659,6 +1661,28 @@
         container.appendChild(errorDiv);
       }
     }
+  }
+
+  // Create a color interpolator for Observable Plot from a base color
+  // Returns start and end colors for smooth linear interpolation
+  function createObservableColorRange(color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+
+    const lighten = (c, factor) => Math.min(255, Math.round(c + (255 - c) * factor));
+    const darken = (c, factor) => Math.max(0, Math.round(c * factor));
+    const toHex = (r, g, b) => `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+    // Return just 2 colors for smooth gradient interpolation
+    return [
+      toHex(lighten(r, 0.95), lighten(g, 0.95), lighten(b, 0.95)),  // Very light (start)
+      toHex(darken(r, 0.5), darken(g, 0.5), darken(b, 0.5))          // Dark (end)
+    ];
   }
 
   // Convert a solid color to a gradient colorscale for Plotly surfaces
@@ -1823,14 +1847,7 @@
         x: x1Values,
         y: x2Values,
         z: zMatrix,
-        colorscale: [
-          [0, '#fff5f5'],
-          [0.2, '#fecaca'],
-          [0.4, '#f87171'],
-          [0.6, '#dc2626'],
-          [0.8, '#C8102E'],
-          [1, '#7f1d1d']
-        ],
+        colorscale: createColorscaleFromColor(emphasisColor),
         colorbar: {
           title: zLabel || meta.zLabel || 'Z',
           titleside: 'right',

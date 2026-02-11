@@ -96,6 +96,44 @@ export class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_usage_endpoint ON usage_analytics(endpoint);
       CREATE INDEX IF NOT EXISTS idx_sessions_session_id ON user_sessions(session_id);
     `);
+        // API Keys table for authentication
+        this.db.exec(`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key_prefix TEXT NOT NULL,
+        key_hint TEXT NOT NULL,
+        key_hash TEXT NOT NULL UNIQUE,
+        owner_name TEXT NOT NULL,
+        owner_email TEXT,
+        tier TEXT DEFAULT 'free',
+        is_active INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME,
+        last_used_at DATETIME,
+        total_requests INTEGER DEFAULT 0,
+        total_credits_used INTEGER DEFAULT 0,
+        UNIQUE(key_prefix, key_hint)
+      )
+    `);
+        // API Usage tracking (for future billing)
+        this.db.exec(`
+      CREATE TABLE IF NOT EXISTS api_usage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key_id INTEGER NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        endpoint TEXT NOT NULL,
+        request_cost INTEGER DEFAULT 1,
+        computation_params TEXT,
+        FOREIGN KEY (key_id) REFERENCES api_keys(id) ON DELETE CASCADE
+      )
+    `);
+        // API Keys indexes
+        this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_api_keys_prefix_hint ON api_keys(key_prefix, key_hint);
+      CREATE INDEX IF NOT EXISTS idx_api_keys_active ON api_keys(is_active);
+      CREATE INDEX IF NOT EXISTS idx_api_usage_key_id ON api_usage(key_id);
+      CREATE INDEX IF NOT EXISTS idx_api_usage_timestamp ON api_usage(timestamp);
+    `);
     }
     setupCleanupJob() {
         // Clean up old records every hour
@@ -205,6 +243,40 @@ export class DatabaseService {
         const result = stmt.get(parametersHash, cutoff);
         return result?.results || null;
     }
+    /**
+     * Batch lookup of cached results for multiple parameter hashes.
+     * Returns a Map of hash → results JSON string for all found entries.
+     * This is much more efficient than N individual getCachedResult calls.
+     */
+    async getBatchCachedResults(parameterHashes) {
+        const results = new Map();
+        if (!this.db || !config.ENABLE_COMPUTATION_CACHE || parameterHashes.length === 0) {
+            return results;
+        }
+        const cutoff = new Date(Date.now() - config.CACHE_TTL * 1000).toISOString();
+        // Use a single query with IN clause for efficiency
+        // We need the most recent result for each unique hash
+        const placeholders = parameterHashes.map(() => '?').join(',');
+        // SQLite query: Get most recent cached result for each hash
+        // Using a subquery to get the max timestamp per parameter, then join to get results
+        const stmt = this.db.prepare(`
+      SELECT c.parameters, c.results
+      FROM computations c
+      INNER JOIN (
+        SELECT parameters, MAX(timestamp) as max_ts
+        FROM computations
+        WHERE parameters IN (${placeholders}) AND timestamp > ?
+        GROUP BY parameters
+      ) latest ON c.parameters = latest.parameters AND c.timestamp = latest.max_ts
+    `);
+        // Parameters: all hashes, then cutoff
+        const queryParams = [...parameterHashes, cutoff];
+        const rows = stmt.all(...queryParams);
+        for (const row of rows) {
+            results.set(row.parameters, row.results);
+        }
+        return results;
+    }
     // Database statistics
     async getStatistics() {
         if (!this.db) {
@@ -238,6 +310,127 @@ export class DatabaseService {
         }
         return stats;
     }
+    // ============================================
+    // API Key Methods
+    // ============================================
+    /**
+     * Find an API key by prefix and hint (for efficient lookup).
+     * Returns the full record if found, null otherwise.
+     */
+    async getApiKeyByHint(prefix, hint) {
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
+        const stmt = this.db.prepare(`
+      SELECT * FROM api_keys
+      WHERE key_prefix = ? AND key_hint = ? AND is_active = 1
+    `);
+        const result = stmt.get(prefix, hint);
+        return result || null;
+    }
+    /**
+     * Create a new API key record.
+     * Returns the inserted ID.
+     */
+    async createApiKey(keyPrefix, keyHint, keyHash, ownerName, ownerEmail, tier = 'free', expiresAt) {
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
+        const stmt = this.db.prepare(`
+      INSERT INTO api_keys (key_prefix, key_hint, key_hash, owner_name, owner_email, tier, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+        const result = stmt.run(keyPrefix, keyHint, keyHash, ownerName, ownerEmail || null, tier, expiresAt?.toISOString() || null);
+        return result.lastInsertRowid;
+    }
+    /**
+     * Update last_used_at and increment total_requests for an API key.
+     */
+    async updateApiKeyUsage(keyId, creditsCost = 1) {
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
+        const stmt = this.db.prepare(`
+      UPDATE api_keys
+      SET last_used_at = CURRENT_TIMESTAMP,
+          total_requests = total_requests + 1,
+          total_credits_used = total_credits_used + ?
+      WHERE id = ?
+    `);
+        stmt.run(creditsCost, keyId);
+    }
+    /**
+     * Record API usage for future billing.
+     */
+    async recordApiUsage(keyId, endpoint, requestCost, computationParams) {
+        if (!this.db) {
+            return;
+        }
+        const stmt = this.db.prepare(`
+      INSERT INTO api_usage (key_id, endpoint, request_cost, computation_params)
+      VALUES (?, ?, ?, ?)
+    `);
+        stmt.run(keyId, endpoint, requestCost, computationParams ? JSON.stringify(computationParams) : null);
+    }
+    /**
+     * List all API keys (for admin).
+     */
+    async listApiKeys() {
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
+        const stmt = this.db.prepare(`
+      SELECT id, key_prefix, key_hint, owner_name, owner_email, tier,
+             is_active, created_at, expires_at, last_used_at,
+             total_requests, total_credits_used
+      FROM api_keys
+      ORDER BY created_at DESC
+    `);
+        return stmt.all();
+    }
+    /**
+     * Revoke (deactivate) an API key.
+     */
+    async revokeApiKey(keyId) {
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
+        const stmt = this.db.prepare(`
+      UPDATE api_keys SET is_active = 0 WHERE id = ?
+    `);
+        const result = stmt.run(keyId);
+        return result.changes > 0;
+    }
+    /**
+     * Get usage statistics for an API key.
+     */
+    async getApiKeyUsageStats(keyId, days = 30) {
+        if (!this.db) {
+            throw new Error('Database not initialized');
+        }
+        const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+        // Total stats
+        const totalStmt = this.db.prepare(`
+      SELECT COUNT(*) as total_requests, COALESCE(SUM(request_cost), 0) as total_credits
+      FROM api_usage
+      WHERE key_id = ? AND timestamp > ?
+    `);
+        const totals = totalStmt.get(keyId, cutoff);
+        // By endpoint
+        const byEndpointStmt = this.db.prepare(`
+      SELECT endpoint, COUNT(*) as count, COALESCE(SUM(request_cost), 0) as credits
+      FROM api_usage
+      WHERE key_id = ? AND timestamp > ?
+      GROUP BY endpoint
+      ORDER BY credits DESC
+    `);
+        const usageByEndpoint = byEndpointStmt.all(keyId, cutoff);
+        return {
+            totalRequests: totals.total_requests,
+            totalCredits: totals.total_credits,
+            usageByEndpoint
+        };
+    }
     async close() {
         if (this.db) {
             this.db.close();
@@ -260,3 +453,4 @@ export class DatabaseService {
         }
     }
 }
+//# sourceMappingURL=database.js.map

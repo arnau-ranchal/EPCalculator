@@ -2543,19 +2543,19 @@
   .plot-select-checkbox:checked + .checkbox-icon-inline {
     background: var(--primary-color);
     border-color: var(--primary-color);
-    box-shadow: 0 2px 4px rgba(200, 16, 46, 0.3);
+    box-shadow: 0 2px 4px color-mix(in srgb, var(--primary-color) 30%, transparent);
   }
 
   .plot-select-label-inline:hover .checkbox-icon-inline {
     border-color: var(--primary-color);
-    background: #fef2f2;
+    background: var(--primary-color-light);
     transform: scale(1.08);
-    box-shadow: 0 2px 6px rgba(200, 16, 46, 0.15);
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--primary-color) 15%, transparent);
   }
 
   .plot-select-checkbox:checked + .checkbox-icon-inline:hover {
-    background: #a60d26;
-    box-shadow: 0 3px 8px rgba(200, 16, 46, 0.4);
+    background: var(--primary-color-dark);
+    box-shadow: 0 3px 8px color-mix(in srgb, var(--primary-color) 40%, transparent);
   }
 
   .plot-select-label-inline.disabled {

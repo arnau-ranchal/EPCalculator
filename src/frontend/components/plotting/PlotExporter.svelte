@@ -437,7 +437,7 @@
   }
 
   async function exportPNG(filename) {
-    console.log('[PNG Export] Starting PNG export with full plot composite...');
+    console.log('[PNG Export] Starting PNG export...');
     console.log('[PNG Export] plotElement:', plotElement);
     console.log('[PNG Export] metadata:', metadata);
 
@@ -530,223 +530,132 @@
       }
     }
 
-    // Observable Plot export
-    // Find the plot SVG element - look for largest SVG
-    const allSvgs = plotElement ? plotElement.querySelectorAll('svg') : [];
-    let mainSvg = null;
-    let maxArea = 0;
+    // Observable Plot export - use html2canvas for reliable rendering
+    console.log('[PNG Export] Using html2canvas for Observable Plot');
 
-    allSvgs.forEach((svg) => {
-      const width = parseFloat(svg.getAttribute('width')) || 0;
-      const height = parseFloat(svg.getAttribute('height')) || 0;
-      const area = width * height;
-      if (area > maxArea) {
-        maxArea = area;
-        mainSvg = svg;
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+
+      // Capture the plot element directly with html2canvas
+      const plotCanvas = await html2canvas(plotElement, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        useCORS: true
+      });
+
+      const plotWidth = plotCanvas.width;
+      const plotHeight = plotCanvas.height;
+
+      // Check if we have series data for legend
+      const hasLegend = seriesData && seriesData.length > 1;
+
+      console.log(`[PNG Export] Captured plot: ${plotWidth}x${plotHeight}`);
+      console.log(`[PNG Export] Title: "${plotTitle}", Params: ${globalParams.length > 0 ? globalParams.join(' • ') : 'none'}, Legend: ${hasLegend ? 'YES' : 'NO'}`);
+
+      // Create composite canvas with title, params, and legend
+      const padding = 40; // Account for 2x scale
+      const titleHeight = plotTitle ? 80 : 0;
+      const subtitleHeight = (globalParams && globalParams.length > 0) ? 60 : 0;
+      const legendHeight = hasLegend ? 80 : 0;
+
+      const totalWidth = plotWidth + (padding * 2);
+      const totalHeight = plotHeight + titleHeight + subtitleHeight + legendHeight + (padding * 3);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = totalWidth;
+      canvas.height = totalHeight;
+
+      const ctx = canvas.getContext('2d');
+
+      // White background
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, totalWidth, totalHeight);
+
+      let yOffset = padding;
+
+      // Draw title (scaled for 2x)
+      if (plotTitle) {
+        ctx.font = 'bold 36px Inter, Arial, sans-serif';
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'center';
+        ctx.fillText(plotTitle, totalWidth / 2, yOffset + 40);
+        yOffset += titleHeight;
       }
-    });
 
-    if (!mainSvg) {
-      throw new Error('No main SVG plot found');
-    }
+      // Draw subtitle with global params
+      if (globalParams && globalParams.length > 0) {
+        ctx.font = '28px Inter, Arial, sans-serif';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        const subtitleText = globalParams.join(' • ');
+        ctx.fillText(subtitleText, totalWidth / 2, yOffset + 30);
+        yOffset += subtitleHeight;
+      }
 
-    const plotWidth = parseFloat(mainSvg.getAttribute('width'));
-    const plotHeight = parseFloat(mainSvg.getAttribute('height'));
+      // Draw legend from series data
+      if (hasLegend && seriesData) {
+        const legendY = yOffset + 20;
+        ctx.font = '24px Inter, Arial, sans-serif';
+        ctx.textAlign = 'left';
 
-    // Check if we have series data for legend
-    const hasLegend = seriesData && seriesData.length > 1;
+        // Calculate total width needed for legend to center it
+        let totalLegendWidth = 0;
+        const legendItems = [];
 
-    console.log(`[PNG Export] Found plot: ${plotWidth}x${plotHeight}`);
-    console.log(`[PNG Export] Title: "${plotTitle}", Params: ${globalParams.length > 0 ? globalParams.join(' • ') : 'none'}, Legend: ${hasLegend ? 'YES' : 'NO'}`);
+        seriesData.forEach((series, index) => {
+          const color = getSeriesColor(series, index);
+          const label = series.metadata?.seriesLabel || 'Series';
+          const itemWidth = 30 + 10 + ctx.measureText(label).width + 40; // box + gap + text + spacing (scaled)
+          legendItems.push({ color, label, width: itemWidth });
+          totalLegendWidth += itemWidth;
+        });
 
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Create composite canvas with extra space for title, subtitle (global params), and legend
-        const padding = 20;
-        const titleHeight = plotTitle ? 40 : 0;
-        const subtitleHeight = (globalParams && globalParams.length > 0) ? 30 : 0;
-        const legendHeight = hasLegend ? 50 : 0;
+        // Center the legend
+        let legendX = (totalWidth - totalLegendWidth) / 2;
 
-        const totalWidth = plotWidth + (padding * 2);
-        const totalHeight = plotHeight + titleHeight + subtitleHeight + legendHeight + (padding * 3);
+        legendItems.forEach((item) => {
+          // Draw color square (scaled)
+          ctx.fillStyle = item.color;
+          ctx.fillRect(legendX, legendY, 30, 30);
 
-        const scale = 2; // High resolution
-        const canvas = document.createElement('canvas');
-        canvas.width = totalWidth * scale;
-        canvas.height = totalHeight * scale;
-
-        const ctx = canvas.getContext('2d');
-        ctx.scale(scale, scale);
-
-        // White background
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, totalWidth, totalHeight);
-
-        let yOffset = padding;
-
-        // Draw title (from prop)
-        if (plotTitle) {
-          ctx.font = 'bold 18px Inter, Arial, sans-serif';
+          // Draw label
           ctx.fillStyle = 'black';
-          ctx.textAlign = 'center';
-          ctx.fillText(plotTitle, totalWidth / 2, yOffset + 20);
-          yOffset += titleHeight;
-        }
+          ctx.fillText(item.label, legendX + 40, legendY + 24);
 
-        // Draw subtitle with global params (from prop)
-        if (globalParams && globalParams.length > 0) {
-          ctx.font = '14px Inter, Arial, sans-serif';
-          ctx.fillStyle = '#666';
-          ctx.textAlign = 'center';
+          legendX += item.width;
+        });
 
-          // Join params with bullet separator
-          const subtitleText = globalParams.join(' • ');
-          const maxWidth = totalWidth - (padding * 4);
-
-          // Split into multiple lines if too long
-          const words = globalParams;  // Already split by param
-          const lines = [];
-          let currentLine = words[0];
-
-          for (let i = 1; i < words.length; i++) {
-            const testLine = currentLine + ' • ' + words[i];
-            const metrics = ctx.measureText(testLine);
-
-            if (metrics.width > maxWidth) {
-              lines.push(currentLine);
-              currentLine = words[i];
-            } else {
-              currentLine = testLine;
-            }
-          }
-          lines.push(currentLine);
-
-          // Draw each line
-          const lineHeight = 18;
-          lines.forEach((line, index) => {
-            ctx.fillText(line, totalWidth / 2, yOffset + 15 + (index * lineHeight));
-          });
-
-          // Adjust offset based on number of lines
-          yOffset += subtitleHeight + ((lines.length - 1) * lineHeight);
-        }
-
-        // Draw legend from series data
-        if (hasLegend && seriesData) {
-          const legendY = yOffset + 10;
-          ctx.font = '12px Inter, Arial, sans-serif';
-          ctx.textAlign = 'left';
-
-          // Calculate total width needed for legend to center it
-          let totalLegendWidth = 0;
-          const legendItems = [];
-
-          seriesData.forEach((series, index) => {
-            const color = getSeriesColor(series, index);
-            const label = series.metadata?.seriesLabel || 'Series';
-            const itemWidth = 15 + 5 + ctx.measureText(label).width + 20; // box + gap + text + spacing
-            legendItems.push({ color, label, width: itemWidth });
-            totalLegendWidth += itemWidth;
-          });
-
-          // Center the legend
-          let legendX = (totalWidth - totalLegendWidth) / 2;
-
-          legendItems.forEach((item) => {
-            // Draw color square
-            ctx.fillStyle = item.color;
-            ctx.fillRect(legendX, legendY, 15, 15);
-
-            // Draw label
-            ctx.fillStyle = 'black';
-            ctx.fillText(item.label, legendX + 20, legendY + 12);
-
-            legendX += item.width;
-          });
-
-          yOffset += legendHeight;
-        }
-
-        // Now draw the main SVG plot
-        const clonedSvg = mainSvg.cloneNode(true);
-        clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-        // Inline styles for SVG elements
-        function inlineStyles(original, cloned) {
-          const computedStyle = window.getComputedStyle(original);
-          const props = ['font-family', 'font-size', 'font-weight', 'font-style',
-            'fill', 'stroke', 'stroke-width', 'opacity', 'text-anchor'];
-
-          let styles = '';
-          props.forEach(prop => {
-            const value = computedStyle.getPropertyValue(prop);
-            if (value && value !== '' && value !== 'none') {
-              styles += `${prop}:${value};`;
-            }
-          });
-
-          if (styles) {
-            cloned.setAttribute('style', (cloned.getAttribute('style') || '') + styles);
-          }
-
-          for (let i = 0; i < original.children.length; i++) {
-            if (cloned.children[i]) {
-              inlineStyles(original.children[i], cloned.children[i]);
-            }
-          }
-        }
-
-        inlineStyles(mainSvg, clonedSvg);
-
-        // Convert SVG to light mode for export (always export with white background, black text)
-        // embedFontData=true to embed Inter font as base64 for isolated blob rendering
-        await convertSvgToLightMode(clonedSvg, true);
-
-        // Convert SVG to image and draw on canvas
-        const serializer = new XMLSerializer();
-        const svgString = serializer.serializeToString(clonedSvg);
-        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(svgBlob);
-
-        const img = new Image();
-
-        img.onload = () => {
-          URL.revokeObjectURL(url);
-
-          // Draw SVG plot at calculated position
-          ctx.drawImage(img, padding, yOffset, plotWidth, plotHeight);
-
-          // Export canvas as PNG
-          canvas.toBlob((blob) => {
-            if (blob) {
-              console.log(`[PNG Export] Created composite PNG: ${blob.size} bytes`);
-              const pngUrl = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = pngUrl;
-              a.download = `${filename}.png`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              URL.revokeObjectURL(pngUrl);
-              resolve({ filename: `${filename}.png` });
-            } else {
-              reject(new Error('Failed to create PNG blob'));
-            }
-          }, 'image/png', 0.95);
-        };
-
-        img.onerror = (e) => {
-          URL.revokeObjectURL(url);
-          reject(new Error('Failed to load SVG image'));
-        };
-
-        img.src = url;
-
-      } catch (error) {
-        console.error('[PNG Export] Error:', error);
-        reject(error);
+        yOffset += legendHeight;
       }
-    });
+
+      // Draw the captured plot
+      ctx.drawImage(plotCanvas, padding, yOffset);
+
+      // Export as PNG
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            console.log(`[PNG Export] Created composite PNG: ${blob.size} bytes`);
+            const pngUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = pngUrl;
+            a.download = `${filename}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(pngUrl);
+            resolve({ filename: `${filename}.png` });
+          } else {
+            reject(new Error('Failed to create PNG blob'));
+          }
+        }, 'image/png', 0.95);
+      });
+
+    } catch (error) {
+      console.error('[PNG Export] html2canvas failed:', error);
+      throw new Error(`Failed to export plot as PNG: ${error.message}`);
+    }
   }
 
   async function exportCSV(filename) {

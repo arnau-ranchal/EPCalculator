@@ -7,3 +7,4 @@ export function generateSessionId() {
 export function validateSessionId(sessionId) {
     return /^[a-f0-9]{32}$/.test(sessionId);
 }
+//# sourceMappingURL=session.js.map

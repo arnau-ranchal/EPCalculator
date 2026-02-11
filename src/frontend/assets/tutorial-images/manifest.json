@@ -1,5 +1,5 @@
 {
-  "generated": "2026-01-26T14:23:53.889Z",
+  "generated": "2026-02-04T18:35:45.876Z",
   "baseUrl": "/tutorial-images/",
   "screenshots": {
     "tab-single-point": {
@@ -135,12 +135,12 @@
     "line-plot-hover-legend": {
       "file": "line-plot-hover-legend.png",
       "description": "Hovering over legend entry highlights the corresponding curve",
-      "success": true
+      "success": false
     },
     "line-plot-hover-point": {
       "file": "line-plot-hover-point.png",
       "description": "Hovering on plot shows tooltip with coordinates",
-      "success": true
+      "success": false
     },
     "line-plot-axis-linear": {
       "file": "line-plot-axis-linear.png",
@@ -161,6 +161,131 @@
       "file": "line-plot-axis-transpose.png",
       "description": "Multiline plot with transposed axes (E₀ on X, SNR on Y)",
       "success": false
+    },
+    "contour-plot-generated": {
+      "file": "contour-plot-generated.png",
+      "description": "Generated contour plot showing E₀ across SNR and ρ",
+      "success": false
+    },
+    "contour-plot-step1-complete": {
+      "file": "contour-plot-step1-complete.png",
+      "description": "First contour plot (QPSK) generated with interface visible",
+      "success": false
+    },
+    "contour-plot-step2-params": {
+      "file": "contour-plot-step2-params.png",
+      "description": "Changing modulation to 8-PSK for second contour plot",
+      "success": false
+    },
+    "contour-plot-checkbox-selection": {
+      "file": "contour-plot-checkbox-selection.png",
+      "description": "Two contour plots with selection checkboxes visible",
+      "success": false
+    },
+    "contour-plot-action-bar": {
+      "file": "contour-plot-action-bar.png",
+      "description": "Action bar showing Compare and Benchmark buttons after selecting two plots",
+      "success": false
+    },
+    "contour-plot-comparison": {
+      "file": "contour-plot-comparison.png",
+      "description": "Side-by-side comparison of two contour plots showing differences",
+      "success": false
+    },
+    "contour-plot-benchmark": {
+      "file": "contour-plot-benchmark.png",
+      "description": "3D benchmark overlay of multiple contour plots",
+      "success": false
+    },
+    "contour-plot-hover": {
+      "file": "contour-plot-hover.png",
+      "description": "Hovering on contour plot shows tooltip with SNR, ρ, and E₀ values",
+      "success": false
+    },
+    "contour-plot-export-button": {
+      "file": "contour-plot-export-button.png",
+      "description": "Export button highlighted on a contour plot",
+      "success": false
+    },
+    "contour-plot-export-menu": {
+      "file": "contour-plot-export-menu.png",
+      "description": "Export menu open on contour plot showing format options",
+      "success": false
+    },
+    "surface-plot-generated": {
+      "file": "surface-plot-generated.png",
+      "description": "3D surface plot showing error exponent landscape",
+      "success": false
+    },
+    "surface-plot-step1-complete": {
+      "file": "surface-plot-step1-complete.png",
+      "description": "First 3D surface generated (QPSK), ready for comparison workflow",
+      "success": false
+    },
+    "surface-plot-step2-params": {
+      "file": "surface-plot-step2-params.png",
+      "description": "Setting parameters for second 3D surface (8-PSK)",
+      "success": false
+    },
+    "surface-plot-checkbox-selection": {
+      "file": "surface-plot-checkbox-selection.png",
+      "description": "Two 3D surfaces with selection checkboxes visible",
+      "success": false
+    },
+    "surface-plot-action-bar": {
+      "file": "surface-plot-action-bar.png",
+      "description": "Action bar showing Compare and Benchmark buttons for 3D surfaces",
+      "success": false
+    },
+    "surface-plot-comparison": {
+      "file": "surface-plot-comparison.png",
+      "description": "3D difference surface showing comparison between two surfaces",
+      "success": false
+    },
+    "surface-plot-benchmark": {
+      "file": "surface-plot-benchmark.png",
+      "description": "3D benchmark overlay showing multiple surfaces together",
+      "success": false
+    },
+    "surface-plot-export-button": {
+      "file": "surface-plot-export-button.png",
+      "description": "Export button highlighted on 3D surface plot",
+      "success": false
+    },
+    "surface-plot-export-menu": {
+      "file": "surface-plot-export-menu.png",
+      "description": "Export menu open on 3D surface plot showing format options",
+      "success": false
+    },
+    "table-mode-generated": {
+      "file": "table-mode-generated.png",
+      "description": "Table showing all computed metrics (E₀, Pe, ρ*, etc.) for QPSK",
+      "success": true
+    },
+    "table-mode-columns": {
+      "file": "table-mode-columns.png",
+      "description": "Table with column headers highlighted showing SNR, E₀, Pe, ρ*, MI, etc.",
+      "success": true
+    },
+    "table-mode-merge-modal": {
+      "file": "table-mode-merge-modal.png",
+      "description": "Merge modal appearing when a second compatible table is generated",
+      "success": true
+    },
+    "table-mode-merged": {
+      "file": "table-mode-merged.png",
+      "description": "Merged table showing QPSK and 8-PSK data side-by-side",
+      "success": true
+    },
+    "table-mode-export-button": {
+      "file": "table-mode-export-button.png",
+      "description": "Export button highlighted on table",
+      "success": true
+    },
+    "table-mode-export-menu": {
+      "file": "table-mode-export-menu.png",
+      "description": "Export menu open on table showing CSV and JSON options",
+      "success": true
     },
     "theme-language": {
       "file": "theme-language.png",

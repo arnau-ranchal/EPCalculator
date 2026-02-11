@@ -808,6 +808,798 @@ const CONFIG = {
     },
 
     // ============================================================
+    // CONTOUR PLOT SCREENSHOTS
+    // ============================================================
+    // CONTOUR PLOT - Generated result
+    {
+      name: 'contour-plot-generated',
+      fullPage: true,
+      url: '/',
+      description: 'Generated contour plot showing E₀ across SNR and ρ',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        // Switch to Plot tab
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Select contour plot mode
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        // Use QPSK for faster computation
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        // Click Compute button
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        // Wait for computation (contour takes longer)
+        { type: 'wait', ms: 20000 },
+        // Spotlight the generated contour plot
+        { type: 'spotlight', selector: '.plot-item, .plots-grid' }
+      ]
+    },
+
+    // CONTOUR PLOT WORKFLOW - Step 1: First plot complete
+    {
+      name: 'contour-plot-step1-complete',
+      fullPage: true,
+      url: '/',
+      description: 'First contour plot (QPSK) generated with interface visible',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 }
+        // No spotlight - show full interface
+      ]
+    },
+
+    // CONTOUR PLOT WORKFLOW - Step 2: Changing parameters for second plot
+    {
+      name: 'contour-plot-step2-params',
+      fullPage: true,
+      url: '/',
+      description: 'Changing modulation to 8-PSK for second contour plot',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Change to 8-PSK
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 300 },
+        // Spotlight the modulation param row
+        { type: 'spotlight', selector: '.param-row:has(#ref-M), .param-reference .param-row:first-of-type' }
+      ]
+    },
+
+    // CONTOUR PLOT WORKFLOW - Step 3: Two plots with checkboxes visible
+    {
+      name: 'contour-plot-checkbox-selection',
+      fullPage: true,
+      url: '/',
+      description: 'Two contour plots with selection checkboxes visible',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Generate second plot (8-PSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Wait for checkboxes to appear (they show when 2+ contour plots exist)
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Click first checkbox using JS click for reliability
+        { type: 'jsClick', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the checkbox area
+        { type: 'spotlight', selector: '[data-tutorial="contour-checkbox"]' }
+      ]
+    },
+
+    // CONTOUR PLOT WORKFLOW - Step 4: Action bar with Compare/Benchmark buttons
+    {
+      name: 'contour-plot-action-bar',
+      fullPage: true,
+      url: '/',
+      description: 'Action bar showing Compare and Benchmark buttons after selecting two plots',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Generate second plot (8-PSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Wait for checkboxes to appear
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Select both plots using JS clicks (nth-of-type works in evaluate context)
+        { type: 'jsClick', selector: '.plots-grid .plot-item:first-of-type [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        { type: 'jsClick', selector: '.plots-grid .plot-item:nth-of-type(2) [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Wait for action bar to appear with .visible class
+        { type: 'waitForSelector', selector: '.action-bar.visible' },
+        { type: 'wait', ms: 300 },
+        // Spotlight the action bar at the bottom
+        { type: 'spotlight', selector: '.action-bar' }
+      ]
+    },
+
+    // CONTOUR PLOT - Comparison result (2D difference)
+    {
+      name: 'contour-plot-comparison',
+      fullPage: true,
+      url: '/',
+      description: 'Side-by-side comparison of two contour plots showing differences',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Generate second plot (8-PSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Wait for checkboxes to appear
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Select both plots
+        { type: 'jsClick', selector: '.plots-grid .plot-item:first-of-type [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        { type: 'jsClick', selector: '.plots-grid .plot-item:nth-of-type(2) [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Wait for action bar and click Comparison button
+        { type: 'waitForSelector', selector: '.action-bar.visible' },
+        { type: 'wait', ms: 300 },
+        { type: 'click', selector: '.comparison-btn:not([disabled])' },
+        { type: 'wait', ms: 5000 },
+        // Wait for the 3rd plot (comparison result) to appear
+        { type: 'waitForSelector', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 1000 },
+        // Scroll the 3rd plot into view and spotlight it
+        { type: 'scrollIntoView', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 500 },
+        { type: 'spotlight', selector: '.plots-grid .plot-item:nth-of-type(3)' }
+      ]
+    },
+
+    // CONTOUR PLOT - Benchmark result (3D overlay)
+    {
+      name: 'contour-plot-benchmark',
+      fullPage: true,
+      url: '/',
+      description: '3D benchmark overlay of multiple contour plots',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Generate second plot (8-PSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Wait for checkboxes to appear
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Select both plots
+        { type: 'jsClick', selector: '.plots-grid .plot-item:first-of-type [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        { type: 'jsClick', selector: '.plots-grid .plot-item:nth-of-type(2) [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Wait for action bar and click Benchmark button
+        { type: 'waitForSelector', selector: '.action-bar.visible' },
+        { type: 'wait', ms: 300 },
+        { type: 'click', selector: '.benchmark-btn:not([disabled])' },
+        { type: 'wait', ms: 5000 },
+        // Wait for the 3rd plot (benchmark result) to appear
+        { type: 'waitForSelector', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 1000 },
+        // Scroll the 3rd plot into view and spotlight it
+        { type: 'scrollIntoView', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 500 },
+        { type: 'spotlight', selector: '.plots-grid .plot-item:nth-of-type(3)' }
+      ]
+    },
+
+    // CONTOUR PLOT - Hover tooltip
+    {
+      name: 'contour-plot-hover',
+      fullPage: true,
+      url: '/',
+      description: 'Hovering on contour plot shows tooltip with SNR, ρ, and E₀ values',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Hover on the plot area to trigger tooltip
+        { type: 'hoverCoordinates', selector: '.plot-content svg', offsetX: 0.5, offsetY: 0.5 },
+        { type: 'wait', ms: 500 }
+        // No spotlight - the tooltip IS the visual highlight
+      ]
+    },
+
+    // CONTOUR PLOT - Export button
+    {
+      name: 'contour-plot-export-button',
+      fullPage: true,
+      url: '/',
+      description: 'Export button highlighted on a contour plot',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Spotlight the export button
+        { type: 'spotlight', selector: '[data-tutorial="export"], .export-trigger, .plot-exporter' }
+      ]
+    },
+
+    // CONTOUR PLOT - Export menu open
+    {
+      name: 'contour-plot-export-menu',
+      fullPage: true,
+      url: '/',
+      description: 'Export menu open on contour plot showing format options',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'contour' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 20000 },
+        // Click the export button to open the menu
+        { type: 'click', selector: '.export-trigger' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the export menu
+        { type: 'spotlight', selector: '.export-menu, .export-menu-container' }
+      ]
+    },
+
+    // ============================================================
+    // 3D SURFACE PLOTS - Follows same workflow as contour plots
+    // ============================================================
+
+    // SURFACE PLOT - Single generated 3D surface
+    {
+      name: 'surface-plot-generated',
+      fullPage: true,
+      url: '/',
+      description: '3D surface plot showing error exponent landscape',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        { type: 'spotlight', selector: '.plot-item' }
+      ]
+    },
+
+    // SURFACE PLOT - Step 1 complete (first surface generated)
+    {
+      name: 'surface-plot-step1-complete',
+      fullPage: true,
+      url: '/',
+      description: 'First 3D surface generated (QPSK), ready for comparison workflow',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        { type: 'spotlight', selector: '.plots-grid' }
+      ]
+    },
+
+    // SURFACE PLOT - Step 2 params (setting up second surface)
+    {
+      name: 'surface-plot-step2-params',
+      fullPage: true,
+      url: '/',
+      description: 'Setting parameters for second 3D surface (8-PSK)',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Now change M to 8 to show we're setting up second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 300 },
+        // Spotlight the controls to show parameter change
+        { type: 'spotlight', selector: '.plotting-controls, .control-panel' }
+      ]
+    },
+
+    // SURFACE PLOT - Checkbox selection (one surface selected)
+    {
+      name: 'surface-plot-checkbox-selection',
+      fullPage: true,
+      url: '/',
+      description: 'Two 3D surfaces with selection checkboxes visible',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Generate second plot (8-PSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Wait for checkboxes to appear
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Select first plot
+        { type: 'jsClick', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Spotlight the checkbox
+        { type: 'spotlight', selector: '[data-tutorial="contour-checkbox"]' }
+      ]
+    },
+
+    // SURFACE PLOT - Action bar (2 surfaces selected)
+    {
+      name: 'surface-plot-action-bar',
+      fullPage: true,
+      url: '/',
+      description: 'Action bar showing Compare and Benchmark buttons for 3D surfaces',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Generate second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Wait for checkboxes
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Select both plots
+        { type: 'jsClick', selector: '.plots-grid .plot-item:first-of-type [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        { type: 'jsClick', selector: '.plots-grid .plot-item:nth-of-type(2) [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Wait for action bar and spotlight it
+        { type: 'waitForSelector', selector: '.action-bar.visible' },
+        { type: 'wait', ms: 300 },
+        { type: 'spotlight', selector: '.action-bar' }
+      ]
+    },
+
+    // SURFACE PLOT - Comparison result (3D difference surface)
+    {
+      name: 'surface-plot-comparison',
+      fullPage: true,
+      url: '/',
+      description: '3D difference surface showing comparison between two surfaces',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Generate second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Wait for checkboxes
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Select both plots
+        { type: 'jsClick', selector: '.plots-grid .plot-item:first-of-type [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        { type: 'jsClick', selector: '.plots-grid .plot-item:nth-of-type(2) [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Click Comparison
+        { type: 'waitForSelector', selector: '.action-bar.visible' },
+        { type: 'wait', ms: 300 },
+        { type: 'click', selector: '.comparison-btn:not([disabled])' },
+        { type: 'wait', ms: 5000 },
+        // Wait for 3rd plot and spotlight it
+        { type: 'waitForSelector', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 1000 },
+        { type: 'scrollIntoView', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 500 },
+        { type: 'spotlight', selector: '.plots-grid .plot-item:nth-of-type(3)' }
+      ]
+    },
+
+    // SURFACE PLOT - Benchmark result (3D overlay)
+    {
+      name: 'surface-plot-benchmark',
+      fullPage: true,
+      url: '/',
+      description: '3D benchmark overlay showing multiple surfaces together',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        // Generate first plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Generate second plot
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        // Wait for checkboxes
+        { type: 'waitForSelector', selector: '[data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Select both plots
+        { type: 'jsClick', selector: '.plots-grid .plot-item:first-of-type [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        { type: 'jsClick', selector: '.plots-grid .plot-item:nth-of-type(2) [data-tutorial="contour-checkbox"]' },
+        { type: 'wait', ms: 500 },
+        // Click Benchmark
+        { type: 'waitForSelector', selector: '.action-bar.visible' },
+        { type: 'wait', ms: 300 },
+        { type: 'click', selector: '.benchmark-btn:not([disabled])' },
+        { type: 'wait', ms: 5000 },
+        // Wait for 3rd plot and spotlight it
+        { type: 'waitForSelector', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 1000 },
+        { type: 'scrollIntoView', selector: '.plots-grid .plot-item:nth-of-type(3)' },
+        { type: 'wait', ms: 500 },
+        { type: 'spotlight', selector: '.plots-grid .plot-item:nth-of-type(3)' }
+      ]
+    },
+
+    // SURFACE PLOT - Export button highlighted
+    {
+      name: 'surface-plot-export-button',
+      fullPage: true,
+      url: '/',
+      description: 'Export button highlighted on 3D surface plot',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        { type: 'spotlight', selector: '[data-tutorial="export"], .export-trigger' }
+      ]
+    },
+
+    // SURFACE PLOT - Export menu open
+    {
+      name: 'surface-plot-export-menu',
+      fullPage: true,
+      url: '/',
+      description: 'Export menu open on 3D surface plot showing format options',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'surface' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 25000 },
+        { type: 'click', selector: '.export-trigger' },
+        { type: 'wait', ms: 500 },
+        { type: 'spotlight', selector: '.export-menu, .export-menu-container' }
+      ]
+    },
+
+    // ============================================================
+    // TABLE MODE SCREENSHOTS
+    // ============================================================
+
+    // TABLE MODE - Generated table showing all metrics
+    {
+      name: 'table-mode-generated',
+      fullPage: true,
+      url: '/',
+      description: 'Table showing all computed metrics (E₀, Pe, ρ*, etc.) for QPSK',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        // Select Table mode (rawData)
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'rawData' },
+        { type: 'wait', ms: 300 },
+        // Configure modulation
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        // Generate table
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 8000 },
+        // Spotlight the table
+        { type: 'spotlight', selector: '.plot-item' }
+      ]
+    },
+
+    // TABLE MODE - Column headers showing all metrics
+    {
+      name: 'table-mode-columns',
+      fullPage: true,
+      url: '/',
+      description: 'Table with column headers highlighted showing SNR, E₀, Pe, ρ*, MI, etc.',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'rawData' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 8000 },
+        // Spotlight the table header row
+        { type: 'spotlight', selector: '.plot-item table thead, .plot-item th' }
+      ]
+    },
+
+    // TABLE MODE - Merge modal appearing for compatible table
+    {
+      name: 'table-mode-merge-modal',
+      fullPage: true,
+      url: '/',
+      description: 'Merge modal appearing when a second compatible table is generated',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'rawData' },
+        { type: 'wait', ms: 300 },
+        // Generate first table (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 8000 },
+        // Generate second table (8-PSK) - this triggers merge modal
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 5000 },
+        // Wait for merge modal
+        { type: 'waitForSelector', selector: '.merge-modal, .modal-container' },
+        { type: 'wait', ms: 300 },
+        // Spotlight the modal
+        { type: 'spotlight', selector: '.merge-modal, .modal-container, .modal-content' }
+      ]
+    },
+
+    // TABLE MODE - Merged table showing multiple modulations
+    {
+      name: 'table-mode-merged',
+      fullPage: true,
+      url: '/',
+      description: 'Merged table showing QPSK and 8-PSK data side-by-side',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'rawData' },
+        { type: 'wait', ms: 300 },
+        // Generate first table (QPSK)
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 8000 },
+        // Generate second table (8-PSK) and click merge
+        { type: 'select', selector: '#M, select[name="M"]', value: '8' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 5000 },
+        // Wait for merge modal and click merge button
+        { type: 'waitForSelector', selector: '.merge-modal, .modal-container' },
+        { type: 'wait', ms: 300 },
+        { type: 'click', selector: 'button:has-text("Merge"), button:has-text("merge"), .merge-btn, button.primary' },
+        { type: 'wait', ms: 3000 },
+        // Spotlight the merged table
+        { type: 'spotlight', selector: '.plot-item' }
+      ]
+    },
+
+    // TABLE MODE - Export button highlighted
+    {
+      name: 'table-mode-export-button',
+      fullPage: true,
+      url: '/',
+      description: 'Export button highlighted on table',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'rawData' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 8000 },
+        { type: 'spotlight', selector: '[data-tutorial="export"], .export-trigger' }
+      ]
+    },
+
+    // TABLE MODE - Export menu open
+    {
+      name: 'table-mode-export-menu',
+      fullPage: true,
+      url: '/',
+      description: 'Export menu open on table showing CSV and JSON options',
+      waitFor: '.simulation-panel',
+      setup: [{ type: 'dismissTutorial' }],
+      actions: [
+        { type: 'wait', ms: 500 },
+        { type: 'click', selector: '.tab-button:nth-child(2)' },
+        { type: 'wait', ms: 500 },
+        { type: 'select', selector: '#plotType, select[name="plotType"]', value: 'rawData' },
+        { type: 'wait', ms: 300 },
+        { type: 'select', selector: '#M, select[name="M"]', value: '4' },
+        { type: 'select', selector: '#typeModulation, select[name="typeModulation"]', value: 'PSK' },
+        { type: 'wait', ms: 200 },
+        { type: 'click', selector: '.plot-button, .compute-button, button[type="submit"]' },
+        { type: 'wait', ms: 8000 },
+        { type: 'click', selector: '.export-trigger' },
+        { type: 'wait', ms: 500 },
+        { type: 'spotlight', selector: '.export-menu, .export-menu-container' }
+      ]
+    },
+
+    // ============================================================
     // FULL PAGE WITH SPOTLIGHT - HEADER CONTROLS
     // ============================================================
     {
@@ -1029,12 +1821,34 @@ async function executeAction(page, action) {
         await page.waitForSelector(action.selector, { timeout: 10000 });
         break;
 
+      case 'scrollIntoView':
+        // Scroll an element into view
+        const scrollSelectors = action.selector.split(',').map(s => s.trim());
+        let scrolledElement = null;
+        for (const sel of scrollSelectors) {
+          try {
+            const elem = await page.$(sel);
+            if (elem) {
+              await elem.scrollIntoViewIfNeeded();
+              scrolledElement = sel;
+              break;
+            }
+          } catch (e) { /* try next */ }
+        }
+        if (scrolledElement) {
+          console.log(`     ✓ Scrolled into view: ${scrolledElement}`);
+        } else {
+          console.log(`     ⚠️ ScrollIntoView: no matching selector found`);
+        }
+        break;
+
       case 'dismissTutorial':
         await page.evaluate(() => {
           const state = JSON.parse(localStorage.getItem('epcalculator_tutorial') || '{}');
           state.hasSeenWelcome = true;
           state.hasSeenPlotTutorial = true;
           state.hasSeenConstellationTutorial = true;
+          state.hasSeenContourComparisonTutorial = true;  // Dismiss the contour comparison tutorial too
           localStorage.setItem('epcalculator_tutorial', JSON.stringify(state));
         });
         console.log(`     ✓ Tutorial dismissed`);
@@ -1288,9 +2102,20 @@ async function main() {
     return;
   }
 
-  // Launch browser
+  // Launch browser with WebGL support for 3D plots
   console.log('🚀 Launching browser...\n');
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--enable-webgl',
+      '--enable-webgl2',
+      '--ignore-gpu-blocklist',
+      '--enable-gpu-rasterization',
+      '--enable-accelerated-2d-canvas',
+      '--disable-gpu-sandbox',
+      '--use-gl=swiftshader'
+    ]
+  });
   const context = await browser.newContext({
     viewport: CONFIG.viewport,
     deviceScaleFactor: CONFIG.deviceScaleFactor

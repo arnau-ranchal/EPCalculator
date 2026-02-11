@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { Type } from '@sinclair/typebox'
 import { ComputationService } from '../services/computation.js'
 import { DatabaseService } from '../services/database.js'
-import { config, universityConfig } from '../config/index.js'
+import { config, universityConfig, APP_VERSION } from '../config/index.js'
 
 export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
   // Detailed health check
@@ -54,7 +54,7 @@ export async function healthRoutes(fastify: FastifyInstance): Promise<void> {
     const healthStatus = {
       status: dbHealth ? 'healthy' : 'degraded',
       timestamp: new Date().toISOString(),
-      version: '2.0.0',
+      version: APP_VERSION,
       uptime: Math.round(process.uptime()),
       services: {
         database: dbHealth,
