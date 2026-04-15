@@ -7,6 +7,16 @@
   import ParameterForm from './ParameterForm.svelte';
   import ResultsDisplay from './ResultsDisplay.svelte';
 
+  // Feature flag: Use custom constellation in Single Point Computation
+  // When false: Always uses standard modulation (PAM/PSK/QAM), ignoring custom constellation
+  // When true: Uses custom constellation from the store if selected
+  // Must match the flag in ParameterForm.svelte for consistent behavior
+  const USE_CUSTOM_CONSTELLATION_IN_SINGLE_POINT = false;
+
+  // Standard modulation types and M values for fallback
+  const STANDARD_MODULATION_TYPES = ['PAM', 'PSK', 'QAM'];
+  const VALID_M_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512];
+
   let errorMessage = '';
 
   async function handleCompute(params) {
@@ -14,14 +24,30 @@
       errorMessage = '';
       isComputing.set(true);
 
+      // When custom constellation is disabled, ensure we use valid standard params
+      let effectiveParams = params;
+      if (!USE_CUSTOM_CONSTELLATION_IN_SINGLE_POINT) {
+        effectiveParams = {
+          ...params,
+          // Default to PAM if typeModulation is Custom or invalid
+          typeModulation: STANDARD_MODULATION_TYPES.includes(params.typeModulation)
+            ? params.typeModulation
+            : 'PAM',
+          // Default to 16 if M is not a standard power of 2
+          M: VALID_M_VALUES.includes(params.M)
+            ? params.M
+            : 16
+        };
+      }
+
       // Convert SNR to linear for backend
       const paramsForBackend = {
-        ...params,
-        SNR: getSNRLinear(params)
+        ...effectiveParams,
+        SNR: getSNRLinear(effectiveParams)
       };
 
-      // Check if using custom constellation (use get() to read current store values)
-      const isUsingCustom = get(useCustomConstellation);
+      // Check if using custom constellation (only if feature flag is enabled)
+      const isUsingCustom = USE_CUSTOM_CONSTELLATION_IN_SINGLE_POINT && get(useCustomConstellation);
       const customConst = isUsingCustom ? get(customConstellation) : null;
 
       // Debug: Log constellation data
@@ -33,7 +59,7 @@
         }))));
       }
 
-      // Map parameters with custom constellation if applicable
+      // Map parameters with custom constellation if applicable (null when flag is disabled)
       const apiParams = mapSimulationParams(paramsForBackend, customConst);
 
       // Debug: Log cache key components

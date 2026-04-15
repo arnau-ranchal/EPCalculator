@@ -8,6 +8,25 @@
   export let onCompute = () => {};
   export let disabled = false;
 
+  // Feature flag: Use custom constellation in Single Point Computation tab
+  // When false: Always uses standard modulation (PAM/PSK/QAM), ignoring custom constellation
+  // When true: Allows custom constellation editing and uses it for computation
+  // The Plotting panel's ParameterReference is the primary way to work with custom constellations
+  const USE_CUSTOM_CONSTELLATION_IN_SINGLE_POINT = false;
+
+  // When custom constellation is disabled for this tab, use a fallback modulation type
+  // This ensures the dropdown always has a valid selection
+  const STANDARD_MODULATION_TYPES = ['PAM', 'PSK', 'QAM'];
+  $: effectiveModulationType = STANDARD_MODULATION_TYPES.includes($simulationParams.typeModulation)
+    ? $simulationParams.typeModulation
+    : 'PAM'; // Default to PAM if current type is 'Custom' or invalid
+
+  // Similarly, ensure M is a valid power of 2 for standard modulations
+  const VALID_M_VALUES = [2, 4, 8, 16, 32, 64, 128, 256, 512];
+  $: effectiveM = VALID_M_VALUES.includes($simulationParams.M)
+    ? $simulationParams.M
+    : 16; // Default to 16 if current M is not a standard value
+
   let form;
 
   function handleSubmit(event) {
@@ -119,14 +138,15 @@
       <!-- Custom Constellation Toggle - Hidden from Single Point Computation, available in Plotting panel -->
       <!-- Use the Plotting panel's "Type" dropdown to select Custom constellation -->
 
-      {#if !$useCustomConstellation}
+      {#if !USE_CUSTOM_CONSTELLATION_IN_SINGLE_POINT || !$useCustomConstellation}
+        <!-- Standard modulation UI - always shown when USE_CUSTOM_CONSTELLATION_IN_SINGLE_POINT is false -->
         <div class="form-row">
           <div class="form-group inline" use:docHover={{ key: 'param-M', position: 'bottom' }}>
             <label for="M">{$_('params.modulationSize')}:</label>
             <select
               id="M"
               name="M"
-              value={$simulationParams.M}
+              value={effectiveM}
               on:change={handleInputChange}
               class:error={$paramValidation.errors.M}
             >
@@ -145,12 +165,12 @@
             {/if}
           </div>
 
-          <div class="form-group inline" use:docHover={{ key: `param-type-${$simulationParams.typeModulation}`, position: 'bottom' }}>
+          <div class="form-group inline" use:docHover={{ key: `param-type-${effectiveModulationType}`, position: 'bottom' }}>
             <label for="typeModulation">{$_('params.modulationType')}:</label>
             <select
               id="typeModulation"
               name="typeModulation"
-              value={$simulationParams.typeModulation}
+              value={effectiveModulationType}
               on:change={handleInputChange}
             >
               <option value="PAM">PAM</option>
@@ -160,7 +180,7 @@
           </div>
         </div>
       {:else}
-        <!-- Show M as read-only when using custom constellation -->
+        <!-- Custom constellation editor UI (when USE_CUSTOM_CONSTELLATION_IN_SINGLE_POINT is true) -->
         <div class="form-row">
           <div class="form-group inline">
             <label for="M-display">{$_('params.modulationSize')}:</label>
@@ -531,6 +551,15 @@
     text-align: center;
     cursor: not-allowed;
     box-sizing: border-box;
+  }
+
+  .m-display-readonly.type-readonly {
+    width: auto;
+    min-width: 100px;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   @media (max-width: 768px) {

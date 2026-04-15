@@ -1827,7 +1827,12 @@ function importSingleSeriesData(parsedData) {
   // Use detected variable types or fall back to generic
   const xVar = xDetection.varType || 'imported_x';
   const yVar = yDetection.varType || 'imported_y';
-  const snrUnit = xDetection.detectedUnit || yDetection.detectedUnit || 'linear';
+
+  // Get filename params (e.g., from "BER_vs_SNR_M=16_QAM.csv")
+  const fnParams = parsedData.filenameParams || {};
+
+  // SNR unit: prefer filename params, then label detection, then default
+  const snrUnit = fnParams.SNRUnit || xDetection.detectedUnit || yDetection.detectedUnit || 'linear';
 
   // Assign automatic color for imported data
   const colorIdx = colorIndex % defaultColors.length;
@@ -1852,15 +1857,25 @@ function importSingleSeriesData(parsedData) {
       plotType: 'lineLog',
       xVar: xVar,
       yVar: yVar,
-      distribution: parsedData.plotParams?.distribution || 'uniform',
+      distribution: fnParams.distribution || parsedData.plotParams?.distribution || 'uniform',
       snrUnit: snrUnit,
       ...(parsedData.plotParams || {})
     },
     simulationParams: {
       isImported: true,
       SNRUnit: xVar === 'SNR' ? snrUnit : undefined,
-      // Preserve any simulation params from exported JSON (fixes "undefined" issue)
-      ...(parsedData.simulationParams || {})
+      // Merge filename-extracted params (M, R, SNR, n, N, typeModulation, etc.)
+      ...(fnParams.M !== undefined && { M: fnParams.M }),
+      ...(fnParams.R !== undefined && { R: fnParams.R }),
+      ...(fnParams.SNR !== undefined && { SNR: fnParams.SNR }),
+      ...(fnParams.n !== undefined && { n: fnParams.n }),
+      ...(fnParams.N !== undefined && { N: fnParams.N }),
+      ...(fnParams.typeModulation && { typeModulation: fnParams.typeModulation }),
+      ...(fnParams.shaping_param !== undefined && { shaping_param: fnParams.shaping_param }),
+      // Preserve any simulation params from exported JSON (filter out undefined values)
+      ...Object.fromEntries(
+        Object.entries(parsedData.simulationParams || {}).filter(([_, v]) => v !== undefined)
+      )
     }
   };
 
@@ -1915,7 +1930,10 @@ function importMultiSeriesData(parsedData) {
 
   const xVar = xDetection.varType || 'imported_x';
   const yVar = yDetection.varType || 'imported_y';
-  const snrUnit = xDetection.detectedUnit || yDetection.detectedUnit || 'linear';
+
+  // Get filename params for shared metadata
+  const fnParams = parsedData.filenameParams || {};
+  const snrUnit = fnParams.SNRUnit || xDetection.detectedUnit || yDetection.detectedUnit || 'linear';
 
   // Import each series as a separate plot, they will auto-merge if axes match
   const plotIds = [];
@@ -1949,8 +1967,22 @@ function importMultiSeriesData(parsedData) {
       simulationParams: {
         isImported: true,
         SNRUnit: xVar === 'SNR' ? snrUnit : undefined,
-        // Preserve simulation params from each series (fixes "undefined" issue)
-        ...(seriesData.simulationParams || {})
+        // Merge filename-extracted params (shared across all series)
+        ...(fnParams.M !== undefined && { M: fnParams.M }),
+        ...(fnParams.R !== undefined && { R: fnParams.R }),
+        ...(fnParams.SNR !== undefined && { SNR: fnParams.SNR }),
+        ...(fnParams.n !== undefined && { n: fnParams.n }),
+        ...(fnParams.N !== undefined && { N: fnParams.N }),
+        ...(fnParams.typeModulation && { typeModulation: fnParams.typeModulation }),
+        ...(fnParams.shaping_param !== undefined && { shaping_param: fnParams.shaping_param }),
+        // Merge series-specific uniqueParams (override shared params, filter undefined)
+        ...Object.fromEntries(
+          Object.entries(seriesData.uniqueParams || {}).filter(([_, v]) => v !== undefined)
+        ),
+        // Preserve simulation params from each series (filter undefined)
+        ...Object.fromEntries(
+          Object.entries(seriesData.simulationParams || {}).filter(([_, v]) => v !== undefined)
+        )
       }
     };
 

@@ -8,73 +8,54 @@ import {EPCalculatorJS} from "../../services/wasm-fallback.js";
  * @returns {object} - e.g., {typeModulation: "QAM", M: 16, SNR: 10, SNRUnit: "dB", R: 0.5}
  */
 export function parseFilenameParams(filename) {
-  // TODO(human): Implement filename parameter extraction
-  //
-  // Instructions:
-  // 1. Remove file extension (.csv, .json)
-  // 2. Split by underscore _
-  // 3. Skip: yVar, "vs", xVar, timestamp (format: HH-MM-SS)
-  // 4. For each remaining part:
-  //    - If contains "=", extract key=value
-  //    - Handle units: SNR=10dB → {SNR: 10, SNRUnit: "dB"}
-  //    - Convert to numbers where possible
-  //    - Map standalone values: QAM → typeModulation, Uniform → distribution, etc.
-  //
-  // Test cases:
-  // "BER_vs_SNR_M=16_QAM_14-23-45.csv" → {M: 16, typeModulation: "QAM"}
-  // "Pe_vs_n_SNR=10dB_R=0.5_14-23-45.csv" → {SNR: 10, SNRUnit: "dB", R: 0.5}
-  // "Rho_vs_beta_Uniform_14-23-45.csv" → {distribution: "uniform"}
-    const params = {};
+  const params = {};
 
-    // TODO: HERE IMPLEMENT THE PARSING
-    const name_no_ext = filename.replace(/\.(csv|json)$/,'');
-    const parts = name_no_ext.split('_');
-    for(let i = 3 /* Skip yVar, "vs", xVar */; i < parts.length; i++){
-      const part = parts[i];
+  // Remove file extension and split by underscore
+  const name_no_ext = filename.replace(/\.(csv|json|txt)$/i, '');
+  const parts = name_no_ext.split('_');
 
-      // Skip timestamp
-      if (part.match(/^\d{2}-\d{2}-\d{2}$/)) continue;
+  // Skip first 3 parts: yVar, "vs", xVar (e.g., "BER_vs_SNR")
+  for (let i = 3; i < parts.length; i++) {
+    const part = parts[i];
 
-      if(part.includes('=')){ // variables with numbers (units)
-        let [key,val] = part.split('=');
-        if(key === 'β' || key === 'beta') {
-          key = 'shaping_param';
-        }
-        params[key] = parseFloat(val);
-        if(key === 'SNR'){
-          if(val.includes('dB') || val.includes('DB') || val.includes('db')){
-            params[key+'Unit'] = 'dB';
-          }
-          else{
-            params[key+'Unit'] = 'linear';
-          }
-        }
+    // Skip timestamp (format: HH-MM-SS)
+    if (part.match(/^\d{2}-\d{2}-\d{2}$/)) continue;
+
+    if (part.includes('=')) {
+      // Key=value pairs (e.g., M=16, SNR=10dB, R=0.5)
+      let [key, val] = part.split('=');
+      if (key === 'β' || key === 'beta') {
+        key = 'shaping_param';
       }
-      else{ // variables with no units of the variable itself
-        if(part.includes('-')){ // mod and constellation pair
-          const [M, constellation] = part.split('-');
-          params.typeModulation = constellation;
-          params.M = Number(M);
-        }
-        else{
-          switch(part) {
-            case 'Uniform':
-              params.distribution = 'uniform';
-              break;
-            case 'MB':
-              params.distribution = 'maxwell-boltzmann';
-              break;
-            case 'PAM':
-            case 'PSK':
-            case 'QAM':
-              params.typeModulation = part;
-              break;
-          }
-        }
+      params[key] = parseFloat(val);
 
+      // Handle SNR units
+      if (key === 'SNR') {
+        params[key + 'Unit'] = /db/i.test(val) ? 'dB' : 'linear';
       }
-
+    } else if (part.includes('-')) {
+      // Modulation-constellation pair (e.g., "16-QAM")
+      const [M, constellation] = part.split('-');
+      params.typeModulation = constellation;
+      params.M = Number(M);
+    } else {
+      // Standalone keywords
+      switch (part) {
+        case 'Uniform':
+          params.distribution = 'uniform';
+          break;
+        case 'MB':
+          params.distribution = 'maxwell-boltzmann';
+          break;
+        case 'PAM':
+        case 'PSK':
+        case 'QAM':
+          params.typeModulation = part;
+          break;
+      }
     }
+  }
+
   return params;
 }
 
@@ -270,13 +251,19 @@ export function parseDataFile(filename, content) {
         result = parseJSON(content);
       }
     } else if (ext === 'csv' || ext === 'txt') {
-      // Try multi-column CSV first, fallback to single-series
-      const multiSeriesResult = parseCSVMultiSeries(content);
-
-      if (multiSeriesResult) {
-        result = multiSeriesResult;
+      // Try stacked CSV first (sections separated by blank lines)
+      const stackedResult = parseStackedCSV(content);
+      if (stackedResult) {
+        result = stackedResult;
       } else {
-        result = parseCSV(content);
+        // Try multi-column CSV (wide format with 3+ columns)
+        const multiSeriesResult = parseCSVMultiSeries(content);
+        if (multiSeriesResult) {
+          result = multiSeriesResult;
+        } else {
+          // Fall back to simple 2-column CSV
+          result = parseCSV(content);
+        }
       }
     } else {
       // Try to detect format by content
@@ -286,8 +273,14 @@ export function parseDataFile(filename, content) {
         const multiSeriesResult = parseJSONMultiSeries(data);
         result = multiSeriesResult || parseJSON(content);
       } else {
-        const multiSeriesResult = parseCSVMultiSeries(content);
-        result = multiSeriesResult || parseCSV(content);
+        // Try stacked, then multi-column, then simple CSV
+        const stackedResult = parseStackedCSV(content);
+        if (stackedResult) {
+          result = stackedResult;
+        } else {
+          const multiSeriesResult = parseCSVMultiSeries(content);
+          result = multiSeriesResult || parseCSV(content);
+        }
       }
     }
   } catch (e) {
@@ -304,6 +297,13 @@ export function parseDataFile(filename, content) {
   // Add filename as fallback title
   if (!result.title && !result.isMultiSeries) {
     result.title = filename.replace(/\.(csv|json|txt)$/i, '');
+  }
+
+  // Extract parameters from filename (e.g., "BER_vs_SNR_M=16_QAM.csv")
+  // and attach them to the result for use during import
+  const filenameParams = parseFilenameParams(filename);
+  if (Object.keys(filenameParams).length > 0) {
+    result.filenameParams = filenameParams;
   }
 
   return result;
@@ -560,32 +560,10 @@ function isAllNumbers(text){
 
 /**
  * Parse external stacked CSV (from Excel, MATLAB, Python, etc.)
+ * Handles formats from Excel/Google Sheets, MATLAB (% comments), and Python/Pandas (# comments)
  * @private Helper function for parseStackedCSV
  */
 function parseExternalStacked(text) {
-  // TODO(human): Implement external stacked CSV parser
-  //
-  // Handle formats from:
-  // - Excel/Google Sheets (plain text headers, no comment chars)
-  // - MATLAB (% comments)
-  // - Python/Pandas (# comments, may repeat headers)
-  //
-  // Algorithm:
-  // 1. Loop through sections
-  // 2. For each section:
-  //    - Detect if first line is comment (# or %) or plain text
-  //    - Extract series label from first line
-  //    - Skip header rows if present (check if line has letters vs numbers)
-  //    - Parse numeric data rows (x,y pairs)
-  // 3. Try to detect xLabel/yLabel from first section if it has headers
-  // 4. Build series array
-  //
-  // Return structure same as EPCalculator format, but isProgramGenerated: false
-  //
-  // Test cases:
-  // - Excel: "X,Y\n\nSeries 1\n1,0.5\n2,0.4\n\nSeries 2\n1,0.6\n2,0.5"
-  // - MATLAB: "% Code length, Error\n\n% M=16\n100,0.45\n\n% M=32\n100,0.42"
-  // - Python: "# First dataset\n100,0.45\n200,0.38\n\n# Second\n100,0.42"
   const out = {
     series: [],
     isProgramGenerated: false,
@@ -594,45 +572,67 @@ function parseExternalStacked(text) {
     xLabel: "X",
     yLabel: "Y"
   };
+
   const lines = text.split('\n');
   let xylabelsfound = false;
   let seriescounter = -1;
-  for(let i = 0; i < lines.length; i++){
+
+  for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if(line){ // if we don't have a blank line
-      if(!xylabelsfound){
-        if(line.includes(',')){ // check if its the xvar and yvar titles
-          [out.xLabel, out.yLabel] = line.split(",").map(s=>s.trim());
-          xylabelsfound = true;
-          continue;
+    if (!line) continue; // Skip blank lines
+
+    // Try to detect axis labels from first non-empty line with comma
+    if (!xylabelsfound && line.includes(',') && !isAllNumbers(line)) {
+      [out.xLabel, out.yLabel] = line.split(",").map(s => s.trim());
+      xylabelsfound = true;
+      continue;
+    }
+
+    if (!isAllNumbers(line)) {
+      // This is a header or series label (not numeric data)
+      seriescounter++;
+      const cleanLine = line.replace(/^[#%]\s*/, '').trim();
+
+      out.series[seriescounter] = {
+        x: [],
+        y: [],
+        yLabel: cleanLine,
+        uniqueParams: {},
+        pointCount: 0
+      };
+
+      // Extract key=value pairs from the label (e.g., "M=16, R=0.5")
+      cleanLine.split(',').forEach(pair => {
+        if (pair.includes("=")) {
+          const [k, v] = pair.split("=");
+          out.series[seriescounter].uniqueParams[k.trim()] = parseFloat(v);
         }
-      }
-      if(!isAllNumbers(line.trim())){ // header or legend title
-        seriescounter++;
+      });
+
+      xylabelsfound = true; // No axis labels present, stop checking
+    } else {
+      // This is numeric data - ensure we have a series to add to
+      if (seriescounter === -1) {
+        // Data without a header - create a default series
+        seriescounter = 0;
         out.series[seriescounter] = {
           x: [],
           y: [],
-          yLabel: line.replace(/^[#%]\s*/,'').trim(), // we store the legend title without the aux symbols at the start
+          yLabel: "Series 1",
           uniqueParams: {},
           pointCount: 0
         };
-
-        const cleanLine = line.replace(/^[#%]\s*/,'').trim();
-        cleanLine.split(',').forEach(pair => {if(pair.includes("=")){const [k, v] = pair.split("="); out.series[seriescounter].uniqueParams[k.trim()] = parseFloat(v);}});
-
-        xylabelsfound = true; // no need to check anymore, they were not included
       }
-      else{ // we found data points values!
-        const xy = line.split(",");
-        out.series[seriescounter].x.push(parseFloat(xy[0]));
-        out.series[seriescounter].y.push(parseFloat(xy[1]));
-        out.series[seriescounter].pointCount += 1;
-        out.totalPoints += 1;
-      }
+
+      const xy = line.split(",");
+      out.series[seriescounter].x.push(parseFloat(xy[0]));
+      out.series[seriescounter].y.push(parseFloat(xy[1]));
+      out.series[seriescounter].pointCount += 1;
+      out.totalPoints += 1;
     }
   }
-  if(seriescounter+1 > 1) out.isMultiSeries = true;
 
+  out.isMultiSeries = out.series.length > 1;
   return out;
 }
 
