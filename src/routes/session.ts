@@ -119,18 +119,17 @@ Use the x-session-id header to identify the session.`,
       response: {
         200: Type.Object({
           activeSessions: Type.Number(),
-          totalActiveRequests: Type.Number(),
-          sessionIds: Type.Array(Type.String())
+          totalActiveRequests: Type.Number()
         })
       }
     }
   }, async (request, reply) => {
-    const sessionIds = getActiveSessions()
-
+    // NOTE: we intentionally do NOT return the list of session IDs.
+    // /session/cancel trusts x-session-id as a capability, so exposing the
+    // full ID list here would let anyone cancel every user's computations.
     return {
-      activeSessions: sessionIds.length,
-      totalActiveRequests: getTotalActiveRequests(),
-      sessionIds
+      activeSessions: getActiveSessions().length,
+      totalActiveRequests: getTotalActiveRequests()
     }
   })
 }
