@@ -78,3 +78,9 @@ __pycache__/
 
 docs/
 
+# Local-only reference docs (audit, planning, analysis — NOT for the public repo)
+audit-results.md
+LEARNING-PLAN.md
+EPCalculator-Analysis(1).md
+SHORT DOCUMENT(1).txt
+
