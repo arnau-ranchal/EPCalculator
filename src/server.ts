@@ -77,6 +77,15 @@ server.listen(config.PORT, config.HOST, () => {
 const fastify: FastifyInstance = Fastify({
   logger: {
     level: config.LOG_LEVEL,
+    redact: {
+      paths: [
+        'req.headers["x-api-key"]',
+        'req.headers.authorization',
+        'req.headers.cookie',
+        '*.apiKey'
+      ],
+      censor: '[REDACTED]'
+    },
     transport: config.NODE_ENV === 'development' ? {
       target: 'pino-pretty',
       options: {
