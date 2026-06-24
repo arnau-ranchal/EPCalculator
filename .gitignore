@@ -84,3 +84,7 @@ LEARNING-PLAN.md
 EPCalculator-Analysis(1).md
 SHORT DOCUMENT(1).txt
 
+# Stray duplicate plots at repo root (the real ones live in src/frontend/assets/tutorial-images/)
+/line-plot-hover-legend.png
+/line-plot-hover-point.png
+
